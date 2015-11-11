@@ -5,6 +5,8 @@
 #include <core/splittools.h>
 #include <algorithm>
 
+#include "FileMERData.h"
+
 FileElectrode::FileElectrode(std::string name, std::string positionFile, std::string spectralFile):
     iElectrode(name){
 
@@ -14,16 +16,29 @@ FileElectrode::~FileElectrode(){
 
 }
 
-int8_t FileElectrode::addData(int8_t depth, iMERData* data){
+int8_t FileElectrode::addData(int8_t depth, std::shared_ptr<iMERData> data){
+    if(_electrodeData.find(depth) != _electrodeData.end()){
+        return -1;
+    }
+    _electrodeData.insert(std::pair<int8_t,std::shared_ptr<iMERData>>(depth,data));
+
+    _SpectralPowerRange.x = std::min(_SpectralPowerRange.x, data->getMinMaxSpextralPower().x);
+    _SpectralPowerRange.y = std::max(_SpectralPowerRange.y, data->getMinMaxSpextralPower().y);
+
     return 1;
 }
-iMERData* FileElectrode::getData(int8_t depth){
-    return NULL;
+std::shared_ptr<iMERData> FileElectrode::getData(int8_t depth){
+    if(_electrodeData.find(depth) != _electrodeData.end()){
+        return _electrodeData.find(depth)->second;
+    }
+    return nullptr;
 }
 
 bool FileElectrode::loadFiles(std::string Position, std::string Spectral){
     int curDepth = -10;
-
+    float counter = 0;
+    double max = -1000000.0;
+    double min = 1000000.0;
 
     std::ifstream filePosition(Position.c_str());
     if(!filePosition.is_open()){
@@ -43,6 +58,9 @@ bool FileElectrode::loadFiles(std::string Position, std::string Spectral){
     {
         Core::Math::Vec3f curPosition;
         std::vector<double> spectralPower;
+        double powerAverage = 0.0f;
+        max = -1000000.0;
+        min = 1000000.0;
 
         std::vector<std::string> valuesPosition = splitString(linePosition,',');
         curPosition = Core::Math::Vec3f(std::stof(valuesPosition[0]),std::stof(valuesPosition[1]),std::stof(valuesPosition[2]));
@@ -50,9 +68,22 @@ bool FileElectrode::loadFiles(std::string Position, std::string Spectral){
         std::vector<std::string> valuesSpectral = splitString(lineSpectral,',');
         for(int i = 0; i < valuesSpectral.size();++i){
             spectralPower.push_back(std::stod(valuesSpectral[i]));
+            max = std::max(max,std::stod(valuesSpectral[i]));
+            min = std::min(min,std::stod(valuesSpectral[i]));
+            powerAverage += std::stod(valuesSpectral[i]);
         }
+        powerAverage /= valuesSpectral.size();
+        std::shared_ptr<iMERData> data = std::make_shared<FileMERData>(spectralPower,
+                                                                       Core::Math::Vec2d(min,max),
+                                                                       powerAverage);
+        data->setDataPosition(curPosition);
 
+        addData(curDepth,data);
+        _SpectralAverage += powerAverage;
+        counter++;
     }
+
+    _SpectralAverage /= counter;
 
     filePosition.close();
     fileSpectral.close();

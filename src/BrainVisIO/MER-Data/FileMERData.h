@@ -7,11 +7,12 @@
 
 class FileMERData : public iMERData{
 public:
-    FileMERData();
+    FileMERData(std::vector<double> spectralData,
+                Core::Math::Vec2d spectralMinMax,
+                double spectralAverage);
     virtual ~FileMERData();
 
     void setInput(std::vector<double> input);
-    void setSpectralPower(std::vector<double> power);
     void setFrequency(double f);
     void setFrequencyRange(Core::Math::Vec2d range);
     void setDataPosition(Core::Math::Vec3f p);
@@ -20,6 +21,8 @@ public:
     std::vector<double> getSpectralPower();
     Core::Math::Vec2d getFrequencyRange();
     Core::Math::Vec3f getDataPosition();
+    Core::Math::Vec2d getMinMaxSpextralPower();
+    double getSpectralAverage();
 
 protected:
    std::vector<double>  _rawData;
@@ -28,6 +31,8 @@ protected:
    double               _frequency;
    Core::Math::Vec2d    _range;
    Core::Math::Vec3f    _position;
+   Core::Math::Vec2d    _spectralMinMax;
+   double               _spectralAverage;
 
 private:
 

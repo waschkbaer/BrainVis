@@ -1,6 +1,11 @@
 #include "FileMERData.h"
 
-FileMERData::FileMERData(){
+FileMERData::FileMERData(std::vector<double> spectralData,
+                         Core::Math::Vec2d spectralMinMax,
+                         double spectralAverage):
+_spectralMinMax(spectralMinMax),
+_spectralData(spectralData),
+_spectralAverage(spectralAverage){
 
 }
 
@@ -12,9 +17,6 @@ void FileMERData::setInput(std::vector<double> input){
     _rawData = input;
 }
 
-void FileMERData::setSpectralPower(std::vector<double> power){
-    _spectralData = power;
-}
 
 void FileMERData::setFrequency(double f){
     _frequency = f;
@@ -42,4 +44,12 @@ Core::Math::Vec2d FileMERData::getFrequencyRange(){
 
 Core::Math::Vec3f FileMERData::getDataPosition(){
     return _position;
+}
+
+Core::Math::Vec2d FileMERData::getMinMaxSpextralPower(){
+    return _spectralMinMax;
+}
+
+double FileMERData::getSpectralAverage(){
+    return _spectralAverage;
 }

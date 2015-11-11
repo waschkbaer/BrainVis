@@ -10,7 +10,6 @@ public:
     virtual ~iMERData(){}
 
     virtual void setInput(std::vector<double> input) = 0;
-    virtual void setSpectralPower(std::vector<double> power) = 0;
     virtual void setFrequency(double f) = 0;
     virtual void setFrequencyRange(Core::Math::Vec2d range) = 0;
     virtual void setDataPosition(Core::Math::Vec3f p) = 0;
@@ -19,6 +18,8 @@ public:
     virtual std::vector<double> getSpectralPower() = 0;
     virtual Core::Math::Vec2d getFrequencyRange() = 0;
     virtual Core::Math::Vec3f getDataPosition() = 0;
+    virtual Core::Math::Vec2d getMinMaxSpextralPower() = 0;
+    virtual double getSpectralAverage() = 0;
 
 protected:
 
