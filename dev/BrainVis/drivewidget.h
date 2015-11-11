@@ -20,7 +20,7 @@ public:
     explicit DriveWidget(QWidget *parent = 0, std::shared_ptr<DataHandle> data = nullptr);
     ~DriveWidget();
 
-    void addTrajectory(std::string name, std::shared_ptr<AbstrElectrode> trajectory);
+    void addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode);
     void updateTrajectory(std::string name);
 
 private:
@@ -33,7 +33,7 @@ private:
     Ui::DriveWidget *ui;
     std::shared_ptr<DataHandle> _data;
 
-    std::map<std::string,std::shared_ptr<AbstrElectrode>> _trajectoryData;
+    std::map<std::string,std::shared_ptr<iElectrode>> _trajectoryData;
 };
 
 #endif // DRIVEWIDGET_H

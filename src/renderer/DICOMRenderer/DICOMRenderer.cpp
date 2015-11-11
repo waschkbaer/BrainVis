@@ -583,6 +583,7 @@ void DICOMRenderer::drawPlaning(){
 
     _frontFaceShader->Disable();
 
+    /*
     //draw the trajectories
     std::shared_ptr<AbstrElectrodeBundle> left = _data->getLeftBundle();
     Vec3f position;
@@ -632,7 +633,7 @@ void DICOMRenderer::drawPlaning(){
         }
     }
 
-    _sphereFFTShader->Disable();
+    _sphereFFTShader->Disable();*/
     _targetBinder->Unbind();
 }
 

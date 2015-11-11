@@ -8,7 +8,7 @@
 #include <BrainVisIO/DicomVolume.h>
 #include <core/Math/Vectors.h>
 #include <BrainVisIO/TransferFunction1D.h>
-#include <BrainVisIO/MER/FileMERData.h>
+#include <BrainVisIO/MER-Data/ElectrodeManager.h>
 
 #include <memory>
 
@@ -49,8 +49,6 @@ public:
 
     void loadMRData(std::string& path);
     void loadCTData(std::string& path);
-    void loadMERFilesLeft(std::string& path,std::vector<std::string> types);
-    void loadMERFilesRight(std::string& path,std::vector<std::string> types);
 
     Core::Math::Vec3f getSelectedSlices() const;
     Core::Math::Vec3ui getMRDimensions() const { return _MRVolume->getDimensions();}
@@ -154,10 +152,6 @@ public:
     float getMRCTBlend() const;
     void setMRCTBlend(float MRCTBlend);
 
-    std::shared_ptr<AbstrElectrodeBundle> getLeftBundle() const;
-
-    std::shared_ptr<AbstrElectrodeBundle> getRightBundle() const;
-
     Core::Math::Vec2f getSpectralRange() const;
 
     uint64_t getDataSetStatus() const;
@@ -168,10 +162,15 @@ public:
     std::vector<Core::Math::Vec3f> getFFTColorImage() const;
     void createFFTColorImage();
 
+    void loadMERFiles(std::string& path,std::vector<std::string> types);
+
+    std::shared_ptr<iElectrode> getElectrode(std::string name);
+    std::shared_ptr<iElectrode> getElectrode(int i);
+
 private:
     void updateMRWorld();
     void incrementStatus();
-    void loadMERFiles(std::string& path,std::vector<std::string> types, std::shared_ptr<AbstrElectrodeBundle>& bundle);
+
     void calculateSpectralRange();
 
     //MR Volume
@@ -206,8 +205,8 @@ private:
     Core::Math::Vec3f                               _vPC;
     Core::Math::Vec3f                               _vMR;
 
-    std::shared_ptr<AbstrElectrodeBundle>           _leftBundle;
-    std::shared_ptr<AbstrElectrodeBundle>           _rightBundle;
+    ElectrodeManager                                _electrodeData;
+
     Core::Math::Vec2i                               _displayedDriveRange;
     Core::Math::Vec2f                               _spectralRange;
     Trajectory                                      _leftSTN;

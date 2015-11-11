@@ -21,6 +21,7 @@ protected:
 
 private:
     std::map<std::string,std::shared_ptr<iElectrode>> _electrodes;
+    std::vector<std::string>    _names;
 };
 
 

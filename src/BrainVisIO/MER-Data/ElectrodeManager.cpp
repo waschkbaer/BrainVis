@@ -1,7 +1,8 @@
 #include "ElectrodeManager.h"
 
-ElectrodeManager::ElectrodeManager(){
-
+ElectrodeManager::ElectrodeManager():
+_electrodes(){
+std::cout << "created electrode manager --------------------"<<std::endl;
 }
 
 ElectrodeManager::~ElectrodeManager(){
@@ -10,17 +11,15 @@ ElectrodeManager::~ElectrodeManager(){
 
 std::shared_ptr<iElectrode> ElectrodeManager::getElectrode(std::string name){
     if(_electrodes.find(name) != _electrodes.end()){
+        std::cout << name.c_str() << "  " << _electrodes.find(name)->second->getName().c_str() <<  std::endl;
         return _electrodes.find(name)->second;
     }
     return nullptr;
 }
 
 std::shared_ptr<iElectrode> ElectrodeManager::getElectrode(int i){
-    std::map<std::string, std::shared_ptr<iElectrode>>::iterator it = _electrodes.begin();
-    for(int j = 0; j < i;++i){
-        it++;
-    }
-    return it->second;
+    std::string name = _names[i];
+    return getElectrode(name);
 }
 
 int ElectrodeManager::getElectrodeCount() const{
@@ -30,5 +29,6 @@ int ElectrodeManager::getElectrodeCount() const{
 void ElectrodeManager::addElectrode(std::shared_ptr<iElectrode> electrode){
     if(_electrodes.find(electrode->getName()) == _electrodes.end()){
         _electrodes.insert(std::pair<std::string,std::shared_ptr<iElectrode>>(electrode->getName(),electrode));
+        _names.push_back(electrode->getName());
     }
 }

@@ -19,12 +19,12 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     }
     ui->testLabel->setPixmap(QPixmap::fromImage(image.scaled(300,100,Qt::IgnoreAspectRatio,Qt::FastTransformation)));*/
 
-    addTrajectory(_data->getLeftBundle()->getTrajectory(0)->getName(),_data->getLeftBundle()->getTrajectory(0));
-    addTrajectory(_data->getLeftBundle()->getTrajectory(1)->getName(),_data->getLeftBundle()->getTrajectory(1));
-    addTrajectory(_data->getLeftBundle()->getTrajectory(2)->getName(),_data->getLeftBundle()->getTrajectory(2));
-    addTrajectory(_data->getRightBundle()->getTrajectory(0)->getName(),_data->getRightBundle()->getTrajectory(0));
-    addTrajectory(_data->getRightBundle()->getTrajectory(1)->getName(),_data->getRightBundle()->getTrajectory(1));
-    addTrajectory(_data->getRightBundle()->getTrajectory(2)->getName(),_data->getRightBundle()->getTrajectory(2));
+    addTrajectory(_data->getElectrode("LLat")->getName(),_data->getElectrode("LLat"));
+    addTrajectory(_data->getElectrode("LAnt")->getName(),_data->getElectrode("LAnt"));
+    addTrajectory(_data->getElectrode("LCen")->getName(),_data->getElectrode("LCen"));
+    addTrajectory(_data->getElectrode("RLat")->getName(),_data->getElectrode("RLat"));
+    addTrajectory(_data->getElectrode("RAnt")->getName(),_data->getElectrode("RAnt"));
+    addTrajectory(_data->getElectrode("RCen")->getName(),_data->getElectrode("RCen"));
 
     std::vector<std::string> elektrodes;
     elektrodes.push_back("LLat");
@@ -73,8 +73,7 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     imageR->setPixmap(QPixmap::fromImage(image->scaled(400,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
     ui->colorFrameRight->layout()->addWidget(imageR);
 
-
-    ui->verticalSlider->setValue(_data->getLeftBundle()->getTrajectory(0)->getDepthRange().y);
+    ui->verticalSlider->setValue(0);
 }
 
 DriveWidget::~DriveWidget()
@@ -88,14 +87,14 @@ void DriveWidget::on_verticalSlider_sliderMoved(int position)
 }
 
 
-void DriveWidget::addTrajectory(std::string name, std::shared_ptr<AbstrElectrode> trajectory){
+void DriveWidget::addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode){
     if(_trajectoryData.find(name) == _trajectoryData.end()){
-        _trajectoryData.insert(std::pair<std::string, std::shared_ptr<AbstrElectrode>>(name,trajectory));
+        _trajectoryData.insert(std::pair<std::string, std::shared_ptr<iElectrode>>(name,electrode));
     }
 }
 void DriveWidget::updateTrajectory(std::string name){
     if(_trajectoryData.find(name) != _trajectoryData.end()){
-        std::shared_ptr<AbstrElectrode> traj = _trajectoryData.find(name)->second;
+        std::shared_ptr<iElectrode> traj = _trajectoryData.find(name)->second;
     }
 
 }
@@ -103,20 +102,20 @@ void DriveWidget::updateTrajectory(std::string name){
 
 QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
     if(_trajectoryData.find(name) != _trajectoryData.end()){
-        std::shared_ptr<AbstrElectrode> traj = _trajectoryData.find(name)->second;
+        std::shared_ptr<iElectrode> traj = _trajectoryData.find(name)->second;
 
-        if(depth >= traj->getDepthRange().x && depth <= traj->getDepthRange().y){
-            std::shared_ptr<MERData> eletrodeData = traj->getData(depth);
+        if(depth >= -10 && depth <= 4){
+            std::shared_ptr<iMERData> eletrodeData = traj->getData(depth);
             if(eletrodeData == nullptr){
                 return NULL;
             }
-            QImage* image = new QImage(eletrodeData->spectralFlow().size(),1,QImage::Format_RGB888);
+            QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
 
             int colorIndex = 0;
             std::cout <<"------------specrange--"<< _data->getSpectralRange() << std::endl;
-            for(int c = 0; c < eletrodeData->spectralFlow().size();++c){
+            for(int c = 0; c < eletrodeData->getSpectralPower().size();++c){
                 //colorIndex = (int)((eletrodeData->spectralFlow()[c]-_data->getSpectralRange().x)/(_data->getSpectralRange().y-_data->getSpectralRange().x)*599);
-                 colorIndex = (int)((eletrodeData->spectralFlow()[c]-traj->getElektrodeRange().x)/(traj->getElektrodeRange().y - traj->getElektrodeRange().x)*599);
+                 colorIndex = (int)((eletrodeData->getSpectralPower()[c]-traj->getSpectralPowerRange().x)/(traj->getSpectralPowerRange().y - traj->getSpectralPowerRange().x)*599);
                  colorIndex = std::min(599,std::max(0,colorIndex));
                  Vec3f color = _data->getFFTColorImage()[colorIndex];
 

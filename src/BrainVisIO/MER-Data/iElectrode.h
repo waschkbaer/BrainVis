@@ -1,5 +1,5 @@
-#ifndef IELECTRODE
-#define IELECTRODE
+#ifndef IELECTRODE_H
+#define IELECTRODE_H
 
 #include <vector>
 #include <map>
@@ -18,9 +18,13 @@ public:
     virtual int8_t addData(int8_t depth, std::shared_ptr<iMERData> data) = 0;
     virtual std::shared_ptr<iMERData> getData(int8_t depth = 0) = 0;
 
-    Core::Math::Vec2d getSpectralPowerRange() const;
+    Core::Math::Vec2d getSpectralPowerRange() const{
+        return _SpectralPowerRange;
+        }
 
-    std::string getName() const;
+    std::string getName() const {
+        return _name;
+       }
 
 protected:
     std::map<int8_t,std::shared_ptr<iMERData>>      _electrodeData;
@@ -32,15 +36,4 @@ private:
 
 };
 
-
-#endif //IELECTRODE
-
-Core::Math::Vec2d iElectrode::getSpectralPowerRange() const
-{
-return _SpectralPowerRange;
-}
-std::string iElectrode::getName() const
-{
-return _name;
-}
-
+#endif //IELECTRODE_H

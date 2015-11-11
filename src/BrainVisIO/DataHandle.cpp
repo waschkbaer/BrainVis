@@ -1,6 +1,8 @@
 #include "DataHandle.h"
 #include <algorithm>
 
+#include "MER-Data/FileElectrode.h"
+
 DataHandle::DataHandle():
     _transferFunction(nullptr),
     _leftSTN(),
@@ -63,21 +65,7 @@ void DataHandle::loadCTData(std::string& path)
     incrementStatus();
 }
 
-void DataHandle::loadMERFilesLeft(std::string& path,std::vector<std::string> types){
-    loadMERFiles(path,types,_leftBundle);
-    if(_leftBundle != nullptr && _rightBundle != nullptr){
-        calculateSpectralRange();
-    }
-}
-
-void DataHandle::loadMERFilesRight(std::string& path,std::vector<std::string> types){
-    loadMERFiles(path,types,_rightBundle);
-    if(_leftBundle != nullptr && _rightBundle != nullptr){
-        calculateSpectralRange();
-    }
-}
-
-void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types, std::shared_ptr<AbstrElectrodeBundle>& bundle){
+void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
     std::vector<std::string> csvs;
     Core::FileFinder::getInstance().readFilesWithEnding(path,csvs,".csv");
 
@@ -92,23 +80,28 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types, 
                csvs[j].find(spec) == std::string::npos){
 
                 positionList.push_back(csvs[j]);
+                std::cout <<"posfile"<< csvs[j] << std::endl;
 
             }else if(csvs[j].find(spec) != std::string::npos){
-
+                std::cout <<"specfile"<< csvs[j] << std::endl;
                 spectralList.push_back(csvs[j]);
 
             }
         }
     }
-    if( types.size() == positionList.size() && positionList.size() == spectralList.size()){
-        bundle = std::make_shared<FileElectrodeBundle>(types,positionList,spectralList, Core::Math::Vec2ui(250,1000));
 
-        _displayedDriveRange = Vec2i(-10,4);
+    for(int i = 0; i < positionList.size();++i){
+        std::shared_ptr<iElectrode> elec = std::make_shared<FileElectrode>(types[i],positionList[i],spectralList[i]);
+        _electrodeData.addElectrode(elec);
+    }
+    for(int i = 0; i < types.size();++i){
+        std::cout << "MERINFO: " <<_electrodeData.getElectrode(types[i])->getName() << std::endl;
+        std::cout << "MERINFO: " <<_electrodeData.getElectrode(types[i])->getSpectralPowerRange() << std::endl;
     }
 }
 
 void DataHandle::calculateSpectralRange(){
-    for(int i = 0; i < _leftBundle->getTrajectoryCount();++i){
+   /* for(int i = 0; i < _leftBundle->getTrajectoryCount();++i){
         for(int j = -10; j <= 4;++j){
             _spectralRange.x = std::min(_spectralRange.x, _leftBundle->getTrajectory(i)->getData(j)->spectralRange().x);
             _spectralRange.y = std::max(_spectralRange.y, _leftBundle->getTrajectory(i)->getData(j)->spectralRange().y);
@@ -121,8 +114,9 @@ void DataHandle::calculateSpectralRange(){
             _spectralRange.x = std::min(_spectralRange.x, _rightBundle->getTrajectory(i)->getData(j)->spectralRange().x);
             _spectralRange.y = std::max(_spectralRange.y, _rightBundle->getTrajectory(i)->getData(j)->spectralRange().y);
         }
-    }
+    }*/
 }
+
 std::vector<Core::Math::Vec3f> DataHandle::getFFTColorImage() const
 {
     return _FFTColorImage;
@@ -200,15 +194,6 @@ Core::Math::Vec2f DataHandle::getSpectralRange() const
     return _spectralRange;
 }
 
-std::shared_ptr<AbstrElectrodeBundle> DataHandle::getRightBundle() const
-{
-    return _rightBundle;
-}
-
-std::shared_ptr<AbstrElectrodeBundle> DataHandle::getLeftBundle() const
-{
-    return _leftBundle;
-}
 
 float DataHandle::getMRCTBlend() const
 {
@@ -601,4 +586,15 @@ std::cout << "LOADING CENTER "<< worldcenter << std::endl;
 
 void DataHandle::incrementStatus(){
     _dataSetStatus++;
+}
+
+std::shared_ptr<iElectrode> DataHandle::getElectrode(std::string name){
+    return _electrodeData.getElectrode(name);
+}
+std::shared_ptr<iElectrode> DataHandle::getElectrode(int i){
+    if(i >= 0 && i < _electrodeData.getElectrodeCount()){
+        _electrodeData.getElectrode(i);
+    }else{
+        return nullptr;
+    }
 }

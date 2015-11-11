@@ -80,20 +80,18 @@ void PlaningWidget::on_Start_clicked()
 
 
     //load mer data
-    std::vector<std::string> left;
-    std::vector<std::string> right;
-
+    std::vector<std::string> electrodes;
     if(ui->trLat->isChecked()){
-        left.push_back("LLat");
-        right.push_back("RLat");
+        electrodes.push_back("LLat");
+        electrodes.push_back("RLat");
     }
     if(ui->trAnt->isChecked()){
-        left.push_back("LAnt");
-        right.push_back("RAnt");
+        electrodes.push_back("LAnt");
+        electrodes.push_back("RAnt");
     }
     if(ui->trCen->isChecked()){
-        left.push_back("LCen");
-        right.push_back("RCen");
+        electrodes.push_back("LCen");
+        electrodes.push_back("RCen");
     }
     std::string merPath =ui->MERPath_2->text().toLocal8Bit().constData();
     std::string suffix = "\\";
@@ -101,8 +99,7 @@ void PlaningWidget::on_Start_clicked()
         std::cout << "does not end with \\"<<std::endl;
         merPath+= "\\";
     }
-    _dataHandle->loadMERFilesLeft(merPath,left);
-    _dataHandle->loadMERFilesRight(merPath,right);
+    _dataHandle->loadMERFiles(merPath,electrodes);
 
     w->setDataHandle(_dataHandle);
 

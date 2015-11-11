@@ -9,7 +9,7 @@
 
 FileElectrode::FileElectrode(std::string name, std::string positionFile, std::string spectralFile):
     iElectrode(name){
-
+    loadFiles(positionFile,spectralFile);
 }
 FileElectrode::~FileElectrode(){
 
@@ -24,7 +24,6 @@ int8_t FileElectrode::addData(int8_t depth, std::shared_ptr<iMERData> data){
 
     _SpectralPowerRange.x = std::min(_SpectralPowerRange.x, data->getMinMaxSpextralPower().x);
     _SpectralPowerRange.y = std::max(_SpectralPowerRange.y, data->getMinMaxSpextralPower().y);
-
     return 1;
 }
 std::shared_ptr<iMERData> FileElectrode::getData(int8_t depth){
@@ -81,6 +80,7 @@ bool FileElectrode::loadFiles(std::string Position, std::string Spectral){
         addData(curDepth,data);
         _SpectralAverage += powerAverage;
         counter++;
+        curDepth++;
     }
 
     _SpectralAverage /= counter;
