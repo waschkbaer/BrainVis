@@ -1,9 +1,13 @@
 file(GLOB BRAINVISIO_SOURCE *.c *.cpp
                 DICOM/*.cpp
-                MER/*.cpp)
+                MER/*.cpp
+		MER-Data/*.cpp
+                FFT/*.cpp)
 file(GLOB BRAINVISIO_HEADER *.h
                 DICOM/*.h
-                MER/*.h)
+                MER/*.h
+		MER-Data/*.h
+                FFT/*.h)
 
 add_library (BRAINVISIO ${BRAINVISIO_SOURCE} ${BRAINVISIO_HEADER})
 
