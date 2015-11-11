@@ -1,0 +1,114 @@
+#include "DicomVolume.h"
+
+
+DicomVolume::DicomVolume(std::string& path)
+{
+  initData(path);
+};
+DicomVolume::DicomVolume(std::string& rawFile, std::string& metaFile){ };
+DicomVolume::~DicomVolume(){ };
+
+void DicomVolume::exportRawFile(std::string& path){
+  std::string filename = path+m_DicomParser.m_FileStacks[0]->m_strDesc+".raw";
+  std::ofstream rawFile;
+  rawFile.open (filename.c_str(), std::ios::out | std::ios::binary);
+  rawFile.write (&m_vData[0], m_vData.size());
+}
+
+union char2short{
+        char ch[2];
+        short n;
+    };
+
+
+bool DicomVolume::initData(std::string& DICOMpath){
+  m_DicomParser.GetDirInfo(DICOMpath);
+
+  //multiple files in folder, don't know which to take
+  if(m_DicomParser.m_FileStacks.size() < 1){
+  std::cout <<"no correct dicom file "<<m_DicomParser.m_FileStacks.size()<<std::endl;
+    return false;
+  }
+
+    //need better dimensions later !
+    m_vDimensions.x = m_DicomParser.m_FileStacks[0]->m_ivSize.x;
+    m_vDimensions.y = m_DicomParser.m_FileStacks[0]->m_ivSize.y;
+    m_vDimensions.z = m_DicomParser.m_FileStacks[0]->m_Elements.size();
+
+    m_vAspectRatio =  m_DicomParser.m_FileStacks[0]->m_fvfAspect;
+    std::cout << "dimensions"<< m_DicomParser.m_FileStacks[0]->m_fvfAspect << std::endl;
+    SimpleDICOMFileInfo* test = (SimpleDICOMFileInfo*)(m_DicomParser.m_FileStacks[0]->m_Elements[0]);
+    std::cout <<"Patient Position: "<< test->m_fvPatientPosition << std::endl;
+    std::cout <<"Patient scale: "<< test->m_fScale << std::endl;
+    std::cout <<"Patient Bias: "<< test->m_fBias << std::endl;
+    std::cout <<"Patient windowwidth: "<< test->m_fWindowWidth << std::endl;
+    std::cout <<"Patient windowcenter: "<< test->m_fWindowCenter << std::endl;
+
+    uint32_t voxelCount = m_vDimensions.x*m_vDimensions.y*m_vDimensions.z;
+    uint32_t bytePerElement = m_DicomParser.m_FileStacks[0]->m_iAllocated/8;
+
+    std::cout << voxelCount << " " << m_DicomParser.m_FileStacks[0]->m_ivSize << " " <<m_DicomParser.m_FileStacks[0]->m_Elements.size() << std::endl;
+    std::cout <<"byte per element: "<< bytePerElement << std::endl;
+
+    //resize the vector to fit the complete volume
+    m_vData.resize(voxelCount*bytePerElement);
+
+    //read each dicome slide and store them in the volume
+    uint32_t dataOffset = 0;
+    for(int i = 0; i < m_DicomParser.m_FileStacks[0]->m_Elements.size();++i){
+        dataOffset = i * (m_DicomParser.m_FileStacks[0]->m_ivSize.x *
+                        m_DicomParser.m_FileStacks[0]->m_ivSize.y *
+                        bytePerElement);
+        m_DicomParser.m_FileStacks[0]->m_Elements[i]->GetData(&(m_vData[dataOffset]),m_DicomParser.m_FileStacks[0]->m_Elements[i]->GetDataSize(), 0);
+    }
+    //calculate the histogram;
+    uint32_t currentValue = 0;
+    uint32_t largestValue = 0;
+    m_vHistogram.resize(4096);
+    for(int i = 0; i < m_vData.size();i += bytePerElement){
+        switch(bytePerElement){
+            case 1: currentValue = (uint32_t)m_vData[i];break;
+            case 2:
+                    char2short c;
+                    c.ch[0] = m_vData[i];
+                    c.ch[1] = m_vData[i+1];
+                    currentValue = c.n;
+                    break;
+            case 4: break;
+            default: break;
+        }
+        if(largestValue < currentValue) largestValue = currentValue;
+        m_vHistogram[currentValue]++;
+    }
+    m_vHistogram.resize(largestValue);
+
+    std::cout <<"largest found value: "<< largestValue << std::endl;
+
+    return true;
+};
+void DicomVolume::initData(std::string& rawFile, std::string& metaFile){};
+
+void DicomVolume::exportJPGFiles(std::string& path){
+  std::vector<short>    shortData;
+  std::string           filename;
+
+  shortData.resize(m_vDimensions.x*m_vDimensions.y*m_vDimensions.z);
+  memcpy(&shortData[0],&m_vData[0],m_vData.size());
+
+  std::vector<char> final;
+  final.resize(m_vDimensions.x*m_vDimensions.y);
+
+  for(int i = 0; i < m_vDimensions.z;++i){
+
+    int k = 0;
+    for(int j = 0; j < m_vDimensions.x*m_vDimensions.y;j ++){
+      final[k] = (uint8_t)(((float)shortData[i*(m_vDimensions.x*m_vDimensions.y)+j] / (float)m_vHistogram.size())*256.0f);
+      k++;
+    }
+
+        filename = path+"output_"+std::to_string(i)+".jpg";
+
+        write_JPEG_fileDICOMTEST((char*)filename.c_str(), 100, (uint8_t*) &(final[0]), m_vDimensions.x,m_vDimensions.y);
+    }
+}
+
