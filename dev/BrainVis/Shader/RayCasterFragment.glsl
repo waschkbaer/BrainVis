@@ -17,6 +17,14 @@ in vec3 entranceInViewSpace;
 layout(location=0) out vec4 outputColor;
 layout(location=1) out vec4 outputPosition;
 
+
+bool isPositiv(float x){
+  if(x >= 0)
+    return true;
+  else
+    return false;
+}
+
 bool isCut(vec3 curPos, vec3 focusPos, vec3 start){
   vec3 dirEye = start-focusPos;
   vec3 dirPos = curPos-focusPos;
@@ -27,36 +35,21 @@ bool isCut(vec3 curPos, vec3 focusPos, vec3 start){
   bool ycut = false;
   bool zcut = false;
 
-  if( (dirEye.x >= 0.0f &&
-      dirPos.x <= 0.0f) ||
-      (dirEye.x < 0.0f &&
-      dirPos.x < 0.0f)
-      ){
-      xcut = true;
-  }
+  if( ( (isPositiv(dirEye.x) && isPositiv(dirPos.x)) ||
+      (!isPositiv(dirEye.x) && !isPositiv(dirPos.x)) ) &&
 
-  if( (dirEye.z >= 0.0f &&
-      dirPos.z <= 0.0f) ||
-      (dirEye.z < 0.0f &&
-      dirPos.z < 0.0f)
-      ){
-      zcut = true;
-  }
+      ( (isPositiv(dirEye.y) && isPositiv(dirPos.y)) ||
+      (!isPositiv(dirEye.y) && !isPositiv(dirPos.y)) ) &&
 
-  if( (dirEye.y >= 0.0f &&
-      dirPos.y <= 0.0f) ||
-      (dirEye.y < 0.0f &&
-      dirPos.y < 0.0f)
-      ){
-      ycut = true;
-  }
+      ( (isPositiv(dirEye.z) && isPositiv(dirPos.z)) ||
+      (!isPositiv(dirEye.z) && !isPositiv(dirPos.z)) )
 
-  if(xcut && ycut && zcut){
+      ){
     return true;
   }
 
-  return false;
 
+  return false;
 }
 
 // Pixel Shader
@@ -79,9 +72,9 @@ void main(void)
   vec4 viewPos = vec4(0,0,0,0);
   for(int i = 0; i < 4000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
-    //if(!isCut(viewPos.xyz,
-    //          vec3(7.97907,18.9604,-24.2198),
-    //          eyePos)){
+    if(!isCut(viewPos.xyz,
+              vec3(7.97907,18.9604,-24.2198),
+              eyePos)){
 
   	value = texture(volume, texturePos).x;
     value *= tfScaling;
@@ -100,7 +93,7 @@ void main(void)
       i = 1000;
       break;
     }
-  //}
+  }
     texturePos += rayDir/800.0f;
 
   	//early ray termination
