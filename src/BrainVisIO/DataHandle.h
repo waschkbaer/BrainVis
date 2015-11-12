@@ -203,7 +203,7 @@ private:
     Core::Math::Vec3f                               _vPC;
     Core::Math::Vec3f                               _vMR;
 
-    ElectrodeManager                                _electrodeData;
+    std::shared_ptr<ElectrodeManager>               _electrodeData;
 
     Core::Math::Vec2i                               _displayedDriveRange;
     Core::Math::Vec2f                               _spectralRange;

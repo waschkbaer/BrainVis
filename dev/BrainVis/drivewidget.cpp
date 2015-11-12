@@ -19,21 +19,6 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     }
     ui->testLabel->setPixmap(QPixmap::fromImage(image.scaled(300,100,Qt::IgnoreAspectRatio,Qt::FastTransformation)));*/
 
-
-    addTrajectory(_data->getElectrode(0)->getName(),_data->getElectrode(0));
-    addTrajectory(_data->getElectrode(1)->getName(),_data->getElectrode(1));
-    addTrajectory(_data->getElectrode(2)->getName(),_data->getElectrode(2));
-    addTrajectory(_data->getElectrode(3)->getName(),_data->getElectrode(3));
-    addTrajectory(_data->getElectrode(4)->getName(),_data->getElectrode(4));
-    addTrajectory(_data->getElectrode(5)->getName(),_data->getElectrode(5));
-
-    /*addTrajectory(_data->getElectrode("LLat")->getName(),_data->getElectrode("LLat"));
-    addTrajectory(_data->getElectrode("LAnt")->getName(),_data->getElectrode("LAnt"));
-    addTrajectory(_data->getElectrode("LCen")->getName(),_data->getElectrode("LCen"));
-    addTrajectory(_data->getElectrode("RLat")->getName(),_data->getElectrode("RLat"));
-    addTrajectory(_data->getElectrode("RAnt")->getName(),_data->getElectrode("RAnt"));
-    addTrajectory(_data->getElectrode("RCen")->getName(),_data->getElectrode("RCen"));*/
-
     std::vector<std::string> elektrodes;
     elektrodes.push_back("LLat");
     elektrodes.push_back("LCen");
@@ -96,21 +81,16 @@ void DriveWidget::on_verticalSlider_sliderMoved(int position)
 
 
 void DriveWidget::addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode){
-    if(_trajectoryData.find(name) == _trajectoryData.end()){
-        _trajectoryData.insert(std::pair<std::string, std::shared_ptr<iElectrode>>(name,electrode));
-    }
+
 }
 void DriveWidget::updateTrajectory(std::string name){
-    if(_trajectoryData.find(name) != _trajectoryData.end()){
-        std::shared_ptr<iElectrode> traj = _trajectoryData.find(name)->second;
-    }
 
 }
 
 
 QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
-    if(_trajectoryData.find(name) != _trajectoryData.end()){
-        std::shared_ptr<iElectrode> traj = _trajectoryData.find(name)->second;
+    if(_data->getElectrode(name) != nullptr){
+        std::shared_ptr<iElectrode> traj = _data->getElectrode(name);
 
         if(depth >= -10 && depth <= 4){
             std::shared_ptr<iMERData> eletrodeData = traj->getData(depth);

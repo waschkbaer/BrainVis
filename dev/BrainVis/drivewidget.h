@@ -32,8 +32,6 @@ private slots:
 private:
     Ui::DriveWidget *ui;
     std::shared_ptr<DataHandle> _data;
-
-    std::map<std::string,std::shared_ptr<iElectrode>> _trajectoryData;
 };
 
 #endif // DRIVEWIDGET_H
