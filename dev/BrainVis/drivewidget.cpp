@@ -120,7 +120,6 @@ QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
             QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
 
             int colorIndex = 0;
-            std::cout <<"------------specrange--"<< _data->getSpectralRange() << std::endl;
             for(int c = 0; c < eletrodeData->getSpectralPower().size();++c){
                 //colorIndex = (int)((eletrodeData->spectralFlow()[c]-_data->getSpectralRange().x)/(_data->getSpectralRange().y-_data->getSpectralRange().x)*599);
                  colorIndex = (int)((eletrodeData->getSpectralPower()[c]-traj->getSpectralPowerRange().x)/(traj->getSpectralPowerRange().y - traj->getSpectralPowerRange().x)*599);

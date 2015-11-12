@@ -171,8 +171,6 @@ private:
     void updateMRWorld();
     void incrementStatus();
 
-    void calculateSpectralRange();
-
     //MR Volume
     std::string                                     _MRPath;
     std::unique_ptr<DicomVolume>                    _MRVolume;

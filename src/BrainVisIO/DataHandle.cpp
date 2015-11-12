@@ -14,7 +14,7 @@ DataHandle::DataHandle():
     _CTeY(0,-1,0),
     _CTeZ(0,0,-1),
     _dataSetStatus(0),
-    _spectralRange(1000.0f,-1000.0f),
+    _spectralRange(1000000.0f,-1000000.0f),
     _MRRotation(-0.1,0,0.1),
     _MROffset(-0.005,-0.74,0.115)
 {
@@ -80,10 +80,8 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
                csvs[j].find(spec) == std::string::npos){
 
                 positionList.push_back(csvs[j]);
-                std::cout <<"posfile"<< csvs[j] << std::endl;
 
             }else if(csvs[j].find(spec) != std::string::npos){
-                std::cout <<"specfile"<< csvs[j] << std::endl;
                 spectralList.push_back(csvs[j]);
 
             }
@@ -93,28 +91,10 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
     for(int i = 0; i < positionList.size();++i){
         std::shared_ptr<iElectrode> elec = std::make_shared<FileElectrode>(types[i], Core::Math::Vec2d(250,1000),positionList[i],spectralList[i]);
         _electrodeData.addElectrode(elec);
-    }
-    for(int i = 0; i < types.size();++i){
-        std::cout << "MERINFO: " <<_electrodeData.getElectrode(types[i])->getName() << std::endl;
-        std::cout << "MERINFO: " <<_electrodeData.getElectrode(types[i])->getSpectralPowerRange() << std::endl;
-    }
-}
 
-void DataHandle::calculateSpectralRange(){
-   /* for(int i = 0; i < _leftBundle->getTrajectoryCount();++i){
-        for(int j = -10; j <= 4;++j){
-            _spectralRange.x = std::min(_spectralRange.x, _leftBundle->getTrajectory(i)->getData(j)->spectralRange().x);
-            _spectralRange.y = std::max(_spectralRange.y, _leftBundle->getTrajectory(i)->getData(j)->spectralRange().y);
-
-        }
+        _spectralRange.x = std::min((float)elec->getSpectralPowerRange().x, _spectralRange.x);
+        _spectralRange.y = std::max((float)elec->getSpectralPowerRange().y, _spectralRange.y);
     }
-
-    for(int i = 0; i < _rightBundle->getTrajectoryCount();++i){
-        for(int j = -10; j <= 4;++j){
-            _spectralRange.x = std::min(_spectralRange.x, _rightBundle->getTrajectory(i)->getData(j)->spectralRange().x);
-            _spectralRange.y = std::max(_spectralRange.y, _rightBundle->getTrajectory(i)->getData(j)->spectralRange().y);
-        }
-    }*/
 }
 
 std::vector<Core::Math::Vec3f> DataHandle::getFFTColorImage() const
@@ -125,23 +105,7 @@ std::vector<Core::Math::Vec3f> DataHandle::getFFTColorImage() const
 void DataHandle::createFFTColorImage(){
     Vec3f c;
     float blue,red,green;
-   /* for(int i = 0; i < 100;++i){
-         blue     = (50.0f - i) / 50.0f;
-         red      = (i-49.0f) / 49.0f;
-         if(i < 50){
-            green    = ( i ) / 60.0f;
-         }else{
-            green = 1.0f - (50.0f - i ) / 50.0f;
-         }
-         blue = std::min(1.0f, std::max(blue, 0.0f));
-         red = std::min(1.0f, std::max(red, 0.0f));
-         green = std::min(1.0f, std::max(green, 0.0f));
-         c = Vec3f(red,green,blue);
-         //std::cout << c << std::endl;
-         _FFTColorImage.push_back(c);
-    }*/
 
-    //formel -> y = (-((x - center )^2) * stauchung ) +maximum
     for(int i = 0; i < 600;++i){
         blue =      (-  ((i - 10 )*(i - 10 )    ) *         ((1.0f/(550 ))  *   (1.0f/(550 ))) ) + 1.0f;
         green =     (-  ((i - 300 )*(i - 300 )  ) *         ((1.0f/(290 ))  *   (1.0f/(290 ))) ) + 1.0f;
@@ -152,7 +116,6 @@ void DataHandle::createFFTColorImage(){
         green = std::min(1.0f, std::max(green, 0.0f));
 
         c = Vec3f(red,green,blue);
-        //std::cout << c << std::endl;
         _FFTColorImage.push_back(c);
     }
 }
@@ -167,8 +130,6 @@ void DataHandle::setDisplayedDriveRange(const Core::Math::Vec2i &displayedDriveR
     _displayedDriveRange = displayedDriveRange;
     incrementStatus();
 }
-
-
 
 void DataHandle::updateMRWorld(){
     Mat4f scale;
@@ -215,7 +176,6 @@ Core::Math::Vec3f DataHandle::getMRRotation() const
 void DataHandle::setMRRotation(const Core::Math::Vec3f &MRRotation)
 {
     _MRRotation = MRRotation;
-    std::cout << "MR ROTATION << "<< _MRRotation <<std::endl;
     updateMRWorld();
     incrementStatus();
 }
@@ -266,8 +226,6 @@ Core::Math::Vec3f DataHandle::getMROffset() const
 void DataHandle::setMROffset(const Core::Math::Vec3f &MROffset)
 {
     _MROffset = MROffset;
-    std::cout << "MR OFFSET << "<< _MROffset<< "MR SCALE : " << _MRScale << std::endl;
-    std::cout << "TRANSLATION: "<< 0.5f*(Vec3f(-_MROffset.x,_MROffset.z,_MROffset.y)*Vec3f(_MRScale.x,_MRScale.y,_MRScale.z)) << std::endl;
 
     updateMRWorld();
     incrementStatus();
@@ -532,7 +490,7 @@ bool DataHandle::calculateCTUnitVectors(){
               (_leftMarker[3]+ 0.5f*(_rightMarker[1]-_leftMarker[3])) )/4.0f;
 
     Vec4f worldcenter = (worldScaling*Vec4f(_CTCenter,1));
-std::cout << "LOADING CENTER "<< worldcenter << std::endl;
+
     Trajectory leftSTN(_leftSTN._startPlaning,_leftSTN._endPlaning);
     Trajectory rightSTN(_rightSTN._startPlaning,_rightSTN._endPlaning);
 
