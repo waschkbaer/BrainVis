@@ -8,9 +8,10 @@
 
 class iElectrode{
 public:
-    iElectrode(std::string name):
+    iElectrode(std::string name = "none", Core::Math::Vec2d range = Core::Math::Vec2d(0,100000.0)):
         _name(name),
-        _SpectralPowerRange(Core::Math::Vec2d(100000.0,-100000.0))
+        _SpectralPowerRange(Core::Math::Vec2d(100000.0,-100000.0)),
+        _analysisRange(range)
     {}
     virtual ~iElectrode(){}
 
@@ -26,11 +27,19 @@ public:
         return _name;
        }
 
+    Core::Math::Vec2d getAnalysisRange() const{
+        return _analysisRange;
+    }
+    void setAnalysisRange(Core::Math::Vec2d range){
+        _analysisRange = range;
+    }
+
 protected:
     std::map<int8_t,std::shared_ptr<iMERData>>      _electrodeData;
     std::string                                     _name;
     Core::Math::Vec2d                               _SpectralPowerRange;
     double                                          _SpectralAverage;
+    Core::Math::Vec2d                               _analysisRange;
 
 private:
 

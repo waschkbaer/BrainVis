@@ -11,6 +11,7 @@
 class FileElectrode: public iElectrode{
 public:
     FileElectrode(std::string name,
+                  Core::Math::Vec2d range,
                   std::string positionFile,
                   std::string spectralFile);
     virtual ~FileElectrode();

@@ -542,8 +542,6 @@ void DICOMRenderer::drawPlaning(){
     scaleT.Scaling(1.0,1.0,1.0);
     Mat4f transT;
     transT.Translation(_data->getLeftSTN()._endWorldSpace);
-    std::cout << _data->getLeftSTN()._endWorldSpace << std::endl;
-    std::cout << _data->getLeftSTN()._endVolumeSpace << std::endl;
     transT = scaleT*transT;
 
     _frontFaceShader->Enable();
@@ -576,7 +574,6 @@ void DICOMRenderer::drawPlaning(){
     scaleT.Scaling(1.0,1.0,1.0);
     transT.Translation(_data->getCTCenter()*_data->getCTScale());
     transT = scaleT*transT;
-    std::cout << "CT CENTER -> " <<_data->getCTCenter()*_data->getCTScale() << std::endl;
 
     _frontFaceShader->Set("worldMatrix",transT);
     _volumeBox->paint();
@@ -601,7 +598,7 @@ void DICOMRenderer::drawPlaning(){
     for(int i = 0; i < 6;i++){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
         if(electrode != nullptr){
-            for(int k = -10; k < 4;++k){
+            for(int k = -10; k <= _data->getDisplayedDriveRange().y; ++k){
                 std::shared_ptr<iMERData> data = electrode->getData(k);
                 if(data != nullptr){
 
@@ -618,44 +615,6 @@ void DICOMRenderer::drawPlaning(){
             }
         }
     }
-
-
-
-    /*
-    for(int i = 0; i < left->getTrajectoryCount();++i){
-        for(int j = left->getTrajectory(i)->getDepthRange().x; j <= left->getTrajectory(i)->getDepthRange().y;++j){
-            if(left->getTrajectory(i)->getData(j)->depth() <= _data->getDisplayedDriveRange().y){
-                position = left->getTrajectory(i)->getData(j)->position()-Vec3f(100,100,100);
-                position = centerWorld.xyz() + _data->getCTeX()*position.x + _data->getCTeY()*position.y + _data->getCTeZ()*position.z;
-                transT.Translation(position);
-                transT = scaleT*transT;
-                _sphereFFTShader->Set("fftValue",left->getTrajectory(i)->getData(j)->spectralPower());
-                _sphereFFTShader->Set("worldMatrix",transT);
-                _sphereFFTShader->Set("fftRange",left->getTrajectory(i)->getElektrodeRange());
-                //_volumeBox->paint();
-                _sphere->paint();
-            }
-        }
-    }
-    left = _data->getRightBundle();
-    for(int i = 0; i < left->getTrajectoryCount();++i){
-        for(int j = left->getTrajectory(i)->getDepthRange().x; j <= left->getTrajectory(i)->getDepthRange().y;++j){
-            if(left->getTrajectory(i)->getData(j)->depth() <= _data->getDisplayedDriveRange().y){
-
-                position = left->getTrajectory(i)->getData(j)->position()-Vec3f(100,100,100);
-                position = centerWorld.xyz() + _data->getCTeX()*position.x + _data->getCTeY()*position.y + _data->getCTeZ()*position.z;
-                transT.Translation(position);
-                transT = scaleT*transT;
-
-                _sphereFFTShader->Set("fftValue",left->getTrajectory(i)->getData(j)->spectralPower());
-                _sphereFFTShader->Set("worldMatrix",transT);
-                _sphereFFTShader->Set("fftRange",left->getTrajectory(i)->getElektrodeRange());
-                //_volumeBox->paint();
-                _sphere->paint();
-               }
-
-        }
-    }*/
 
     _sphereFFTShader->Disable();
     _targetBinder->Unbind();

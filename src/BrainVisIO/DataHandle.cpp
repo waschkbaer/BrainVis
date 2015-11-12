@@ -91,7 +91,7 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
     }
 
     for(int i = 0; i < positionList.size();++i){
-        std::shared_ptr<iElectrode> elec = std::make_shared<FileElectrode>(types[i],positionList[i],spectralList[i]);
+        std::shared_ptr<iElectrode> elec = std::make_shared<FileElectrode>(types[i], Core::Math::Vec2d(250,1000),positionList[i],spectralList[i]);
         _electrodeData.addElectrode(elec);
     }
     for(int i = 0; i < types.size();++i){
@@ -591,6 +591,7 @@ void DataHandle::incrementStatus(){
 std::shared_ptr<iElectrode> DataHandle::getElectrode(std::string name){
     return _electrodeData.getElectrode(name);
 }
+
 std::shared_ptr<iElectrode> DataHandle::getElectrode(int i){
     if(i >= 0 && i < _electrodeData.getElectrodeCount()){
         return _electrodeData.getElectrode(i);
