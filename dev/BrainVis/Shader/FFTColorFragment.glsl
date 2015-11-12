@@ -1,6 +1,6 @@
-#version 420 core
+#version 410 core
 
-layout(binding=0) uniform sampler1D fftColor;
+uniform sampler1D fftColor;
 
 // INPUT VARIABLES
 in vec3 normalview;

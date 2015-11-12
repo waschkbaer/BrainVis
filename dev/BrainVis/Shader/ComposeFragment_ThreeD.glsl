@@ -1,8 +1,8 @@
-#version 420 core
+#version 410 core
 
-layout(binding=0) uniform sampler2D raycastCT;
-layout(binding=1) uniform sampler2D raycastMR;
-layout(binding=2) uniform sampler2D boundingBox;
+uniform sampler2D raycastCT;
+uniform sampler2D raycastMR;
+uniform sampler2D boundingBox;
 
 uniform float slide = 0.0f;
 uniform int axis = 0;

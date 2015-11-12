@@ -1,7 +1,7 @@
-#version 420 core
+#version 410 core
 
-layout(binding=0) uniform sampler3D volume;
-layout(binding=1) uniform sampler1D transferfunction;
+uniform sampler3D volume;
+uniform sampler1D transferfunction;
 
 uniform int axis = 0;
 uniform float tfScaling;

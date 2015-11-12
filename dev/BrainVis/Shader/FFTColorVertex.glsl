@@ -1,9 +1,9 @@
-#version 420 core
+#version 410 core
 
 // INPUT VARIABLES
-layout (location=0) in vec3 inputPosition;
-layout (location=1) in vec3 inputNormal;
-layout (location=2) in vec2 inputTexcoord;
+in vec3 inputPosition;
+in vec3 inputNormal;
+in vec2 inputTexcoord;
 
 // OUTPUT VARIABLES
 out vec3 normalview;

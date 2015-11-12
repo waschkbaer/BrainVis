@@ -1,8 +1,8 @@
-#version 420 core
+#version 410 core
 
-layout(binding=0) uniform sampler2D rayStartPoint;
-layout(binding=1) uniform sampler3D volume;
-layout(binding=2) uniform sampler1D transferfunction;
+uniform sampler2D rayStartPoint;
+uniform sampler3D volume;
+uniform sampler1D transferfunction;
 
 uniform mat4 viewFragmentMatrix;
 uniform mat4 worldFragmentMatrix;

@@ -1,6 +1,6 @@
-#version 420 core
+#version 410 core
 
-layout(binding=0) uniform sampler3D volume;
+uniform sampler3D volume;
 
 uniform int frameMode = 0;
 uniform float tfScaling;

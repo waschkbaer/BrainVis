@@ -1,9 +1,9 @@
-#version 420 core
+#version 410 core
 
-layout(binding=0) uniform sampler2D sliceImageCT;
-layout(binding=1) uniform sampler2D sliceImageMR;
-layout(binding=2) uniform sampler2D electrodeImage;
-layout(binding=3) uniform sampler2D topImage;
+uniform sampler2D sliceImageCT;
+uniform sampler2D sliceImageMR;
+uniform sampler2D electrodeImage;
+uniform sampler2D topImage;
 
 uniform float slide = 0.0f;
 uniform int axis = 0;
