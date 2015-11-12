@@ -8,6 +8,7 @@ uniform mat4 viewFragmentMatrix;
 uniform mat4 worldFragmentMatrix;
 uniform float tfScaling;
 uniform vec3 eyePos;
+uniform vec3 focusWorldPos = vec3(7.97907,18.9604,-24.2198);
 
 // INPUT VARIABLES
 in vec3 normalview;
@@ -73,7 +74,7 @@ void main(void)
   for(int i = 0; i < 4000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
     if(!isCut(viewPos.xyz,
-              vec3(7.97907,18.9604,-24.2198),
+              focusWorldPos,
               eyePos)){
 
   	value = texture(volume, texturePos).x;

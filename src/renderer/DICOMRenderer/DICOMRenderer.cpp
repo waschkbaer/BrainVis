@@ -448,6 +448,7 @@ void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
     _rayCastShader->Set("viewFragmentMatrix",_view);
     _rayCastShader->Set("tfScaling",tfScaling);
     _rayCastShader->Set("eyePos",_camera->GetWorldPosition());
+    _rayCastShader->Set("focusWorldPos",_data->getCTCenter()*_data->getCTScale());
 
     _volumeBox->paint();
 
