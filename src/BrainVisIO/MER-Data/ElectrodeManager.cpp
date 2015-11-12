@@ -11,15 +11,13 @@ ElectrodeManager::~ElectrodeManager(){
 
 std::shared_ptr<iElectrode> ElectrodeManager::getElectrode(std::string name){
     if(_electrodes.find(name) != _electrodes.end()){
-        std::cout << name.c_str() << "  " << _electrodes.find(name)->second->getName().c_str() <<  std::endl;
         return _electrodes.find(name)->second;
     }
     return nullptr;
 }
 
 std::shared_ptr<iElectrode> ElectrodeManager::getElectrode(int i){
-    std::string name = _names[i];
-    return getElectrode(name);
+    return getElectrode(_names[i]);
 }
 
 int ElectrodeManager::getElectrodeCount() const{

@@ -2,6 +2,7 @@
 #include <renderer/OpenGL/OpenGLDefines.h>
 #include <algorithm>
 #include <renderer/Context/ContextMutex.h>
+#include <BrainVisIO/MER-Data/ElectrodeManager.h>
 
 using namespace std;
 using namespace Tuvok::Renderer;
@@ -583,9 +584,8 @@ void DICOMRenderer::drawPlaning(){
 
     _frontFaceShader->Disable();
 
-    /*
+
     //draw the trajectories
-    std::shared_ptr<AbstrElectrodeBundle> left = _data->getLeftBundle();
     Vec3f position;
     scaleT.Scaling(1.0,1.0,1.0);
     Mat4f worldScaling;
@@ -598,6 +598,30 @@ void DICOMRenderer::drawPlaning(){
     _sphereFFTShader->Set("fftRange",_data->getSpectralRange());
     _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
 
+    for(int i = 0; i < 6;i++){
+        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if(electrode != nullptr){
+            for(int k = -10; k < 4;++k){
+                std::shared_ptr<iMERData> data = electrode->getData(k);
+                if(data != nullptr){
+
+                    position = data->getDataPosition()-Vec3f(100,100,100);
+                    position = centerWorld.xyz() + _data->getCTeX()*position.x + _data->getCTeY()*position.y + _data->getCTeZ()*position.z;
+                    transT.Translation(position);
+                    transT = scaleT*transT;
+                    _sphereFFTShader->Set("fftValue",(float)data->getSpectralAverage());
+                    _sphereFFTShader->Set("worldMatrix",transT);
+                    _sphereFFTShader->Set("fftRange",Vec2f(electrode->getSpectralPowerRange().x,electrode->getSpectralPowerRange().y));
+
+                    _sphere->paint();
+                }
+            }
+        }
+    }
+
+
+
+    /*
     for(int i = 0; i < left->getTrajectoryCount();++i){
         for(int j = left->getTrajectory(i)->getDepthRange().x; j <= left->getTrajectory(i)->getDepthRange().y;++j){
             if(left->getTrajectory(i)->getData(j)->depth() <= _data->getDisplayedDriveRange().y){
@@ -631,9 +655,9 @@ void DICOMRenderer::drawPlaning(){
                }
 
         }
-    }
+    }*/
 
-    _sphereFFTShader->Disable();*/
+    _sphereFFTShader->Disable();
     _targetBinder->Unbind();
 }
 

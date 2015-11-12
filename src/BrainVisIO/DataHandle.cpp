@@ -593,7 +593,7 @@ std::shared_ptr<iElectrode> DataHandle::getElectrode(std::string name){
 }
 std::shared_ptr<iElectrode> DataHandle::getElectrode(int i){
     if(i >= 0 && i < _electrodeData.getElectrodeCount()){
-        _electrodeData.getElectrode(i);
+        return _electrodeData.getElectrode(i);
     }else{
         return nullptr;
     }
