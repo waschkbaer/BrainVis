@@ -16,23 +16,6 @@ FileElectrode::~FileElectrode(){
 
 }
 
-int8_t FileElectrode::addData(int8_t depth, std::shared_ptr<iMERData> data){
-    if(_electrodeData.find(depth) != _electrodeData.end()){
-        return -1;
-    }
-    _electrodeData.insert(std::pair<int8_t,std::shared_ptr<iMERData>>(depth,data));
-
-    _SpectralPowerRange.x = std::min(_SpectralPowerRange.x, data->getMinMaxSpextralPower().x);
-    _SpectralPowerRange.y = std::max(_SpectralPowerRange.y, data->getMinMaxSpextralPower().y);
-    return 1;
-}
-std::shared_ptr<iMERData> FileElectrode::getData(int8_t depth){
-    if(_electrodeData.find(depth) != _electrodeData.end()){
-        return _electrodeData.find(depth)->second;
-    }
-    return nullptr;
-}
-
 bool FileElectrode::loadFiles(std::string Position, std::string Spectral){
     int curDepth = -10;
     float counter = 0;
@@ -91,4 +74,12 @@ bool FileElectrode::loadFiles(std::string Position, std::string Spectral){
 
     filePosition.close();
     fileSpectral.close();
+}
+
+void FileElectrode::updateElectrode(){
+
+}
+
+void FileElectrode::recalculateFrequencyRange(){
+
 }

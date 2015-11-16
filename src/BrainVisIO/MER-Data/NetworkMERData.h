@@ -1,16 +1,14 @@
-#ifndef FILEMERDATA
-#define FILEMERDATA
+#ifndef NETWORKMERDATA
+#define NETWORKMERDATA
 
 #include <vector>
 #include <core/Math/Vectors.h>
 #include "iMERData.h"
 
-class FileMERData : public iMERData{
+class NetworkMERData : public iMERData{
 public:
-    FileMERData(std::vector<double> spectralData,
-                Core::Math::Vec2d spectralMinMax,
-                double spectralAverage);
-    virtual ~FileMERData();
+    NetworkMERData();
+    virtual ~NetworkMERData();
 
     void setInput(std::vector<double> input);
     void setFrequency(double f);
@@ -27,18 +25,20 @@ public:
     void executeFFT();
 
 protected:
-   std::vector<double>  _rawData;
-   std::vector<double>  _spectralData;
+   std::vector<double>  _rawData; //input
+   std::vector<double>  _spectralData; //calc
 
-   double               _frequency;
-   Core::Math::Vec2d    _range;
-   Core::Math::Vec3f    _position;
-   Core::Math::Vec2d    _spectralMinMax;
-   double               _spectralAverage;
+   double               _frequency; //input
+   Core::Math::Vec2d    _range; //input!?!
+   Core::Math::Vec3f    _position; //input
+   Core::Math::Vec2d    _spectralMinMax; //calc
+   double               _spectralAverage; //calc
 
 private:
+
+
 
 };
 
 
-#endif //FILEMERDATA
+#endif //NETWORKMERDATA

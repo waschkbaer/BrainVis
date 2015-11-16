@@ -53,3 +53,7 @@ Core::Math::Vec2d FileMERData::getMinMaxSpextralPower(){
 double FileMERData::getSpectralAverage(){
     return _spectralAverage;
 }
+
+void FileMERData::executeFFT(){
+
+}

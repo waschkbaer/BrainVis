@@ -21,6 +21,8 @@ public:
     virtual Core::Math::Vec2d getMinMaxSpextralPower() = 0;
     virtual double getSpectralAverage() = 0;
 
+    virtual void executeFFT() = 0;
+
 protected:
 
 private:

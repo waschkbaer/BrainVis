@@ -16,9 +16,8 @@ public:
                   std::string spectralFile);
     virtual ~FileElectrode();
 
-    //return -1 if depth already stored
-    int8_t addData(int8_t depth, std::shared_ptr<iMERData> data);
-    std::shared_ptr<iMERData> getData(int8_t depth = 0);
+    void updateElectrode();
+    void recalculateFrequencyRange();
 
 protected:
 
