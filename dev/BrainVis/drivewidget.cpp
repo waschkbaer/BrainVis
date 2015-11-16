@@ -1,6 +1,7 @@
 #include "drivewidget.h"
 #include "ui_drivewidget.h"
 #include <QLabel>
+#include <QLineEdit>
 
 DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
@@ -80,19 +81,20 @@ QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
 
             QFrame* base = new QFrame();
             //base->setFrameStyle(QFrame::Sunken | QFrame::Box);
-            base->setGeometry(0,0,100,15);
+            base->setGeometry(0,0,225,30);
             base->setLayout(baseLayout);
 
+
+
+
             QLabel* imageL = new QLabel();
-            imageL->setGeometry(0,0,150,20);
-            imageL->setPixmap(QPixmap::fromImage(image->scaled(150,20,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
+            imageL->setGeometry(0,0,175,30);
+            imageL->setPixmap(QPixmap::fromImage(image->scaled(175,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
             baseLayout->addWidget(imageL);
 
-            std::string naming = "("+std::to_string(depth) + ") "+name;
-
-            QLabel* textL = new QLabel(naming.c_str());
-            textL->setGeometry(0,0,100,75);
-            baseLayout->addWidget(textL);
+            QLineEdit* classification = new QLineEdit(QString(std::to_string(depth).c_str()));
+            classification->setGeometry(0,0,50,30);
+            baseLayout->addWidget(classification);
 
             return base;
 
@@ -113,11 +115,16 @@ void DriveWidget::on_addElectrode_clicked()
 
         QFrame *frame = new QFrame();
         frame->setFrameStyle(QFrame::Sunken | QFrame::Box);
-        frame->setGeometry(0,0,100,15);
+        frame->setGeometry(0,0,225,30);
         frame->setLayout(layout);
+        frame->setMaximumWidth(230);
 
+        QLabel* textLabel = new QLabel(selection.c_str());
+        QFont font("Arial",10,QFont::Bold);
+        textLabel->setFont(font);
+        layout->addWidget(textLabel);
 
-        for(int i = -10; i < 4;++i){
+        for(int i = -10; i <= 4;++i){
             QFrame *dataEntry = createElectordeImageEntry(selection,i);
             layout->addWidget(dataEntry);
         }
@@ -134,6 +141,8 @@ void DriveWidget::on_removeButton_clicked()
 
     if(_electrodeFrames.find(selection) != _electrodeFrames.end()){
         QFrame* frame = _electrodeFrames.find(selection)->second;
+
+        //find better solution, not sure if this will delete all children
         frame->close();
         ui->dataPanel->layout()->removeWidget(_electrodeFrames.find(selection)->second);
 
