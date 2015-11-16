@@ -30,5 +30,5 @@ target_link_libraries (Renderer LINK_PUBLIC ghoul)
 
 #MOCCA
 include_directories(
-					${TRINITY_ROOT_DIR}/src/mocca/include/
-					${TRINITY_ROOT_DIR}/src/mocca/include/mocca/)
+					${BRAINVIS_ROOT_DIR}/src/mocca/include/
+					${BRAINVIS_ROOT_DIR}/src/mocca/include/mocca/)

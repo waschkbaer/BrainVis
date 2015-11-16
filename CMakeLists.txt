@@ -2,23 +2,22 @@ cmake_minimum_required(VERSION 2.8.4)
 project(BrainVis)
 
 # setting the project root directory
-set(TRINITY_ROOT_DIR ${PROJECT_SOURCE_DIR})
-add_definitions(-DTRINITY_ROOT_DIR="${TRINITY_ROOT_DIR}")
+set(BRAINVIS_ROOT_DIR ${PROJECT_SOURCE_DIR})
+add_definitions(-DBRAINVIS_ROOT_DIR="${BRAINVIS_ROOT_DIR}")
 
 # install libraries to ~/local if you don't have sudo permissions; fixme dmc: remove when refactoring is finished
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ~/local)
 
 
-set(CMAKE_INSTALL_PREFIX ${TRINITY_ROOT_DIR}/build/install)
-set(CMAKE_MODULE_PATH ${TRINITY_ROOT_DIR}/cmake/modules)
-set(CMAKE_PLATFORM_PATH ${TRINITY_ROOT_DIR}/cmake/platform)
+set(CMAKE_INSTALL_PREFIX ${BRAINVIS_ROOT_DIR}/build/install)
+set(CMAKE_MODULE_PATH ${BRAINVIS_ROOT_DIR}/cmake/modules)
+set(CMAKE_PLATFORM_PATH ${BRAINVIS_ROOT_DIR}/cmake/platform)
 
 
 
 #turn on using solution folders
 #todo verify if needed
 set_property( GLOBAL PROPERTY USE_FOLDERS ON)
-option(TRINITY_HAVE_TESTS "Activate the unit tests" ON)
 
 #todo is this really necessary?
 include(CheckCXXCompilerFlag)
@@ -34,28 +33,12 @@ endif()
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-   message(STATUS "Setting build type to 'Debug' as none was specified.")
-   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+   message(STATUS "Setting build type to 'Release' as none was specified.")
+   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
    # Set the possible values of build type for cmake-gui
-   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Release"
      "MinSizeRel" "RelWithDebInfo")
 endif()
-
-
-# support for gtest
-if (TRINITY_HAVE_TESTS)
-  set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
-    add_subdirectory(ext/gmock) #Build gmock
-  enable_testing()
-  include_directories(${gmock_SOURCE_DIR}/include ${gmock_SOURCE_DIR})
-  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-  if (WIN32) 
-    set_target_properties(gtest gtest_main 
-                          PROPERTIES COMPILE_DEFINITIONS "_VARIADIC_MAX=10")
-  endif ()
-endif ()
-
-
 
 find_package(OpenGL REQUIRED)
 

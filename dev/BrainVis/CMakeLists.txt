@@ -29,7 +29,7 @@ QT5_WRAP_UI(UIS_HDRS drivewidget.ui)
 
 add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS})
 
-set_target_properties( BrainVis PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TRINITY_ROOT_DIR}/build/bin )
+set_target_properties( BrainVis PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BRAINVIS_ROOT_DIR}/build/bin )
 
 
 file(COPY ${SHADERS} DESTINATION ${CMAKE_SOURCE_DIR}/build/bin/Shader)
@@ -47,8 +47,8 @@ target_link_libraries(BrainVis LINK_PUBLIC BRAINVISIO)
 
 #GHOUL
 include_directories(
-					${TRINITY_ROOT_DIR}/ext/ghoul/include/
-					${TRINITY_ROOT_DIR}/ext/ghoul/include/ghoul/)
+					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/
+					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/ghoul/)
 
 
 
