@@ -203,8 +203,6 @@ private:
     Core::Math::Vec3f                               _vPC;
     Core::Math::Vec3f                               _vMR;
 
-    std::shared_ptr<ElectrodeManager>               _electrodeData;
-
     Core::Math::Vec2i                               _displayedDriveRange;
     Core::Math::Vec2f                               _spectralRange;
     Trajectory                                      _leftSTN;

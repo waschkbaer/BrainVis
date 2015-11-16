@@ -599,7 +599,7 @@ void DICOMRenderer::drawPlaning(){
     for(int i = 0; i < 6;i++){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
         if(electrode != nullptr){
-            for(int k = -10; k <= _data->getDisplayedDriveRange().y; ++k){
+            for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
                 std::shared_ptr<iMERData> data = electrode->getData(k);
                 if(data != nullptr){
 

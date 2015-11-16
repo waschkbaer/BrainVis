@@ -20,6 +20,7 @@ void NetworkElectrode::updateElectrode(){
     std::vector<double> input;
     Core::Math::Vec3f  position(100,100,100);
     int8_t depth = 0;
+    double frequency = 2000.0;
 
 
     //create the data
@@ -27,7 +28,7 @@ void NetworkElectrode::updateElectrode(){
 
     //setinput
     data->setDataPosition(position);
-    data->setFrequency(2000);
+    data->setFrequency(frequency);
     data->setFrequencyRange(_analysisRange);
     data->setInput(input); //will execute the fft function
 

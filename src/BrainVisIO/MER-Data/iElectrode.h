@@ -57,6 +57,10 @@ public:
         _analysisRange = range;
     }
 
+    Core::Math::Vec2d getDepthRange() const {
+        return _depthRange;
+    }
+
 protected:
     std::map<int8_t,std::shared_ptr<iMERData>>      _electrodeData;
     std::string                                     _name;

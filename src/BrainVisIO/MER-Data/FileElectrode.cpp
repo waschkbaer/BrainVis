@@ -10,6 +10,8 @@
 FileElectrode::FileElectrode(std::string name,Core::Math::Vec2d range, std::string positionFile, std::string spectralFile):
     iElectrode(name,range){
     loadFiles(positionFile,spectralFile);
+    _depthRange.x = -10.0;
+    _depthRange.y = 4.0;
 }
 FileElectrode::~FileElectrode(){
 

@@ -20,8 +20,6 @@ DataHandle::DataHandle():
 {
     incrementStatus();
     createFFTColorImage();
-
-    _electrodeData = std::make_shared<ElectrodeManager>();
 }
 
 
@@ -92,11 +90,8 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
 
     for(int i = 0; i < positionList.size();++i){
         std::shared_ptr<iElectrode> elec = std::make_shared<FileElectrode>(types[i], Core::Math::Vec2d(250,1000),positionList[i],spectralList[i]);
-        if(_electrodeData == nullptr){
-            _electrodeData = std::make_shared<ElectrodeManager>();
-        }
 
-        _electrodeData->addElectrode(elec);
+        ElectrodeManager::getInstance().addElectrode(elec);
 
         _spectralRange.x = std::min((float)elec->getSpectralPowerRange().x, _spectralRange.x);
         _spectralRange.y = std::max((float)elec->getSpectralPowerRange().y, _spectralRange.y);
@@ -553,12 +548,12 @@ void DataHandle::incrementStatus(){
 }
 
 std::shared_ptr<iElectrode> DataHandle::getElectrode(std::string name){
-    return _electrodeData->getElectrode(name);
+    return ElectrodeManager::getInstance().getElectrode(name);
 }
 
 std::shared_ptr<iElectrode> DataHandle::getElectrode(int i){
-    if(i >= 0 && i < _electrodeData->getElectrodeCount()){
-        return _electrodeData->getElectrode(i);
+    if(i >= 0 && i < ElectrodeManager::getInstance().getElectrodeCount()){
+        return ElectrodeManager::getInstance().getElectrode(i);
     }else{
         return nullptr;
     }

@@ -2,7 +2,6 @@
 
 ElectrodeManager::ElectrodeManager():
 _electrodes(){
-std::cout << "created electrode manager --------------------"<<std::endl;
 }
 
 ElectrodeManager::~ElectrodeManager(){
@@ -28,5 +27,11 @@ void ElectrodeManager::addElectrode(std::shared_ptr<iElectrode> electrode){
     if(_electrodes.find(electrode->getName()) == _electrodes.end()){
         _electrodes.insert(std::pair<std::string,std::shared_ptr<iElectrode>>(electrode->getName(),electrode));
         _names.push_back(electrode->getName());
+    }
+}
+
+void ElectrodeManager::updateElectrodes(){
+    for(int i = 0; i < _electrodes.size();++i){
+        getElectrode(i)->updateElectrode();
     }
 }

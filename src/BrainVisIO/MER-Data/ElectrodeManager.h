@@ -7,8 +7,11 @@
 
 class ElectrodeManager{
 public:
-    ElectrodeManager();
-    ~ElectrodeManager();
+    static ElectrodeManager& getInstance(){
+        static ElectrodeManager instance;
+        return instance;
+    }
+
 
     std::shared_ptr<iElectrode> getElectrode(std::string name);
     std::shared_ptr<iElectrode> getElectrode(int i = 0);
@@ -17,9 +20,14 @@ public:
 
     void addElectrode(std::shared_ptr<iElectrode> electrode);
 
+    void updateElectrodes();
+
 protected:
 
 private:
+    ElectrodeManager();
+    ~ElectrodeManager();
+
     std::map<std::string,std::shared_ptr<iElectrode>> _electrodes;
     std::vector<std::string>    _names;
 };
