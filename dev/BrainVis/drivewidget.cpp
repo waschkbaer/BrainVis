@@ -54,53 +54,8 @@ void DriveWidget::updateTrajectory(std::string name){
 
 }
 
+void DriveWidget::addImageEntry(std::string name, int depth){
 
-QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
-    if(_data->getElectrode(name) != nullptr){
-        std::shared_ptr<iElectrode> traj = _data->getElectrode(name);
-
-        if(depth >= -10 && depth <= 4){
-            std::shared_ptr<iMERData> eletrodeData = traj->getData(depth);
-            if(eletrodeData == nullptr){
-                return NULL;
-            }
-            QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
-
-            int colorIndex = 0;
-            for(int c = 0; c < eletrodeData->getSpectralPower().size();++c){
-                //colorIndex = (int)((eletrodeData->spectralFlow()[c]-_data->getSpectralRange().x)/(_data->getSpectralRange().y-_data->getSpectralRange().x)*599);
-                 colorIndex = (int)((eletrodeData->getSpectralPower()[c]-traj->getSpectralPowerRange().x)/(traj->getSpectralPowerRange().y - traj->getSpectralPowerRange().x)*599);
-                 colorIndex = std::min(599,std::max(0,colorIndex));
-                 Vec3f color = _data->getFFTColorImage()[colorIndex];
-
-                 image->setPixel(c,0,QColor((int)(color.x*255.0f),(int)(color.y*255.0f),(int)(color.z*255.0f)).rgb());
-            }
-
-            QHBoxLayout* baseLayout = new QHBoxLayout();
-            baseLayout->setContentsMargins(0,0,0,0);
-
-            QFrame* base = new QFrame();
-            //base->setFrameStyle(QFrame::Sunken | QFrame::Box);
-            base->setGeometry(0,0,225,30);
-            base->setLayout(baseLayout);
-
-
-
-
-            QLabel* imageL = new QLabel();
-            imageL->setGeometry(0,0,175,30);
-            imageL->setPixmap(QPixmap::fromImage(image->scaled(175,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
-            baseLayout->addWidget(imageL);
-
-            QLineEdit* classification = new QLineEdit(QString(std::to_string(depth).c_str()));
-            classification->setGeometry(0,0,50,30);
-            baseLayout->addWidget(classification);
-
-            return base;
-
-        }
-    }
-    return NULL;
 }
 
 void DriveWidget::on_addElectrode_clicked()
@@ -110,27 +65,12 @@ void DriveWidget::on_addElectrode_clicked()
 
     if(_electrodeFrames.find(selection) == _electrodeFrames.end()){
 
-        QVBoxLayout *layout = new QVBoxLayout();
-        layout->setContentsMargins(0,0,0,0);
+        ElectrodeBaseFrame *frame = new ElectrodeBaseFrame(selection,this);
 
-        QFrame *frame = new QFrame();
-        frame->setFrameStyle(QFrame::Sunken | QFrame::Box);
-        frame->setGeometry(0,0,225,30);
-        frame->setLayout(layout);
-        frame->setMaximumWidth(230);
-
-        QLabel* textLabel = new QLabel(selection.c_str());
-        QFont font("Arial",10,QFont::Bold);
-        textLabel->setFont(font);
-        layout->addWidget(textLabel);
-
-        for(int i = -10; i <= 4;++i){
-            QFrame *dataEntry = createElectordeImageEntry(selection,i);
-            layout->addWidget(dataEntry);
-        }
+        frame->createFrameEntrys(_data);
 
         ui->dataPanel->layout()->addWidget(frame);
-        _electrodeFrames.insert(std::pair<std::string,QFrame*>(selection,frame));
+        _electrodeFrames.insert(std::pair<std::string,ElectrodeBaseFrame*>(selection,frame));
 
     }
 }
@@ -140,7 +80,7 @@ void DriveWidget::on_removeButton_clicked()
     std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
 
     if(_electrodeFrames.find(selection) != _electrodeFrames.end()){
-        QFrame* frame = _electrodeFrames.find(selection)->second;
+        ElectrodeBaseFrame* frame = _electrodeFrames.find(selection)->second;
 
         //find better solution, not sure if this will delete all children
         frame->close();
@@ -149,4 +89,34 @@ void DriveWidget::on_removeButton_clicked()
         _electrodeFrames.erase(selection);
         delete frame;
     }
+}
+
+
+void DriveWidget::updateWidget(){
+    //iterate over all electrodes displayed
+    for(auto it = _electrodeFrames.begin(); it != _electrodeFrames.end();it++){
+        //add a check if recreation is needed!
+        ElectrodeBaseFrame* frame = it->second;
+        if(frame->childCount() < _data->getElectrode(it->first)->getDepthRange().x){
+
+        }
+        frame->resetFrame();
+
+        frame->createFrameEntrys(_data);
+    }
+}
+
+void DriveWidget::on_sginalButton_clicked()
+{
+    updateWidget();
+}
+
+void DriveWidget::on_probabilityButton_clicked()
+{
+    updateWidget();
+}
+
+void DriveWidget::on_fftButton_clicked()
+{
+    updateWidget();
 }

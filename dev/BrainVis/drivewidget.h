@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QFrame>
 #include <BrainVisIO/DataHandle.h>
+#include "DriveTool/ElectrodeBaseFrame.h"
 
 #include <map>
 
@@ -23,10 +24,10 @@ public:
     void addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode);
     void updateTrajectory(std::string name);
 
-    void updateWidget(){};
+    void updateWidget();
 
 private:
-    QFrame* createElectordeImageEntry(std::string name, int depth);
+    void addImageEntry(std::string name, int depth);
 
 private slots:
     void on_verticalSlider_sliderMoved(int position);
@@ -35,11 +36,17 @@ private slots:
 
     void on_removeButton_clicked();
 
+    void on_sginalButton_clicked();
+
+    void on_probabilityButton_clicked();
+
+    void on_fftButton_clicked();
+
 private:
     Ui::DriveWidget *ui;
     std::shared_ptr<DataHandle> _data;
 
-    std::map<std::string,QFrame*>      _electrodeFrames;
+    std::map<std::string,ElectrodeBaseFrame*>      _electrodeFrames;
 };
 
 #endif // DRIVEWIDGET_H
