@@ -13,7 +13,9 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     std::vector<std::string> elektrodes = ElectrodeManager::getInstance().getRegisteredElectrodes();
 
     for(int j = 0; j < elektrodes.size();++j){
-        QVBoxLayout *layout = new QVBoxLayout();
+        ui->electrodeSelection->addItem(elektrodes[j].c_str());
+
+       /* QVBoxLayout *layout = new QVBoxLayout();
         layout->setContentsMargins(0,0,0,0);
 
         QFrame *frame = new QFrame();
@@ -28,10 +30,11 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
         }
 
         if(j <= 2){
-            ui->DataFrame->layout()->addWidget(frame);
+            //ui->DataFrame->layout()->addWidget(frame);
+            ui->dataPanel->layout()->addWidget(frame);
         }else{
-            ui->DataFrameRight->layout()->addWidget(frame);
-        }
+            //ui->DataFrameRight->layout()->addWidget(frame);
+        }*/
 
     }
 
@@ -45,13 +48,13 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QLabel* imageL = new QLabel();
     imageL->setGeometry(0,0,400,30);
     imageL->setPixmap(QPixmap::fromImage(image->scaled(400,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
-    ui->colorFrame->layout()->addWidget(imageL);
+    //ui->colorFrame->layout()->addWidget(imageL);
     QLabel* imageR = new QLabel();
     imageR->setGeometry(0,0,400,30);
     imageR->setPixmap(QPixmap::fromImage(image->scaled(400,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
-    ui->colorFrameRight->layout()->addWidget(imageR);
+    //ui->colorFrameRight->layout()->addWidget(imageR);
 
-    ui->verticalSlider->setValue(0);
+    //ui->verticalSlider->setValue(0);
 }
 
 DriveWidget::~DriveWidget()
@@ -118,4 +121,32 @@ QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
         }
     }
     return NULL;
+}
+
+void DriveWidget::on_addElectrode_clicked()
+{
+    std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
+
+
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->setContentsMargins(0,0,0,0);
+
+    QFrame *frame = new QFrame();
+    frame->setFrameStyle(QFrame::Sunken | QFrame::Box);
+    frame->setGeometry(0,0,100,15);
+    frame->setLayout(layout);
+
+
+    for(int i = -10; i < 4;++i){
+        QFrame *dataEntry = createElectordeImageEntry(selection,i);
+        layout->addWidget(dataEntry);
+    }
+
+    ui->dataPanel->layout()->addWidget(frame);
+
+}
+
+void DriveWidget::on_removeButton_clicked()
+{
+    std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
 }

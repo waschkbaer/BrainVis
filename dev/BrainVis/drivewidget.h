@@ -29,6 +29,10 @@ private:
 private slots:
     void on_verticalSlider_sliderMoved(int position);
 
+    void on_addElectrode_clicked();
+
+    void on_removeButton_clicked();
+
 private:
     Ui::DriveWidget *ui;
     std::shared_ptr<DataHandle> _data;
