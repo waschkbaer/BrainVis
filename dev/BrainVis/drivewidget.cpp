@@ -14,28 +14,6 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
 
     for(int j = 0; j < elektrodes.size();++j){
         ui->electrodeSelection->addItem(elektrodes[j].c_str());
-
-       /* QVBoxLayout *layout = new QVBoxLayout();
-        layout->setContentsMargins(0,0,0,0);
-
-        QFrame *frame = new QFrame();
-        frame->setFrameStyle(QFrame::Sunken | QFrame::Box);
-        frame->setGeometry(0,0,100,15);
-        frame->setLayout(layout);
-
-
-        for(int i = -10; i < 4;++i){
-            QFrame *dataEntry = createElectordeImageEntry(elektrodes[j],i);
-            layout->addWidget(dataEntry);
-        }
-
-        if(j <= 2){
-            //ui->DataFrame->layout()->addWidget(frame);
-            ui->dataPanel->layout()->addWidget(frame);
-        }else{
-            //ui->DataFrameRight->layout()->addWidget(frame);
-        }*/
-
     }
 
 
@@ -125,28 +103,41 @@ QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
 
 void DriveWidget::on_addElectrode_clicked()
 {
+
     std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
 
+    if(_electrodeFrames.find(selection) == _electrodeFrames.end()){
 
-    QVBoxLayout *layout = new QVBoxLayout();
-    layout->setContentsMargins(0,0,0,0);
+        QVBoxLayout *layout = new QVBoxLayout();
+        layout->setContentsMargins(0,0,0,0);
 
-    QFrame *frame = new QFrame();
-    frame->setFrameStyle(QFrame::Sunken | QFrame::Box);
-    frame->setGeometry(0,0,100,15);
-    frame->setLayout(layout);
+        QFrame *frame = new QFrame();
+        frame->setFrameStyle(QFrame::Sunken | QFrame::Box);
+        frame->setGeometry(0,0,100,15);
+        frame->setLayout(layout);
 
 
-    for(int i = -10; i < 4;++i){
-        QFrame *dataEntry = createElectordeImageEntry(selection,i);
-        layout->addWidget(dataEntry);
+        for(int i = -10; i < 4;++i){
+            QFrame *dataEntry = createElectordeImageEntry(selection,i);
+            layout->addWidget(dataEntry);
+        }
+
+        ui->dataPanel->layout()->addWidget(frame);
+        _electrodeFrames.insert(std::pair<std::string,QFrame*>(selection,frame));
+
     }
-
-    ui->dataPanel->layout()->addWidget(frame);
-
 }
 
 void DriveWidget::on_removeButton_clicked()
 {
     std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
+
+    if(_electrodeFrames.find(selection) != _electrodeFrames.end()){
+        QFrame* frame = _electrodeFrames.find(selection)->second;
+        frame->close();
+        ui->dataPanel->layout()->removeWidget(_electrodeFrames.find(selection)->second);
+
+        _electrodeFrames.erase(selection);
+        delete frame;
+    }
 }

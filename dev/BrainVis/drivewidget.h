@@ -23,6 +23,8 @@ public:
     void addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode);
     void updateTrajectory(std::string name);
 
+    void updateWidget(){};
+
 private:
     QFrame* createElectordeImageEntry(std::string name, int depth);
 
@@ -36,6 +38,8 @@ private slots:
 private:
     Ui::DriveWidget *ui;
     std::shared_ptr<DataHandle> _data;
+
+    std::map<std::string,QFrame*>      _electrodeFrames;
 };
 
 #endif // DRIVEWIDGET_H
