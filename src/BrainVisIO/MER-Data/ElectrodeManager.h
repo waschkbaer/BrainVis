@@ -22,14 +22,16 @@ public:
 
     void updateElectrodes();
 
+    std::vector<std::string> getRegisteredElectrodes() const;
+
 protected:
 
 private:
     ElectrodeManager();
     ~ElectrodeManager();
 
-    std::map<std::string,std::shared_ptr<iElectrode>> _electrodes;
-    std::vector<std::string>    _names;
+    std::map<std::string,std::shared_ptr<iElectrode>>   _electrodes;
+    std::vector<std::string>                            _names;
 };
 
 

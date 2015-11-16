@@ -10,22 +10,7 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     ui->setupUi(this);
     this->setFloating(true);
 
-    /*QImage image(100,100,QImage::Format_RGB888);
-    QColor c(255,255,255);
-    for(int x = 0; x < 100; x+=2){
-        for(int y = 0; y < 100; y+=2){
-            image.setPixel(x,y,c.rgba());
-        }
-    }
-    ui->testLabel->setPixmap(QPixmap::fromImage(image.scaled(300,100,Qt::IgnoreAspectRatio,Qt::FastTransformation)));*/
-
-    std::vector<std::string> elektrodes;
-    elektrodes.push_back("LLat");
-    elektrodes.push_back("LCen");
-    elektrodes.push_back("LAnt");
-    elektrodes.push_back("RLat");
-    elektrodes.push_back("RCen");
-    elektrodes.push_back("RAnt");
+    std::vector<std::string> elektrodes = ElectrodeManager::getInstance().getRegisteredElectrodes();
 
     for(int j = 0; j < elektrodes.size();++j){
         QVBoxLayout *layout = new QVBoxLayout();
@@ -122,7 +107,7 @@ QFrame* DriveWidget::createElectordeImageEntry(std::string name, int depth){
             imageL->setPixmap(QPixmap::fromImage(image->scaled(150,20,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
             baseLayout->addWidget(imageL);
 
-            std::string naming = ">"+ std::to_string(depth) + " "+name;
+            std::string naming = "("+std::to_string(depth) + ") "+name;
 
             QLabel* textL = new QLabel(naming.c_str());
             textL->setGeometry(0,0,100,75);

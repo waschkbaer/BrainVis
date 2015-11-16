@@ -35,3 +35,7 @@ void ElectrodeManager::updateElectrodes(){
         getElectrode(i)->updateElectrode();
     }
 }
+
+std::vector<std::string> ElectrodeManager::getRegisteredElectrodes() const{
+    return _names;
+}
