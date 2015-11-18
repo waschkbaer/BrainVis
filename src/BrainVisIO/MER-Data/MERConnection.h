@@ -29,6 +29,8 @@ public:
     Core::Math::Vec3f getPosition(std::string electrodeIdentifier, int depth);
     std::vector<double> getSignal(std::string electrodeIdentifier, int depth);
 
+    bool getIsConnected() const;
+
 protected:
     MERConnection():_isConnected(false){};
     ~MERConnection(){};

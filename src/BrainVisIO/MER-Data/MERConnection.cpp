@@ -54,10 +54,6 @@ std::vector<std::string> MERConnection::getRegisteredElectrodes(){
         if(data.byteArray().size() > 0){
             std::string s(data.byteArray().data(),0,data.byteArray().size());
             electrodeList = splitStringDump(s,':');
-
-            for(std::string s: electrodeList){
-                std::cout << s << std::endl;
-            }
         }
       }
       catch (const ConnectionClosedError& err){
@@ -82,8 +78,6 @@ int MERConnection::getCurrentDepth(std::string electrodeIdentifier){
         BytePacket data = _connection->receive();
         if(data.byteArray().size() > 0){
             depth = data.get<int32_t>();
-
-            std::cout <<"Depth of <"<<electrodeIdentifier<<"> is currently "<< depth << std::endl;
         }
       }
       catch (const ConnectionClosedError& err){
@@ -111,8 +105,6 @@ Core::Math::Vec3f MERConnection::getPosition(std::string electrodeIdentifier, in
             pos.resize(3);
             std::memcpy(&(pos[0]),data.byteArray().data(),3*sizeof(float));
             positionVec = Core::Math::Vec3f(pos[0],pos[1],pos[2]);
-
-            std::cout <<"Position of <"<<electrodeIdentifier<<"> is currently "<< positionVec << std::endl;
         }
       }
       catch (const ConnectionClosedError& err){
@@ -137,12 +129,8 @@ std::vector<double> MERConnection::getSignal(std::string electrodeIdentifier, in
 
         BytePacket data = _connection->receive();
         if(data.byteArray().size() > 0){
-            std::cout << data.byteArray().size() << std::endl;
-
             signal.resize(data.byteArray().size() / sizeof(double));
             std::memcpy(&(signal[0]),data.byteArray().data(),data.byteArray().size());
-
-            std::cout <<"Signalsize of <"<<electrodeIdentifier<<"> is currently "<< signal.size() << std::endl;
         }
       }
       catch (const ConnectionClosedError& err){
@@ -162,3 +150,8 @@ void MERConnection::sendString(std::string msg){
 
     _connection->send(stringArray);
 }
+bool MERConnection::getIsConnected() const
+{
+    return _isConnected;
+}
+
