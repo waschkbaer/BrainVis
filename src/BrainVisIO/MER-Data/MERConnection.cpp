@@ -48,6 +48,7 @@ std::vector<std::string> MERConnection::getRegisteredElectrodes(){
     if(!_isConnected) return electrodeList;
 
     try{
+         _connectionMutex.lock();
         sendString("GETELC");
 
         BytePacket data = _connection->receive();
@@ -62,7 +63,7 @@ std::vector<std::string> MERConnection::getRegisteredElectrodes(){
       catch (const NetworkError& err){
         //LERRORC("NetworkRendererClient", "network error");
       }
-
+     _connectionMutex.unlock();
     return electrodeList;
 }
 
@@ -73,6 +74,7 @@ int MERConnection::getCurrentDepth(std::string electrodeIdentifier){
     std::string request = "CDEPTH:"+electrodeIdentifier;
 
     try{
+        _connectionMutex.lock();
         sendString(request);
 
         BytePacket data = _connection->receive();
@@ -86,7 +88,7 @@ int MERConnection::getCurrentDepth(std::string electrodeIdentifier){
       catch (const NetworkError& err){
         //LERRORC("NetworkRendererClient", "network error");
       }
-
+     _connectionMutex.unlock();
     return depth;
 }
 
@@ -97,6 +99,7 @@ Core::Math::Vec3f MERConnection::getPosition(std::string electrodeIdentifier, in
     std::string request = "POS:"+electrodeIdentifier+":"+std::to_string(depth);
 
     try{
+         _connectionMutex.lock();
         sendString(request);
 
         BytePacket data = _connection->receive();
@@ -113,7 +116,7 @@ Core::Math::Vec3f MERConnection::getPosition(std::string electrodeIdentifier, in
       catch (const NetworkError& err){
         //LERRORC("NetworkRendererClient", "network error");
       }
-
+     _connectionMutex.unlock();
     return positionVec;
 }
 
@@ -125,6 +128,7 @@ std::vector<double> MERConnection::getSignal(std::string electrodeIdentifier, in
     std::string request = "SIGNAL:"+electrodeIdentifier+":"+std::to_string(depth);
 
     try{
+        _connectionMutex.lock();
         sendString(request);
 
         BytePacket data = _connection->receive();
@@ -139,7 +143,7 @@ std::vector<double> MERConnection::getSignal(std::string electrodeIdentifier, in
       catch (const NetworkError& err){
         //LERRORC("NetworkRendererClient", "network error");
       }
-
+    _connectionMutex.unlock();
     return signal;
 }
 
@@ -155,3 +159,9 @@ bool MERConnection::getIsConnected() const
     return _isConnected;
 }
 
+void MERConnection::clear(){
+     _connectionMutex.lock();
+    _connection = nullptr;
+    _isConnected = false;
+    _connectionMutex.unlock();
+}

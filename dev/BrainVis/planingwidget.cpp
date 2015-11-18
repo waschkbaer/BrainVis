@@ -99,8 +99,15 @@ void PlaningWidget::on_Start_clicked()
         std::cout << "does not end with \\"<<std::endl;
         merPath+= "\\";
     }
-    //_dataHandle->loadMERFiles(merPath,electrodes);
-    _dataHandle->loadMERNetwork(electrodes);
+    if(!ui->mernetworkbox->isChecked()){
+        _dataHandle->loadMERFiles(merPath,electrodes);
+    }else{
+        std::string merHost =ui->merip->text().toLocal8Bit().constData();
+        int port = ui->merport->text().toInt();
+
+        _dataHandle->loadMERNetwork(electrodes);
+    }
+
 
     w->setDataHandle(_dataHandle);
 

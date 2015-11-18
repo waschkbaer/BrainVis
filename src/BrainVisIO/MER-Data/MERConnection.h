@@ -3,6 +3,7 @@
 
 #include <Core/Math/Vectors.h>
 #include <vector>
+#include <mutex>
 
 //NETWORKING
 #include <base/Error.h>
@@ -31,6 +32,8 @@ public:
 
     bool getIsConnected() const;
 
+    void clear();
+
 protected:
     MERConnection():_isConnected(false){};
     ~MERConnection(){};
@@ -39,6 +42,8 @@ private:
 
     std::unique_ptr<AbstractConnection>     _connection;
     bool                                    _isConnected;
+
+    std::mutex                              _connectionMutex;
 };
 
 

@@ -919,26 +919,101 @@
           <property name="title">
            <string>MER Folder</string>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_14">
+          <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
-            <widget class="QLabel" name="label_14">
-             <property name="text">
-              <string>MER:Path</string>
+            <widget class="QFrame" name="frame_11">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_14">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_14">
+                <property name="text">
+                 <string>MER:Path</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="MERPath_2">
+                <property name="text">
+                 <string>C:/Users/andre/Documents/BrainVis/build/bin/MER</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="merButton">
+                <property name="text">
+                 <string>Select MER Folder</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="MERPath_2">
-             <property name="text">
-              <string>C:/Users/andre/Documents/BrainVis/build/bin/MER</string>
+            <widget class="QFrame" name="frame_12">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="merButton">
-             <property name="text">
-              <string>Select MER Folder</string>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
              </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_15">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="mernetworkbox">
+                <property name="text">
+                 <string>use MERNetwork</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="merip">
+                <property name="text">
+                 <string>localhost</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="merport">
+                <property name="text">
+                 <string>41234</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>

@@ -172,6 +172,7 @@ public:
 
     bool getUsesNetworkMER() const;
     void NetworkUpdateThread();
+    void waitForNetworkThread();
 
 private:
     void updateMRWorld();

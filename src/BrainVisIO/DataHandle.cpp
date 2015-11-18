@@ -24,6 +24,8 @@ DataHandle::DataHandle():
     incrementStatus();
     createFFTColorImage();
 
+    MERConnection::getInstance().clear();
+    ElectrodeManager::getInstance().clear();
 
     MERConnection::getInstance().openConnection("localhost",41234);
 }
@@ -48,7 +50,6 @@ void DataHandle::loadMRData(std::string& path)
     _MRLoaded = true;
     incrementStatus();
 }
-
 
 void DataHandle::loadCTData(std::string& path)
 {
@@ -134,7 +135,7 @@ void DataHandle::NetworkUpdateThread(){
     bool changed = false;
     while(isConnected){
         isConnected = MERConnection::getInstance().getIsConnected();
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         changed = false;
 
        for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
@@ -158,7 +159,11 @@ void DataHandle::NetworkUpdateThread(){
          incrementStatus();
        }
     }
-    std::terminate();
+}
+
+void DataHandle::waitForNetworkThread(){
+    MERConnection::getInstance().clear();
+    _networkUpdateThread->join();
 }
 
 std::vector<Core::Math::Vec3f> DataHandle::getFFTColorImage() const

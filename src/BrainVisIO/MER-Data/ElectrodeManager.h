@@ -24,6 +24,8 @@ public:
 
     std::vector<std::string> getRegisteredElectrodes() const;
 
+    void clear();
+
 protected:
 
 private:
