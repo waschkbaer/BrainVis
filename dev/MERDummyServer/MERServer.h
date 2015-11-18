@@ -5,6 +5,20 @@
 #include <vector>
 #include <Core/Math/Vectors.h>
 #include <map>
+#include <memory>
+#include <thread>
+
+//networking with mocca
+#include <base/Error.h>
+#include <base/BytePacket.h>
+#include <net/TCPNetworkAddress.h>
+#include <net/LoopbackNetworkService.h>
+#include <net/LoopbackConnectionListener.h>
+#include <net/TCPNetworkService.h>
+#include <net/Error.h>
+
+using namespace mocca;
+using namespace mocca::net;
 
 struct Data{
 
@@ -21,10 +35,13 @@ struct Data{
 
 class MERServer{
 public:
-    MERServer();
+    MERServer(int port);
     ~MERServer();
 
     void run();
+    void startNetworkThread();
+
+
 
     void generateDataStepLeft();
     void generateDataStepRight();
@@ -32,6 +49,9 @@ public:
     void printInformation();
 
 protected:
+    void networkerRun();
+    void handleMsg(std::string s);
+
 
     void sendData();
     void listData();
@@ -46,6 +66,12 @@ private:
 
 private:
     std::map<std::string,std::vector<Data>> _electrodes;
+
+
+    std::unique_ptr<IConnectionListener>    _listener;
+    std::unique_ptr<AbstractConnection>     _connection;
+
+    std::unique_ptr<std::thread>            _networkThread;
 };
 
 

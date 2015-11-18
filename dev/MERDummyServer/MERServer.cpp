@@ -2,9 +2,18 @@
 #include <cstdlib>
 #include <iostream>
 
-MERServer::MERServer(){
+#include "logging/logmanager.h"
+#include "logging/consolelog.h"
+#include "logging/htmllog.h"
+#include "logging/textlog.h"
+using namespace ghoul::logging;
+
+MERServer::MERServer(int port){
     srand (time(NULL));
     initFakeData();
+
+    TCPNetworkService netService;
+    _listener  = netService.bind(std::to_string(port)); // listen for connections
 }
 MERServer::~MERServer(){
 
@@ -12,18 +21,51 @@ MERServer::~MERServer(){
 
 void MERServer::run(){
       int i = 0;
-      std::cout << "wait for input !"<< std::endl;
+      LINFOC("MERDUMMYSERVER","waiting for input");
       std::cin >> i;
       if(i == 1){
-          std::cout << "will do left step to next"<< std::endl;
+          LINFOC("MERDUMMYSERVER","will do left step to next");
           generateDataStepLeft();
           printInformation();
       }
       if(i == 2){
-          std::cout << "will do right step to next"<< std::endl;
+          LINFOC("MERDUMMYSERVER","will do right step to next");
           generateDataStepRight();
           printInformation();
       }
+
+}
+
+void MERServer::startNetworkThread(){
+    _networkThread = std::unique_ptr<std::thread>(new std::thread(&MERServer::networkerRun,this));
+}
+
+void MERServer::networkerRun(){
+    bool keepAlive = true;
+    LINFOC("MERDUMMYSERVER","waiting for connection");
+    while(_connection == nullptr){
+        _connection = _listener->getConnection();
+    }
+    LINFOC("MERDUMMYSERVER","got a connection");
+
+    while(keepAlive){
+        try{
+            BytePacket data = _connection->receive();
+            if(data.byteArray().size() > 0){
+                std::string s(data.byteArray().data(),0,data.byteArray().size());
+                handleMsg(s);
+            }
+        }catch(const ConnectionClosedError& err){
+            LERRORC("MERDUMMYSERVER", "lost connection");
+            keepAlive = false;
+        }catch(const NetworkError& err){
+            keepAlive = false;
+            LERRORC("MERDUMMYSERVER", "network error");
+        }
+    }
+}
+
+void MERServer::handleMsg(std::string s){
 
 }
 

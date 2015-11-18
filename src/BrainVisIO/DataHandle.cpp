@@ -20,6 +20,9 @@ DataHandle::DataHandle():
 {
     incrementStatus();
     createFFTColorImage();
+
+
+    //MERConnection::getInstance().openConnection("localhost",41234);
 }
 
 

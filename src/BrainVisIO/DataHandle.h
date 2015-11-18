@@ -10,6 +10,8 @@
 #include <BrainVisIO/TransferFunction1D.h>
 #include <BrainVisIO/MER-Data/ElectrodeManager.h>
 
+#include <BrainVisIO/MER-Data/MERConnection.h>
+
 #include <memory>
 
 #include <vector>

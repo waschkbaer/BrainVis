@@ -16,6 +16,28 @@ NetworkElectrode::~NetworkElectrode(){
 }
 
 void NetworkElectrode::updateElectrode(){
+    //request idea
+    /*
+     * int d = MERconnection->getCurDepth(this->name)
+     * if(d > depthRange.y){
+     *      position = MERConnection->getPosition(this->name,d);
+     *      signal = MERConnection->getSignla(this->name,d);
+     *
+     *      update/add etc
+     *      for(driveWidget w: driveWidgetList){
+     *          w->update()
+     *      }
+     *      for(renderer r: rendererList){ //not needed for renderers ! just call shedule redraw! will do the rest i guess!
+     *          r->update();
+     *      }
+     *
+     * }else{
+     *  just do nothing and request again in some future!
+     * }
+     *
+     *
+     * */
+
     //this should be some network data! change later
     std::vector<double> input;
     Core::Math::Vec3f  position(100,100,100);

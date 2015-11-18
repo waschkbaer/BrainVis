@@ -29,7 +29,7 @@ QT5_WRAP_UI(UIS_HDRS informationwidget.ui)
 QT5_WRAP_UI(UIS_HDRS planingwidget.ui)
 QT5_WRAP_UI(UIS_HDRS drivewidget.ui)
 
-add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS})
+add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca>)
 
 set_target_properties( BrainVis PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BRAINVIS_ROOT_DIR}/build/bin )
 
@@ -52,7 +52,8 @@ include_directories(
 					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/
 					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/ghoul/)
 
-
-
-
+#MOCCA
+include_directories(
+					${BRAINVIS_ROOT_DIR}/src/mocca/include/
+					${BRAINVIS_ROOT_DIR}/src/mocca/include/mocca/)
 
