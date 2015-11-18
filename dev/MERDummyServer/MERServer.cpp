@@ -8,6 +8,22 @@
 #include "logging/textlog.h"
 using namespace ghoul::logging;
 
+std::vector<std::string> &splitStringDump(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+std::vector<std::string> splitStringDump(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    splitStringDump(s, delim, elems);
+    return elems;
+}
+
 MERServer::MERServer(int port){
     srand (time(NULL));
     initFakeData();
@@ -41,31 +57,79 @@ void MERServer::startNetworkThread(){
 }
 
 void MERServer::networkerRun(){
-    bool keepAlive = true;
-    LINFOC("MERDUMMYSERVER","waiting for connection");
-    while(_connection == nullptr){
-        _connection = _listener->getConnection();
-    }
-    LINFOC("MERDUMMYSERVER","got a connection");
-
-    while(keepAlive){
-        try{
-            BytePacket data = _connection->receive();
-            if(data.byteArray().size() > 0){
-                std::string s(data.byteArray().data(),0,data.byteArray().size());
-                handleMsg(s);
-            }
-        }catch(const ConnectionClosedError& err){
-            LERRORC("MERDUMMYSERVER", "lost connection");
-            keepAlive = false;
-        }catch(const NetworkError& err){
-            keepAlive = false;
-            LERRORC("MERDUMMYSERVER", "network error");
+        bool keepAlive = true;
+        LINFOC("MERDUMMYSERVER","waiting for connection");
+        while(_connection == nullptr){
+            _connection = _listener->getConnection();
         }
-    }
+        LINFOC("MERDUMMYSERVER","got a connection");
+
+        while(keepAlive){
+            try{
+                BytePacket data = _connection->receive();
+                if(data.byteArray().size() > 0){
+                    std::string s(data.byteArray().data(),0,data.byteArray().size());
+                    handleMsg(s);
+                }
+            }catch(const ConnectionClosedError& err){
+                LERRORC("MERDUMMYSERVER", "lost connection");
+                _connection == nullptr;
+                keepAlive = false;
+            }catch(const NetworkError& err){
+                keepAlive = false;
+                _connection == nullptr;
+                LERRORC("MERDUMMYSERVER", "network error");
+            }
+        }
 }
 
 void MERServer::handleMsg(std::string s){
+    LINFOC("MERDUMMYSERVER", "MSG: "+s);
+
+    std::vector<std::string> msgPara = splitStringDump(s,':');
+
+    if(msgPara[0] == "GETELC"){
+        std::string answer;
+
+        for(auto it = _electrodes.begin(); it != _electrodes.end();++it){
+            answer += it->first;
+            answer += ":";
+        }
+        answer = answer.substr(0,answer.size()-1);
+        LINFOC("MERDUMMYSERVER","ANSWER: "+ answer);
+
+        ByteArray stringArray;
+        stringArray.append(answer.c_str(),answer.size());
+
+        _connection->send(stringArray);
+    }else if(msgPara[0] == "POS"){
+        std::vector<Data> dat = _electrodes.find(msgPara[1])->second;
+        Core::Math::Vec3f pos = dat[std::atoi(msgPara[2].c_str())+10]._position;
+
+        LINFOC("MERDUMMYSERVER","ANSWER: "<< pos.x << "," << pos.y << "," << pos.z);
+        ByteArray depthArr;
+        depthArr.append(&pos.x,sizeof(float));
+        depthArr.append(&pos.y,sizeof(float));
+        depthArr.append(&pos.z,sizeof(float));
+
+        _connection->send(depthArr);
+    }else if(msgPara[0] == "CDEPTH"){
+        std::vector<Data> dat = _electrodes.find(msgPara[1])->second;
+        int32_t depth = dat[dat.size()-1]._depth;
+
+        ByteArray depthArr;
+        depthArr.append(&depth,sizeof(int32_t));
+
+        _connection->send(depthArr);
+    }else if(msgPara[0] == "SIGNAL"){
+        std::vector<Data> dat = _electrodes.find(msgPara[1])->second;
+        std::vector<double> signal = dat[dat.size()-1]._signal;
+
+        ByteArray signalArr;
+        signalArr.append(&(signal[0]),sizeof(double)*signal.size());
+
+        _connection->send(signalArr);
+    }
 
 }
 

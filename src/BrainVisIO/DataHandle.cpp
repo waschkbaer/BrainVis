@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "MER-Data/FileElectrode.h"
+#include "MER-Data/NetworkElectrode.h"
 
 DataHandle::DataHandle():
     _transferFunction(nullptr),
@@ -22,7 +23,7 @@ DataHandle::DataHandle():
     createFFTColorImage();
 
 
-    //MERConnection::getInstance().openConnection("localhost",41234);
+    MERConnection::getInstance().openConnection("localhost",41234);
 }
 
 
@@ -98,6 +99,14 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
 
         _spectralRange.x = std::min((float)elec->getSpectralPowerRange().x, _spectralRange.x);
         _spectralRange.y = std::max((float)elec->getSpectralPowerRange().y, _spectralRange.y);
+    }
+}
+
+void loadMERNetwork(std::vector<std::string> types){
+    std::vector<std::string> registeredElectrodes = MERConnection::getInstance().getRegisteredElectrodes();
+
+    for(int i = 0; i < registeredElectrodes.size();++i){
+        std::shared_ptr<iElectrode> elec = std::make_shared<NetworkElectrode>(registeredElectrodes[0]);
     }
 }
 

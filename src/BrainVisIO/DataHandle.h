@@ -165,6 +165,7 @@ public:
     void createFFTColorImage();
 
     void loadMERFiles(std::string& path,std::vector<std::string> types);
+    void loadMERNetwork(std::vector<std::string> types);
 
     std::shared_ptr<iElectrode> getElectrode(std::string name);
     std::shared_ptr<iElectrode> getElectrode(int i);
