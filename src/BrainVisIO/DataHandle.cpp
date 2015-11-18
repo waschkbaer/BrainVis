@@ -106,7 +106,7 @@ void loadMERNetwork(std::vector<std::string> types){
     std::vector<std::string> registeredElectrodes = MERConnection::getInstance().getRegisteredElectrodes();
 
     for(int i = 0; i < registeredElectrodes.size();++i){
-        std::shared_ptr<iElectrode> elec = std::make_shared<NetworkElectrode>(registeredElectrodes[0]);
+        //std::shared_ptr<iElectrode> elec = std::make_shared<NetworkElectrode>(registeredElectrodes[0]);
     }
 }
 
