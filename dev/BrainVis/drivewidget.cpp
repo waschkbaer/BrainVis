@@ -15,7 +15,7 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(200);
+    timer->start(2000);
 
     std::vector<std::string> elektrodes = ElectrodeManager::getInstance().getRegisteredElectrodes();
 

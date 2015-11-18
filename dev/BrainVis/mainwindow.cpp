@@ -26,7 +26,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    _data->waitForNetworkThread();
+    if(_data->getUsesNetworkMER()){
+        _data->waitForNetworkThread();
+    }
     delete ui;
 }
 
