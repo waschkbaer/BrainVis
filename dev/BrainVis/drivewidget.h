@@ -24,8 +24,6 @@ public:
     void addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode);
     void updateTrajectory(std::string name);
 
-    void updateWidget();
-
 private:
     void addImageEntry(std::string name, int depth);
 
@@ -42,11 +40,14 @@ private slots:
 
     void on_fftButton_clicked();
 
+    void update();
+
 private:
     Ui::DriveWidget *ui;
     std::shared_ptr<DataHandle> _data;
 
-    std::map<std::string,ElectrodeBaseFrame*>      _electrodeFrames;
+    std::map<std::string,ElectrodeBaseFrame*>       _electrodeFrames;
+    uint64_t                                        _latestStatus;
 };
 
 #endif // DRIVEWIDGET_H

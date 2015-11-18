@@ -37,15 +37,15 @@ MERServer::~MERServer(){
 
 void MERServer::run(){
       int i = 0;
-      LINFOC("MERDUMMYSERVER","waiting for input");
+      //LINFOC("MERDUMMYSERVER","waiting for input");
       std::cin >> i;
       if(i == 1){
-          LINFOC("MERDUMMYSERVER","will do left step to next");
+          //LINFOC("MERDUMMYSERVER","will do left step to next");
           generateDataStepLeft();
           printInformation();
       }
       if(i == 2){
-          LINFOC("MERDUMMYSERVER","will do right step to next");
+          //LINFOC("MERDUMMYSERVER","will do right step to next");
           generateDataStepRight();
           printInformation();
       }
@@ -84,7 +84,7 @@ void MERServer::networkerRun(){
 }
 
 void MERServer::handleMsg(std::string s){
-    LINFOC("MERDUMMYSERVER", "MSG: "+s);
+    //LINFOC("MERDUMMYSERVER", "MSG: "+s);
 
     std::vector<std::string> msgPara = splitStringDump(s,':');
 
@@ -96,7 +96,7 @@ void MERServer::handleMsg(std::string s){
             answer += ":";
         }
         answer = answer.substr(0,answer.size()-1);
-        LINFOC("MERDUMMYSERVER","ANSWER: "+ answer);
+        //LINFOC("MERDUMMYSERVER","ANSWER: "+ answer);
 
         ByteArray stringArray;
         stringArray.append(answer.c_str(),answer.size());
@@ -106,7 +106,7 @@ void MERServer::handleMsg(std::string s){
         std::vector<Data> dat = _electrodes.find(msgPara[1])->second;
         Core::Math::Vec3f pos = dat[std::atoi(msgPara[2].c_str())+10]._position;
 
-        LINFOC("MERDUMMYSERVER","ANSWER: "<< pos.x << "," << pos.y << "," << pos.z);
+        //LINFOC("MERDUMMYSERVER","ANSWER: "<< pos.x << "," << pos.y << "," << pos.z);
         ByteArray depthArr;
         depthArr.append(&pos.x,sizeof(float));
         depthArr.append(&pos.y,sizeof(float));
@@ -205,7 +205,7 @@ void MERServer::printInformation(){
 
         for(int i = 0; i < it->second.size();++i){
             Data d = it->second[i];
-            std::cout << "depth: "<< std::to_string(d._depth) << " position: "<< d._position << " signalsize: "<< d._signal.size()<<std::endl;
+            //std::cout << "depth: "<< std::to_string(d._depth) << " position: "<< d._position << " signalsize: "<< d._signal.size()<<std::endl;
         }
     }
 }

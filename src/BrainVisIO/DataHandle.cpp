@@ -133,18 +133,21 @@ void DataHandle::loadMERNetwork(std::vector<std::string> types){
 void DataHandle::NetworkUpdateThread(){
     bool isConnected = MERConnection::getInstance().getIsConnected();
     bool changed = false;
+    int curDepth = 0;
+    std::shared_ptr<iElectrode> elec;
+    std::shared_ptr<iMERData> data;
     while(isConnected){
         isConnected = MERConnection::getInstance().getIsConnected();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         changed = false;
 
        for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
-            std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(i);
-            int curDepth = MERConnection::getInstance().getCurrentDepth(elec->getName());
+            elec = ElectrodeManager::getInstance().getElectrode(i);
+            curDepth = MERConnection::getInstance().getCurrentDepth(elec->getName());
             if(curDepth > elec->getDepthRange().y){
                 changed = true;
                 for(int j = elec->getDepthRange().y+1; j <= curDepth;j++ ){
-                    std::shared_ptr<iMERData> data = std::make_shared<NetworkMERData>();
+                    data = std::make_shared<NetworkMERData>();
                     data->setDataPosition(MERConnection::getInstance().getPosition(elec->getName(),j));
                     data->setFrequency(2000.0f);
                     data->setFrequencyRange(Core::Math::Vec2d(0,2000.0f));

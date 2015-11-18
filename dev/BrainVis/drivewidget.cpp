@@ -2,14 +2,20 @@
 #include "ui_drivewidget.h"
 #include <QLabel>
 #include <QLineEdit>
+#include <QTimer>
 
 DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
     _data(data),
-    ui(new Ui::DriveWidget)
+    ui(new Ui::DriveWidget),
+    _latestStatus(0)
 {
     ui->setupUi(this);
     this->setFloating(true);
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    timer->start(200);
 
     std::vector<std::string> elektrodes = ElectrodeManager::getInstance().getRegisteredElectrodes();
 
@@ -77,46 +83,53 @@ void DriveWidget::on_addElectrode_clicked()
 
 void DriveWidget::on_removeButton_clicked()
 {
-    std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
+        std::string selection(ui->electrodeSelection->itemText(ui->electrodeSelection->currentIndex()).toLocal8Bit().constData());
 
-    if(_electrodeFrames.find(selection) != _electrodeFrames.end()){
-        ElectrodeBaseFrame* frame = _electrodeFrames.find(selection)->second;
+        if(_electrodeFrames.find(selection) != _electrodeFrames.end()){
+            ElectrodeBaseFrame* frame = _electrodeFrames.find(selection)->second;
 
-        //find better solution, not sure if this will delete all children
-        frame->close();
-        ui->dataPanel->layout()->removeWidget(_electrodeFrames.find(selection)->second);
+            //find better solution, not sure if this will delete all children
+            frame->close();
+            ui->dataPanel->layout()->removeWidget(_electrodeFrames.find(selection)->second);
 
-        _electrodeFrames.erase(selection);
-        delete frame;
-    }
+            _electrodeFrames.erase(selection);
+            delete frame;
+        }
 }
 
 
-void DriveWidget::updateWidget(){
-    //iterate over all electrodes displayed
-    for(auto it = _electrodeFrames.begin(); it != _electrodeFrames.end();it++){
-        //add a check if recreation is needed!
-        ElectrodeBaseFrame* frame = it->second;
-        if(frame->childCount() < _data->getElectrode(it->first)->getDepthRange().x){
+void DriveWidget::update(){
+    uint64_t curStatus = _data->getDataSetStatus();
 
+    if(_latestStatus < curStatus){
+        _latestStatus = curStatus;
+
+        //iterate over all electrodes displayed
+        for(auto it = _electrodeFrames.begin(); it != _electrodeFrames.end();it++){
+            //add a check if recreation is needed!
+            ElectrodeBaseFrame* frame = it->second;
+            if(frame->childCount() < _data->getElectrode(it->first)->getDepthRange().x){
+
+            }
+            frame->resetFrame();
+
+            frame->createFrameEntrys(_data);
         }
-        frame->resetFrame();
 
-        frame->createFrameEntrys(_data);
     }
 }
 
 void DriveWidget::on_sginalButton_clicked()
 {
-    updateWidget();
+    update();
 }
 
 void DriveWidget::on_probabilityButton_clicked()
 {
-    updateWidget();
+    update();
 }
 
 void DriveWidget::on_fftButton_clicked()
 {
-    updateWidget();
+    update();
 }
