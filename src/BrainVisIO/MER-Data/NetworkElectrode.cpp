@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <core/splittools.h>
 #include <algorithm>
 
 #include "NetworkMERData.h"

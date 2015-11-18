@@ -13,7 +13,7 @@
 #include <BrainVisIO/MER-Data/MERConnection.h>
 
 #include <memory>
-
+#include <thread>
 #include <vector>
 
 struct Trajectory{
@@ -170,6 +170,9 @@ public:
     std::shared_ptr<iElectrode> getElectrode(std::string name);
     std::shared_ptr<iElectrode> getElectrode(int i);
 
+    bool getUsesNetworkMER() const;
+    void NetworkUpdateThread();
+
 private:
     void updateMRWorld();
     void incrementStatus();
@@ -219,6 +222,9 @@ private:
     Core::Math::Vec3f                               _vSliceSelection;
 
     uint64_t                                        _dataSetStatus;
+
+    bool                                            _usesNetworkMER;
+    std::unique_ptr<std::thread>                    _networkUpdateThread;
 
 };
 

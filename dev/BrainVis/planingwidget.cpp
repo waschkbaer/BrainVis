@@ -99,7 +99,8 @@ void PlaningWidget::on_Start_clicked()
         std::cout << "does not end with \\"<<std::endl;
         merPath+= "\\";
     }
-    _dataHandle->loadMERFiles(merPath,electrodes);
+    //_dataHandle->loadMERFiles(merPath,electrodes);
+    _dataHandle->loadMERNetwork(electrodes);
 
     w->setDataHandle(_dataHandle);
 

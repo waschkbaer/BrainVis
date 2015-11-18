@@ -55,7 +55,10 @@ void NetworkMERData::executeFFT(){
     FFTCalc calc;
     calc.setInput(_rawData);
     calc.execute();
+    calc.calculateSpectrum2();
     _spectralData = calc.getSpectrum();
+    std::cout << "raw data size: "<< _rawData.size() <<std::endl;
+    std::cout <<"FFT SIZE!"<< _spectralData.size()<<std::endl;
 
     double stepsize = _frequency / (double)_spectralData.size();
 

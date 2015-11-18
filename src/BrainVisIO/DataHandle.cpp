@@ -3,6 +3,7 @@
 
 #include "MER-Data/FileElectrode.h"
 #include "MER-Data/NetworkElectrode.h"
+#include "MER-Data/NetworkMERData.h"
 
 DataHandle::DataHandle():
     _transferFunction(nullptr),
@@ -17,7 +18,8 @@ DataHandle::DataHandle():
     _dataSetStatus(0),
     _spectralRange(1000000.0f,-1000000.0f),
     _MRRotation(-0.1,0,0.1),
-    _MROffset(-0.005,-0.74,0.115)
+    _MROffset(-0.005,-0.74,0.115),
+    _usesNetworkMER(false)
 {
     incrementStatus();
     createFFTColorImage();
@@ -102,11 +104,51 @@ void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
     }
 }
 
-void loadMERNetwork(std::vector<std::string> types){
+void DataHandle::loadMERNetwork(std::vector<std::string> types){
+    _usesNetworkMER = true;
     std::vector<std::string> registeredElectrodes = MERConnection::getInstance().getRegisteredElectrodes();
 
     for(int i = 0; i < registeredElectrodes.size();++i){
-        //std::shared_ptr<iElectrode> elec = std::make_shared<NetworkElectrode>(registeredElectrodes[0]);
+        std::shared_ptr<iElectrode> elec = std::make_shared<NetworkElectrode>(registeredElectrodes[i]);
+        int curDepth = MERConnection::getInstance().getCurrentDepth(registeredElectrodes[i]);
+
+        for(int j = -10; j <= curDepth;j++){
+            std::shared_ptr<iMERData> data = std::make_shared<NetworkMERData>();
+            data->setDataPosition(MERConnection::getInstance().getPosition(registeredElectrodes[i],j));
+            data->setFrequency(2000.0f);
+            data->setFrequencyRange(Core::Math::Vec2d(0,2000.0f));
+            data->setInput(MERConnection::getInstance().getSignal(registeredElectrodes[i],j));
+            data->executeFFT();
+
+            elec->addData(j,data);
+        }
+
+        ElectrodeManager::getInstance().addElectrode(elec);
+    }
+
+    _networkUpdateThread = std::unique_ptr<std::thread>(new std::thread(&DataHandle::NetworkUpdateThread,this));
+}
+
+void DataHandle::NetworkUpdateThread(){
+    while(true){
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+       for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
+            std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(i);
+            int curDepth = MERConnection::getInstance().getCurrentDepth(elec->getName());
+            if(curDepth > elec->getDepthRange().y){
+                for(int j = elec->getDepthRange().y+1; j <= curDepth;j++ ){
+                    std::shared_ptr<iMERData> data = std::make_shared<NetworkMERData>();
+                    data->setDataPosition(MERConnection::getInstance().getPosition(elec->getName(),j));
+                    data->setFrequency(2000.0f);
+                    data->setFrequencyRange(Core::Math::Vec2d(0,2000.0f));
+                    data->setInput(MERConnection::getInstance().getSignal(elec->getName(),j));
+                    data->executeFFT();
+
+                    elec->addData(j,data);
+                }
+            }
+       }
     }
 }
 
@@ -558,6 +600,11 @@ bool DataHandle::calculateCTUnitVectors(){
 void DataHandle::incrementStatus(){
     _dataSetStatus++;
 }
+bool DataHandle::getUsesNetworkMER() const
+{
+    return _usesNetworkMER;
+}
+
 
 std::shared_ptr<iElectrode> DataHandle::getElectrode(std::string name){
     return ElectrodeManager::getInstance().getElectrode(name);
