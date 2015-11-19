@@ -22,12 +22,15 @@ public:
     Core::Math::Vec2ui getImageSize();
     uint8_t getSizePerPixel();
 
+    void setFontColor(int r, int g, int b);
+
     void saveImage(std::string filename);
     void resizeImage(int width, int height);
 
 private:
-    std::shared_ptr<QImage>     _image;
-    std::shared_ptr<QPainter> _painter;
+    QImage*                     _image;
+    QPainter*                   _painter;
+    QColor                      _penColor;
 protected:
 };
 

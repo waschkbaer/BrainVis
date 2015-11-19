@@ -7,17 +7,17 @@ FontImagePainter::FontImagePainter():
 }
 
 FontImagePainter::FontImagePainter(int width, int height){
-    _image = std::make_shared<QImage>(width,height,QImage::Format_RGB888);
+    //_image = std::make_shared<QImage>(width,height,QImage::Format_RGB888);
+    _image = new QImage(width,height,QImage::Format_RGB888);
     _image->fill(QColor(0,0,0).rgb());
 
-    _painter = std::make_shared<QPainter>(_image.get());
+    _painter = new QPainter(_image);
 
     QPen myPen(Qt::white, 2, Qt::SolidLine);
     _painter->setPen(myPen);
 }
 
 FontImagePainter::~FontImagePainter(){
-
 }
 
 void FontImagePainter::clearImage(){
@@ -45,6 +45,16 @@ void FontImagePainter::saveImage(std::string filename){
 }
 
 void FontImagePainter::resizeImage(int width, int height){
-    _image = std::make_shared<QImage>(width,height,QImage::Format_RGB888);
+
+    delete _painter;
+    delete _image;
+    _image = new QImage(width,height,QImage::Format_RGB888);
     _image->fill(QColor(0,0,0).rgb());
+    _painter = new QPainter(_image);
+    QPen myPen(Qt::white, 2, Qt::SolidLine);
+    _painter->setPen(myPen);
+}
+
+void FontImagePainter::setFontColor(int r, int g, int b){
+
 }

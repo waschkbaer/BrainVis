@@ -76,7 +76,6 @@ void OpenGLWidget::paintGL(){
 }
 
 void OpenGLWidget::update(){
-    std::cout << "t"<< std::endl;
 }
 
 Vec2i oldPos(-1,-1);
@@ -159,11 +158,16 @@ void OpenGLWidget::renderFont(){
     if(_fontImage == nullptr){
         _fontImage = std::unique_ptr<FontImagePainter>(new FontImagePainter(width(),height()));
     }
-    _fontImage->clearImage();
+    if( _fontImage->getImageSize().x != width() ||
+        _fontImage->getImageSize().y != height()){
+        _fontImage->resizeImage(width(),height());
+    }else{
+        _fontImage->clearImage();
 
-    //draw all stuff needed
-    _fontImage->drawText(5,12,"Hello Text in Renderer");
-    _renderer->setFontData((char*)_fontImage->getImageData());
-    _fontImage->saveImage("Test.bmp");
+        //draw all stuff needed
+        _fontImage->setFontColor(255,0,255);
+        _fontImage->drawText(5,12,"Hello Text in Renderer");
+        _renderer->setFontData((char*)_fontImage->getImageData());
+    }
 }
 
