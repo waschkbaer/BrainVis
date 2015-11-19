@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     showMaximized();
+    ui->centralWidget->setStyleSheet("background-color: #8D9294;");
 }
 
 MainWindow::~MainWindow()

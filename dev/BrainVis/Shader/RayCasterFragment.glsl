@@ -95,7 +95,7 @@ void main(void)
       break;
     }
   }
-    texturePos += rayDir/800.0f;
+    texturePos += rayDir/1500.0f;
 
   	//early ray termination
   	if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||

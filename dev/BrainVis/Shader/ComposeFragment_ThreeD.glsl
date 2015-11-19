@@ -8,6 +8,9 @@ uniform float slide = 0.0f;
 uniform int axis = 0;
 uniform float mrctblend = 0.5f;
 
+uniform vec3 bottomBG = vec3(0.1f,0.2f,0.5f);
+uniform vec3 topBG = vec3(0.4f,1.0f,1.0f);
+
 // INPUT VARIABLES
 in vec2 vScreenPosition;
 
@@ -40,6 +43,11 @@ void main(void)
   	finalColor = boundingColor.xyz;
   }
 
+  if( finalColor.x == 0.0 &&
+      finalColor.y == 0.0 &&
+      finalColor.z == 0.0){
+    finalColor.xyz = topBG*vScreenPosition.y + (1.0f -vScreenPosition.y)*bottomBG;
+  }
 
   outputColor = vec4(finalColor,1);
 }
