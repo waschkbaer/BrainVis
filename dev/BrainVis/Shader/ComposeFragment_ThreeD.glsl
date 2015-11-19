@@ -3,6 +3,7 @@
 uniform sampler2D raycastCT;
 uniform sampler2D raycastMR;
 uniform sampler2D boundingBox;
+uniform sampler2D fontTexture;
 
 uniform float slide = 0.0f;
 uniform int axis = 0;
@@ -23,6 +24,7 @@ void main(void)
   vec4 raycastColorCT = texture(raycastCT,vScreenPosition);
   vec4 raycastColorMR = texture(raycastMR,vScreenPosition);
   vec4 boundingColor = texture(boundingBox,vScreenPosition);
+  vec3 font = texture(fontTexture,vec2(vScreenPosition.x,1.0-vScreenPosition.y)).xyz;
 
   vec3 finalColor = raycastColorCT.xyz;
   finalColor = raycastColorCT.xyz*mrctblend + (1.0f-mrctblend)* raycastColorMR.xyz;
@@ -49,6 +51,6 @@ void main(void)
     finalColor.xyz = topBG*vScreenPosition.y + (1.0f -vScreenPosition.y)*bottomBG;
   }
 
-  outputColor = vec4(finalColor,1);
+  outputColor = vec4(finalColor+font,1);
 }
 
