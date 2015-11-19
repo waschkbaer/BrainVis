@@ -10,6 +10,7 @@
 #include <renderer/OpenGL/GLCore/GLFrameBufferObject.h>
 #include <renderer/OpenGL/GLCore/GLProgram.h>
 #include <renderer/OpenGL/GLCore/GLTexture3D.h>
+#include <renderer/OpenGL/GLCore/GLTexture2D.h>
 #include <renderer/OpenGL/GLCore/GLTexture1D.h>
 #include <renderer/OpenGL/GLTargetBinder.h>
 
@@ -36,6 +37,7 @@ using Tuvok::Renderer::OpenGL::GLCore::GLBoundingQuadZ;
 using Tuvok::Renderer::OpenGL::GLCore::GLRenderPlane;
 using Tuvok::Renderer::OpenGL::GLCore::GLFBOTex;
 using Tuvok::Renderer::OpenGL::GLCore::GLTexture3D;
+using Tuvok::Renderer::OpenGL::GLCore::GLTexture2D;
 using Tuvok::Renderer::OpenGL::GLCore::GLTexture1D;
 using Tuvok::Renderer::Camera;
 using Tuvok::Renderer::ShaderDescriptor;
@@ -73,6 +75,8 @@ class DICOMRenderer{
 
         void PickPixel(Vec2ui coord);
         void sheduleRepaint();
+
+        void setFontData(char* data);
 
     private:
         bool LoadShaderResources();
@@ -135,6 +139,7 @@ class DICOMRenderer{
         std::shared_ptr<GLTexture3D>    _GL_CTVolume;
         std::shared_ptr<GLTexture1D>    _transferFunctionTex;
         std::shared_ptr<GLTexture1D>    _FFTColor;
+        std::shared_ptr<GLTexture2D>    _FontTexture;
 
         std::shared_ptr<GLProgram>      _frontFaceShader;
         std::shared_ptr<GLProgram>      _NearPlanShader;

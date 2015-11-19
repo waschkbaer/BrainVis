@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 file(GLOB BRAINVIS_SOURCE 	*.cpp
-				DriveTool/*.cpp)
+				DriveTool/*.cpp
+				Utils/*.cpp)
 file(GLOB BRAINVIS_HEADER 	*.h
-				DriveTool/*.h)
+				DriveTool/*.h
+				Utils/*.h)
 file(GLOB SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Shader/*.glsl)
 file(GLOB BUTTONS ${CMAKE_CURRENT_SOURCE_DIR}/Buttons/*.jpg)
 file(GLOB DEMOMER ${CMAKE_CURRENT_SOURCE_DIR}/MER/*.csv)

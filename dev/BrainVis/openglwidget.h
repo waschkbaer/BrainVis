@@ -16,7 +16,7 @@
 #include <BrainVisIO/DataHandle.h>
 
 #include <memory>
-
+#include "Utils/FontImagePainter.h"
 
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
@@ -56,10 +56,14 @@ public:
     int rendererID() const;
     void setRendererID(int rendererID);
 
+    void renderFont();
+
 private:
     std::unique_ptr<DICOMRenderer>  _renderer;
     std::shared_ptr<DataHandle>     _data;
     QTimer*                         _timer;
+
+    std::unique_ptr<FontImagePainter> _fontImage;
 
     Vec2ui                          _windowSize;
 

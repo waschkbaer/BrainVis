@@ -11,6 +11,7 @@
 #include <QMouseEvent>
 #include <QSurfaceFormat>
 #include <ModiSingleton.h>
+#include <QPainter>
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent),
@@ -65,6 +66,7 @@ void OpenGLWidget::paintGL(){
             _renderer->SetWindowSize(width(),height());
         }
 
+        renderFont();
         _renderer->Paint();
 
     }else{
@@ -76,6 +78,7 @@ void OpenGLWidget::paintGL(){
 void OpenGLWidget::update(){
     std::cout << "t"<< std::endl;
 }
+
 Vec2i oldPos(-1,-1);
 void OpenGLWidget::mousePressEvent(QMouseEvent * event ){
     if(event->button() == Qt::LeftButton){
@@ -150,5 +153,17 @@ int OpenGLWidget::rendererID() const
 void OpenGLWidget::setRendererID(int rendererID)
 {
     _rendererID = rendererID;
+}
+
+void OpenGLWidget::renderFont(){
+    if(_fontImage == nullptr){
+        _fontImage = std::unique_ptr<FontImagePainter>(new FontImagePainter(width(),height()));
+    }
+    _fontImage->clearImage();
+
+    //draw all stuff needed
+    _fontImage->drawText(5,12,"Hello Text in Renderer");
+    _renderer->setFontData((char*)_fontImage->getImageData());
+    _fontImage->saveImage("Test.bmp");
 }
 

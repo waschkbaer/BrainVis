@@ -208,6 +208,10 @@ void DICOMRenderer::sheduleRepaint(){
     _needsUpdate = true;
 }
 
+void DICOMRenderer::setFontData(char* data){
+    _FontTexture->SetData((void*) data);
+}
+
 void DICOMRenderer::checkDatasetStatus(){
     if(_datasetStatus < _data->getDataSetStatus() ){
         sheduleRepaint();
@@ -344,6 +348,9 @@ bool DICOMRenderer::LoadFrameBuffer(){
      _TwoDFontFBO                   = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _TwoDTopFBO                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _boundingBoxVolumeBuffer       = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+
+     //fontbuffer
+     _FontTexture                   = std::make_shared<GLTexture2D>(_windowSize.x, _windowSize.y, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
      return true;
  }
 
@@ -634,6 +641,7 @@ void DICOMRenderer::drawCompositing(){
     _compositingThreeDShader->SetTexture2D("raycastCT",_rayCastColorCT->GetTextureHandle(),0);
     _compositingThreeDShader->SetTexture2D("raycastMR",_rayCastColorMR->GetTextureHandle(),1);
     _compositingThreeDShader->SetTexture2D("boundingBox",_boundingBoxVolumeBuffer->GetTextureHandle(),2);
+    _compositingThreeDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),3);
 
     _renderPlane->paint();
 
