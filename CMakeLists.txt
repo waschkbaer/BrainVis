@@ -14,6 +14,11 @@ set(CMAKE_MODULE_PATH ${BRAINVIS_ROOT_DIR}/cmake/modules)
 set(CMAKE_PLATFORM_PATH ${BRAINVIS_ROOT_DIR}/cmake/platform)
 
 
+SET(CMAKE_FIND_LIBRARY_PREFIXES "")
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".dll")
+
+
+
 
 #turn on using solution folders
 #todo verify if needed

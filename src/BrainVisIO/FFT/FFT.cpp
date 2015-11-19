@@ -1,11 +1,9 @@
 #include "FFT.h"
 
+
 FFTCalc::FFTCalc():
     exp(1){
-
-    fftw_plan* plan;
-
-};
+}
 FFTCalc::~FFTCalc(){
 
 };

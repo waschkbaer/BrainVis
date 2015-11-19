@@ -13,10 +13,10 @@ target_include_directories (BRAINVISIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries (BRAINVISIO LINK_PUBLIC Core)
 target_link_libraries (BRAINVISIO LINK_PUBLIC jpeglib)
 
+
 if(WIN32)
     target_link_libraries (BRAINVISIO LINK_PUBLIC Shlwapi)
 endif(WIN32)
-
 
 #MOCCA
 include_directories(
