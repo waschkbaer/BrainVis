@@ -79,6 +79,7 @@ void DriveWidget::on_addElectrode_clicked()
         _electrodeFrames.insert(std::pair<std::string,ElectrodeBaseFrame*>(selection,frame));
 
     }
+    this->resize(this->minimumWidth(),this->minimumHeight());
 }
 
 void DriveWidget::on_removeButton_clicked()
@@ -95,6 +96,7 @@ void DriveWidget::on_removeButton_clicked()
             _electrodeFrames.erase(selection);
             delete frame;
         }
+        this->resize(this->minimumWidth(),this->minimumHeight());
 }
 
 
@@ -117,6 +119,8 @@ void DriveWidget::update(){
         }
 
     }
+
+    this->resize(this->minimumWidth(),this->minimumHeight());
 }
 
 void DriveWidget::on_sginalButton_clicked()

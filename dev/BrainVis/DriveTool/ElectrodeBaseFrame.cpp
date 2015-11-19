@@ -57,12 +57,13 @@ void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data){
     }
     Vec2d range = electrode->getDepthRange();
     for(double d = range.x; d <= range.y;++d){
-        QFrame* curFrame = createSingleEntry(data,(int)d,electrode->getSpectralPowerRange());
+
+        QFrame* curFrame = createSingleEntry(data,electrode->getData(d)->getClassification(),(int)d,electrode->getSpectralPowerRange());
         this->addElectrodeEntry(curFrame);
     }
 }
 
-QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data, int depth, Core::Math::Vec2d powerRange){
+QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange){
     std::shared_ptr<iElectrode> electrode = data->getElectrode(_electrodeName);
     if(electrode == nullptr){
         return NULL;
@@ -92,13 +93,21 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data, 
     base->setGeometry(0,0,225,30);
     base->setLayout(baseLayout);
 
+    std::string sDepth = std::to_string(depth);
+
+    QLabel* depthLabel = new QLabel(QString(sDepth.c_str()));
+    depthLabel->setGeometry(0,0,15,30);
+    depthLabel->setMinimumWidth(15);
+    baseLayout->addWidget(depthLabel);
+
 
     QLabel* imageL = new QLabel();
     imageL->setGeometry(0,0,175,30);
     imageL->setPixmap(QPixmap::fromImage(image->scaled(175,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
     baseLayout->addWidget(imageL);
 
-    QLineEdit* classification = new QLineEdit(QString(std::to_string(depth).c_str()));
+
+    QLineEdit* classification = new QLineEdit(QString(classy.c_str()));
     classification->setGeometry(0,0,50,30);
     baseLayout->addWidget(classification);
 

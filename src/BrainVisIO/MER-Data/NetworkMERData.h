@@ -24,6 +24,9 @@ public:
 
     void executeFFT();
 
+    std::string getClassification();
+    void setClassification(std::string classification);
+
 protected:
    std::vector<double>  _rawData; //input
    std::vector<double>  _spectralData; //calc
@@ -33,6 +36,8 @@ protected:
    Core::Math::Vec3f    _position; //input
    Core::Math::Vec2d    _spectralMinMax; //calc
    double               _spectralAverage; //calc
+
+   std::string          _classification;
 
 private:
 

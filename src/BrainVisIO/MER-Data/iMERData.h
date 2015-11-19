@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <core/Math/Vectors.h>
+#include <string>
 
 class iMERData{
 public:
@@ -23,9 +24,13 @@ public:
 
     virtual void executeFFT() = 0;
 
+    virtual std::string getClassification() = 0;
+    virtual void setClassification(std::string classification) = 0;
+
 protected:
 
 private:
+
 
 };
 

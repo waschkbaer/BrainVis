@@ -20,7 +20,7 @@ public:
     void createFrameEntrys(std::shared_ptr<DataHandle> data);
 
 protected:
-    QFrame* createSingleEntry(std::shared_ptr<DataHandle> data, int depth, Core::Math::Vec2d powerRange);
+    QFrame* createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange);
 
 private:
     int             _childCount;

@@ -2,7 +2,8 @@
 #include <BrainVisIO/FFT/FFT.h>
 
 NetworkMERData::NetworkMERData():
-_spectralMinMax(10000000.0f,-10000000.0f){
+_spectralMinMax(10000000.0f,-10000000.0f),
+_classification("?"){
 
 }
 
@@ -71,4 +72,11 @@ void NetworkMERData::executeFFT(){
         specAvg += _spectralData[i];
     }
     specAvg /= _spectralData.size();
+}
+
+std::string NetworkMERData::getClassification(){
+    return _classification;
+}
+void NetworkMERData::setClassification(std::string classification){
+    _classification = classification;
 }

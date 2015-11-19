@@ -5,7 +5,8 @@ FileMERData::FileMERData(std::vector<double> spectralData,
                          double spectralAverage):
 _spectralMinMax(spectralMinMax),
 _spectralData(spectralData),
-_spectralAverage(spectralAverage){
+_spectralAverage(spectralAverage),
+_classification("?"){
 
 }
 
@@ -56,4 +57,11 @@ double FileMERData::getSpectralAverage(){
 
 void FileMERData::executeFFT(){
 
+}
+
+std::string FileMERData::getClassification(){
+    return _classification;
+}
+void FileMERData::setClassification(std::string classification){
+    _classification = classification;
 }
