@@ -6,7 +6,7 @@ FFTCalc::FFTCalc():
 }
 FFTCalc::~FFTCalc(){
 
-};
+}
 
 std::vector<double> FFTCalc::getReal(){
     return _real;

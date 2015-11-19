@@ -3,7 +3,8 @@
 
 NetworkMERData::NetworkMERData():
 _spectralMinMax(10000000.0f,-10000000.0f),
-_classification("?"){
+_classification("?"),
+_inputRange(10000000.0,-100000000.0){
 
 }
 
@@ -13,6 +14,14 @@ NetworkMERData::~NetworkMERData(){
 
 void NetworkMERData::setInput(std::vector<double> input){
     _rawData = input;
+    for(double d : input){
+        if(d < _inputRange.x){
+            _inputRange.x = d;
+        }
+        if(d > _inputRange.y){
+            _inputRange.y = d;
+        }
+    }
 }
 
 

@@ -18,6 +18,7 @@ public:
     void setDataPosition(Core::Math::Vec3f p);
 
     std::vector<double> getInput();
+    Core::Math::Vec2d getInputRange(){ return Core::Math::Vec2d(0,1);}
     std::vector<double> getSpectralPower();
     Core::Math::Vec2d getFrequencyRange();
     Core::Math::Vec3f getDataPosition();

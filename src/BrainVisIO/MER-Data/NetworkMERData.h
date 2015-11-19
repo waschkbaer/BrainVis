@@ -16,6 +16,7 @@ public:
     void setDataPosition(Core::Math::Vec3f p);
 
     std::vector<double> getInput();
+    Core::Math::Vec2d getInputRange(){ return _inputRange;}
     std::vector<double> getSpectralPower();
     Core::Math::Vec2d getFrequencyRange();
     Core::Math::Vec3f getDataPosition();
@@ -29,6 +30,7 @@ public:
 
 protected:
    std::vector<double>  _rawData; //input
+   Core::Math::Vec2d    _inputRange; //Calc
    std::vector<double>  _spectralData; //calc
 
    double               _frequency; //input

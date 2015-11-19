@@ -16,6 +16,7 @@ public:
     virtual void setDataPosition(Core::Math::Vec3f p) = 0;
 
     virtual std::vector<double> getInput() = 0;
+    virtual Core::Math::Vec2d getInputRange() = 0;
     virtual std::vector<double> getSpectralPower() = 0;
     virtual Core::Math::Vec2d getFrequencyRange() = 0;
     virtual Core::Math::Vec3f getDataPosition() = 0;

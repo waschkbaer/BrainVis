@@ -74,7 +74,9 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,s
     }
     Core::Math::Vec2d spectralRange = powerRange;
 
-    QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
+    QImage* image = createSignalImage(data,eletrodeData);
+
+    /*QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
 
     int colorIndex = 0;
     for(int c = 0; c < eletrodeData->getSpectralPower().size();++c){
@@ -83,7 +85,7 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,s
          Vec3f color = data->getFFTColorImage()[colorIndex];
 
          image->setPixel(c,0,QColor((int)(color.x*255.0f),(int)(color.y*255.0f),(int)(color.z*255.0f)).rgb());
-    }
+    }*/
 
     QHBoxLayout* baseLayout = new QHBoxLayout();
     baseLayout->setContentsMargins(0,0,0,0);
@@ -112,4 +114,55 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,s
     baseLayout->addWidget(classification);
 
     return base;
+}
+
+
+QImage* ElectrodeBaseFrame::createFFTImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData, Core::Math::Vec2d powerRange){
+    QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
+
+    int colorIndex = 0;
+    for(int c = 0; c < eletrodeData->getSpectralPower().size();++c){
+         colorIndex = (int)((eletrodeData->getSpectralPower()[c]- powerRange.x)/(powerRange.y - powerRange.x)*599);
+         colorIndex = std::min(599,std::max(0,colorIndex));
+         Vec3f color = data->getFFTColorImage()[colorIndex];
+
+         image->setPixel(c,0,QColor((int)(color.x*255.0f),(int)(color.y*255.0f),(int)(color.z*255.0f)).rgb());
+    }
+    return image;
+}
+QImage* ElectrodeBaseFrame::createSignalImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData){
+    if(eletrodeData->getInput().size() <= 0)  return NULL;
+
+    Core::Math::Vec2d inputRange = eletrodeData->getInputRange();
+    double center = (inputRange.x+inputRange.y)/2.0;
+    double factor = inputRange.y-center;
+
+
+    QImage* image = new QImage(175,100,QImage::Format_RGB888);
+    double curValue = 0;
+    int pixel = 0;
+    int pixelMinusEins = 50;
+
+    for(int c = 0; c < eletrodeData->getInput().size();++c){
+        curValue = eletrodeData->getInput()[c];
+        curValue = curValue-center;
+        curValue = curValue/factor;
+        pixel = 50+(curValue* 49);
+        std::cout <<c<< " "<< pixel<< std::endl;
+
+        if(pixelMinusEins <= pixel){
+            for(int i = pixelMinusEins; i < pixel;++i){
+             image->setPixel(c,i,QColor(0,0,0).rgb());
+            }
+        }else{
+            for(int i = pixel; i < pixelMinusEins;++i){
+             image->setPixel(c,i,QColor(0,0,0).rgb());
+            }
+        }
+        pixelMinusEins = pixel;
+    }
+    return image;
+}
+QImage* ElectrodeBaseFrame::createProbabilityImaga(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData){
+    return NULL;
 }
