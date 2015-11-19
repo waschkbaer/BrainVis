@@ -6,6 +6,7 @@
 #include <QFrame>
 #include <BrainVisIO/DataHandle.h>
 #include "DriveTool/ElectrodeBaseFrame.h"
+#include "DriveTool/DriveEnums.h"
 
 #include <map>
 
@@ -48,6 +49,9 @@ private:
 
     std::map<std::string,ElectrodeBaseFrame*>       _electrodeFrames;
     uint64_t                                        _latestStatus;
+
+    ImageSetting                                    _imageSetting;
+    bool                                            _forceUpdate;
 };
 
 #endif // DRIVEWIDGET_H

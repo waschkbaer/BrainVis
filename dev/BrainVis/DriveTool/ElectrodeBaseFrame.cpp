@@ -50,7 +50,7 @@ void ElectrodeBaseFrame::resetFrame(){
 }
 
 
-void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data){
+void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data, ImageSetting setting){
     std::shared_ptr<iElectrode> electrode = data->getElectrode(_electrodeName);
     if(electrode == nullptr){
         return;
@@ -58,12 +58,12 @@ void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data){
     Vec2d range = electrode->getDepthRange();
     for(double d = range.x; d <= range.y;++d){
 
-        QFrame* curFrame = createSingleEntry(data,electrode->getData(d)->getClassification(),(int)d,electrode->getSpectralPowerRange());
+        QFrame* curFrame = createSingleEntry(data,electrode->getData(d)->getClassification(),(int)d,electrode->getSpectralPowerRange(),setting);
         this->addElectrodeEntry(curFrame);
     }
 }
 
-QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange){
+QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange, ImageSetting setting){
     std::shared_ptr<iElectrode> electrode = data->getElectrode(_electrodeName);
     if(electrode == nullptr){
         return NULL;
@@ -74,18 +74,33 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,s
     }
     Core::Math::Vec2d spectralRange = powerRange;
 
-    QImage* image = createSignalImage(data,eletrodeData);
+    QImage* image = NULL;
 
-    /*QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
 
-    int colorIndex = 0;
-    for(int c = 0; c < eletrodeData->getSpectralPower().size();++c){
-         colorIndex = (int)((eletrodeData->getSpectralPower()[c]- spectralRange.x)/(spectralRange.y - spectralRange.x)*599);
-         colorIndex = std::min(599,std::max(0,colorIndex));
-         Vec3f color = data->getFFTColorImage()[colorIndex];
+    switch(setting){
+        case ImageSetting::FFT :        {
+                                        if(_spectralImages.find(depth) == _spectralImages.end()){
+                                            image = createFFTImage(data,eletrodeData,spectralRange);
+                                            _spectralImages.insert(std::pair<int,QImage*>(depth,image));
+                                        }else{
+                                            image = _spectralImages.find(depth)->second;
+                                        }
+                                        break;
+                                        }
+        case ImageSetting::Signal :     {
+                                        if(_signalImages.find(depth) == _signalImages.end()){
+                                            image = createSignalImage(data,eletrodeData);
+                                            _signalImages.insert(std::pair<int,QImage*>(depth,image));
+                                        }else{
+                                            image = _signalImages.find(depth)->second;
+                                        }
+                                        break;
+                                        }
+        case ImageSetting::probability :{
+                                        break;
+                                        }
+    }
 
-         image->setPixel(c,0,QColor((int)(color.x*255.0f),(int)(color.y*255.0f),(int)(color.z*255.0f)).rgb());
-    }*/
 
     QHBoxLayout* baseLayout = new QHBoxLayout();
     baseLayout->setContentsMargins(0,0,0,0);
@@ -102,12 +117,12 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,s
     depthLabel->setMinimumWidth(15);
     baseLayout->addWidget(depthLabel);
 
-
-    QLabel* imageL = new QLabel();
-    imageL->setGeometry(0,0,175,30);
-    imageL->setPixmap(QPixmap::fromImage(image->scaled(175,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
-    baseLayout->addWidget(imageL);
-
+    if(image != NULL){
+        QLabel* imageL = new QLabel();
+        imageL->setGeometry(0,0,175,30);
+        imageL->setPixmap(QPixmap::fromImage(image->scaled(175,30,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
+        baseLayout->addWidget(imageL);
+    }
 
     QLineEdit* classification = new QLineEdit(QString(classy.c_str()));
     classification->setGeometry(0,0,50,30);
@@ -131,24 +146,27 @@ QImage* ElectrodeBaseFrame::createFFTImage(std::shared_ptr<DataHandle> data, std
     return image;
 }
 QImage* ElectrodeBaseFrame::createSignalImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData){
+
     if(eletrodeData->getInput().size() <= 0)  return NULL;
 
     Core::Math::Vec2d inputRange = eletrodeData->getInputRange();
     double center = (inputRange.x+inputRange.y)/2.0;
     double factor = inputRange.y-center;
 
+    double step = eletrodeData->getInput().size()/175.0;
 
     QImage* image = new QImage(175,100,QImage::Format_RGB888);
+    image->fill(QColor(255,255,255).rgb());
     double curValue = 0;
     int pixel = 0;
     int pixelMinusEins = 50;
 
-    for(int c = 0; c < eletrodeData->getInput().size();++c){
-        curValue = eletrodeData->getInput()[c];
+    for(int c = 0; c < 175;++c){
+        curValue = eletrodeData->getInput()[c*step];
         curValue = curValue-center;
         curValue = curValue/factor;
         pixel = 50+(curValue* 49);
-        std::cout <<c<< " "<< pixel<< std::endl;
+        //std::cout <<c<< " "<< pixel<< std::endl;
 
         if(pixelMinusEins <= pixel){
             for(int i = pixelMinusEins; i < pixel;++i){
@@ -156,7 +174,7 @@ QImage* ElectrodeBaseFrame::createSignalImage(std::shared_ptr<DataHandle> data, 
             }
         }else{
             for(int i = pixel; i < pixelMinusEins;++i){
-             image->setPixel(c,i,QColor(0,0,0).rgb());
+             image->setPixel(c,i,QColor(25,25,178).rgb());
             }
         }
         pixelMinusEins = pixel;

@@ -8,14 +8,16 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
     _data(data),
     ui(new Ui::DriveWidget),
-    _latestStatus(0)
+    _latestStatus(0),
+    _imageSetting(ImageSetting::FFT),
+    _forceUpdate(false)
 {
     ui->setupUi(this);
     this->setFloating(true);
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(2000);
+    timer->start(500);
 
     std::vector<std::string> elektrodes = ElectrodeManager::getInstance().getRegisteredElectrodes();
 
@@ -73,7 +75,7 @@ void DriveWidget::on_addElectrode_clicked()
 
         ElectrodeBaseFrame *frame = new ElectrodeBaseFrame(selection,this);
 
-        frame->createFrameEntrys(_data);
+        frame->createFrameEntrys(_data,_imageSetting);
 
         ui->dataPanel->layout()->addWidget(frame);
         _electrodeFrames.insert(std::pair<std::string,ElectrodeBaseFrame*>(selection,frame));
@@ -103,7 +105,7 @@ void DriveWidget::on_removeButton_clicked()
 void DriveWidget::update(){
     uint64_t curStatus = _data->getDataSetStatus();
 
-    if(_latestStatus < curStatus){
+    if(_latestStatus < curStatus || _forceUpdate){
         _latestStatus = curStatus;
 
         //iterate over all electrodes displayed
@@ -115,9 +117,9 @@ void DriveWidget::update(){
             }
             frame->resetFrame();
 
-            frame->createFrameEntrys(_data);
+            frame->createFrameEntrys(_data,_imageSetting);
         }
-
+        _forceUpdate = false;
     }
 
     this->resize(this->minimumWidth(),this->minimumHeight());
@@ -125,15 +127,21 @@ void DriveWidget::update(){
 
 void DriveWidget::on_sginalButton_clicked()
 {
+    _imageSetting = ImageSetting::Signal;
+    _forceUpdate = true;
     update();
 }
 
 void DriveWidget::on_probabilityButton_clicked()
 {
+    _imageSetting = ImageSetting::probability;
+    _forceUpdate = true;
     update();
 }
 
 void DriveWidget::on_fftButton_clicked()
 {
+    _imageSetting = ImageSetting::FFT;
+    _forceUpdate = true;
     update();
 }
