@@ -167,6 +167,7 @@ void OpenGLWidget::renderFont(){
         //draw all stuff needed
         _fontImage->setFontColor(255,0,255);
         _fontImage->drawText(5,12,"Hello Text in Renderer");
+        _fontImage->finishText();
         _renderer->setFontData((char*)_fontImage->getImageData());
     }
 }

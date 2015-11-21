@@ -17,8 +17,9 @@ public:
 
     void clearImage();
     void drawText(int x, int y, std::string text);
+    void finishText();
 
-    uchar* getImageData();
+    char* getImageData();
     Core::Math::Vec2ui getImageSize();
     uint8_t getSizePerPixel();
 
@@ -31,6 +32,8 @@ private:
     QImage*                     _image;
     QPainter*                   _painter;
     QColor                      _penColor;
+
+    std::vector<char>           _rawData;
 protected:
 };
 

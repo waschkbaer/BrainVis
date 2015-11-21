@@ -15,6 +15,8 @@ FontImagePainter::FontImagePainter(int width, int height){
 
     QPen myPen(Qt::white, 2, Qt::SolidLine);
     _painter->setPen(myPen);
+    _rawData.resize(_image->width()*_image->height()*3);
+    _rawData.clear();
 }
 
 FontImagePainter::~FontImagePainter(){
@@ -28,8 +30,8 @@ void FontImagePainter::drawText(int x, int y, std::string text){
     return _painter->drawText(x,y,QString(text.c_str()));
 }
 
-uchar* FontImagePainter::getImageData(){
-    return _image->bits();
+char* FontImagePainter::getImageData(){
+    return &(_rawData[0]);
 }
 
 Core::Math::Vec2ui FontImagePainter::getImageSize(){
@@ -56,5 +58,18 @@ void FontImagePainter::resizeImage(int width, int height){
 }
 
 void FontImagePainter::setFontColor(int r, int g, int b){
+
+}
+
+void FontImagePainter::finishText(){
+    _rawData.resize(_image->width()*_image->height()*3);
+    char* curLineStart = (char*) _image->bits();
+
+
+    for(int i = 0; i < _image->height();++i){
+        std::memcpy(&(_rawData[i*(_image->width()*3)]),curLineStart,_image->width()*3);
+
+        curLineStart += _image->bytesPerLine()*sizeof(char);
+    }
 
 }
