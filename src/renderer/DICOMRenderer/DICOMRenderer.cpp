@@ -459,6 +459,10 @@ void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
     _rayCastShader->Set("eyePos",_camera->GetWorldPosition());
     _rayCastShader->Set("focusWorldPos",_data->getSelectedWorldSpacePositon());
 
+    //if(left -> CTeX else (right) -CTeX
+    _rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
+    _rayCastShader->Set("cutMode",2);
+
     _volumeBox->paint();
 
     _rayCastShader->Disable();

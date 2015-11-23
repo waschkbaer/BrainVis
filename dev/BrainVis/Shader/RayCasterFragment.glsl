@@ -9,6 +9,8 @@ uniform mat4 worldFragmentMatrix;
 uniform float tfScaling;
 uniform vec3 eyePos;
 uniform vec3 focusWorldPos = vec3(7.97907,18.9604,-24.2198);
+uniform vec3 cutPlaneNormal = vec3(1,0,0);
+uniform int cutMode = 1;
 
 // INPUT VARIABLES
 in vec3 normalview;
@@ -26,15 +28,21 @@ bool isPositiv(float x){
     return false;
 }
 
-bool isCut(vec3 curPos, vec3 focusPos, vec3 start){
+bool isPlaneCut(vec3 curPos, vec3 focusPos, vec3 normal){
+  vec3 dirPos = curPos-focusPos;
+  dirPos = normalize(dirPos);
+  normal = normalize(normal);
+  float dotValue = dot(dirPos,normal);
+  if(dotValue > 0.0){
+    return true;
+  }
+  return false;
+}
+
+bool isCubicCut(vec3 curPos, vec3 focusPos, vec3 start){
   vec3 dirEye = start-focusPos;
   vec3 dirPos = curPos-focusPos;
   dirEye = normalize(dirEye);
-  start = normalize(start);
-
-  bool xcut = false;
-  bool ycut = false;
-  bool zcut = false;
 
   if( ( (isPositiv(dirEye.x) && isPositiv(dirPos.x)) ||
       (!isPositiv(dirEye.x) && !isPositiv(dirPos.x)) ) &&
@@ -71,30 +79,43 @@ void main(void)
   vec4 finalColor = vec4(0,0,0,0);
   float value = 0;
   vec4 viewPos = vec4(0,0,0,0);
+  bool isCut = false;
   for(int i = 0; i < 4000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
-    if(!isCut(viewPos.xyz,
-              focusWorldPos,
-              eyePos)){
 
-  	value = texture(volume, texturePos).x;
-    value *= tfScaling;
-    vec4 color =  texture(transferfunction, value);
-  	
-    finalColor.xyz = finalColor.xyz + (1.0f-finalColor.w)*color.xyz;
-    finalColor.w = finalColor.w+color.w;
-	if(finalColor.w != 0.0){
-
-	}
-    if(finalColor.w >= 1.0f){  
-      viewPos = viewFragmentMatrix*viewPos;
-      outputColor = vec4(finalColor.xyz,viewPos.z);
-      outputPosition = vec4(texturePos,viewPos.z);
-      //outputColor = vec4(texturePos,viewPos.z);
-      i = 1000;
-      break;
+    switch(cutMode){
+      case 0 : isCut = false;
+                       break;
+      case 1 : isCut = isCubicCut( viewPos.xyz,
+                              focusWorldPos,
+                              eyePos);
+                        break;
+      case 2 : isCut = isPlaneCut( viewPos.xyz,
+                              focusWorldPos,
+                              cutPlaneNormal);
+                        break;
     }
-  }
+
+    if(!isCut){
+
+        	value = texture(volume, texturePos).x;
+          value *= tfScaling;
+          vec4 color =  texture(transferfunction, value);
+        	
+          finalColor.xyz = finalColor.xyz + (1.0f-finalColor.w)*color.xyz;
+          finalColor.w = finalColor.w+color.w;
+      	   if(finalColor.w != 0.0){
+
+      	   }
+          if(finalColor.w >= 1.0f){  
+            viewPos = viewFragmentMatrix*viewPos;
+            outputColor = vec4(finalColor.xyz,viewPos.z);
+            outputPosition = vec4(texturePos,viewPos.z);
+            //outputColor = vec4(texturePos,viewPos.z);
+            i = 1000;
+            break;
+          }
+    }
     texturePos += rayDir/1500.0f;
 
   	//early ray termination
