@@ -58,6 +58,10 @@ public:
 
     void renderFont();
 
+    void setClipMode(DICOMClipMode mode){
+         _renderer->setClipMode(mode);
+    }
+
 private:
     std::unique_ptr<DICOMRenderer>  _renderer;
     std::shared_ptr<DataHandle>     _data;

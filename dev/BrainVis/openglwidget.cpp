@@ -107,11 +107,13 @@ void OpenGLWidget::mouseReleaseEvent (QMouseEvent * event ){
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
     GLMutex::getInstance().lockContext();
     if(_leftMouseDown){
-        std::cout << _rendererID << std::endl;
+
+        //TF Editor active
         if(ModiSingleton::getInstance().getActiveMode() == Mode::TFEditor){
 
             updateTF((float)event->pos().x(),(float)event->pos().y(),(float)width(),(float)height());
 
+        //camera movement active
         }else if(ModiSingleton::getInstance().getActiveMode() == Mode::CameraMovement){
             if(oldPos.x == -1 && oldPos.y == -1){
                 oldPos.x = event->pos().x();
@@ -121,6 +123,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
             Vec2i delta(event->pos().x()-oldPos.x ,event->pos().y()-oldPos.y);
             _renderer->moveCamera(Vec3f(-delta.x*0.01f,delta.y*0.01f,0));
 
+        //camera rotation active
         }else if(ModiSingleton::getInstance().getActiveMode() == Mode::CameraRotation){
             if(oldPos.x == -1 && oldPos.y == -1){
                 oldPos.x = event->pos().x();
@@ -130,6 +133,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
             Vec2i delta(event->pos().x()-oldPos.x ,event->pos().y()-oldPos.y);
             _renderer->rotateCamera(Vec3f(delta.y*0.5f,delta.x*0.5f,0));
 
+        //volume picking active
         }else if(ModiSingleton::getInstance().getActiveMode() == Mode::VolumePicking){
             _renderer->PickPixel(Vec2ui(event->pos().x(),event->pos().y()));
         }

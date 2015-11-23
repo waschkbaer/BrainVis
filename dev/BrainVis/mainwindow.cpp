@@ -33,12 +33,16 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_actionAdd_RenderWidget_triggered()
-{
+void MainWindow::createNewRenderWidger(){
     if(_data != nullptr){
      m_vActiveWidgets.push_back(new RenderWidget(_data,this,this->getNextRenderIDCounter()));
      m_vActiveWidgets[m_vActiveWidgets.size()-1]->setFloating (true);
      }
+}
+
+void MainWindow::on_actionAdd_RenderWidget_triggered()
+{
+    createNewRenderWidger();
 }
 
 void MainWindow::on_actionSelect_Folder_triggered()
@@ -83,3 +87,38 @@ int MainWindow::getNextRenderIDCounter()
     return _renderIDCounter;
 }
 
+
+void MainWindow::on_actionCubic_Cut_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::CubicCut);
+    }
+}
+
+void MainWindow::on_actionClip_Plane_automatic_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneAuto);
+    }
+}
+
+void MainWindow::on_actionClip_Plane_Y_Axis_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneY);
+    }
+}
+
+void MainWindow::on_actionClip_Plane_X_Axis_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneX);
+    }
+}
+
+void MainWindow::on_actionClip_Plane_Z_Axis_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneZ);
+    }
+}

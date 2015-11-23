@@ -111,7 +111,7 @@ void PlaningWidget::on_Start_clicked()
 
     w->setDataHandle(_dataHandle);
 
-    new RenderWidget(_dataHandle,w,w->getNextRenderIDCounter());
+    w->createNewRenderWidger();
 
 
     DriveWidget* drive = new DriveWidget(w,_dataHandle);

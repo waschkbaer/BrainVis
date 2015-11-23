@@ -20,6 +20,7 @@
 #include <core/Time/Timer.h>
 
 #include <BrainVisIO/DataHandle.h>
+#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 #include <memory>
 #include <string>
@@ -78,7 +79,10 @@ class DICOMRenderer{
 
         void setFontData(char* data);
 
-    private:
+        DICOMClipMode clipMode() const;
+        void setClipMode(const DICOMClipMode &clipMode);
+
+private:
         bool LoadShaderResources();
         bool LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, ShaderDescriptor& sd);
         bool LoadGeometry();
@@ -211,6 +215,8 @@ class DICOMRenderer{
 
         bool                            _needsUpdate;
         uint64_t                        _datasetStatus;
+
+        DICOMClipMode                   _clipMode;
 };
 
 

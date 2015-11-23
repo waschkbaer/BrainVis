@@ -22,7 +22,8 @@ _vTranslation(0,0,0),
 _viewX(),
 _viewY(),
 _viewZ(),
-_datasetStatus(0)
+_datasetStatus(0),
+_clipMode(DICOMClipMode::none)
 {
 _timer.start();
 _elapsedTime = _timer.elapsed();
@@ -157,14 +158,12 @@ void DICOMRenderer::searchGFrame(Vec2f range){
     if(_data->calculateCTUnitVectors()){
         _data->setBFoundCTFrame(true);
     }
-
-
 }
 
 void DICOMRenderer::ChangeSlide(int slidedelta){
     Vec3f currentSlice = _data->getSelectedSlices();
     switch(_activeRenderMode){
-        case RenderMode::ThreeDMode:
+    case RenderMode::ThreeDMode:
                                 _eyeDistance += 4.1f*(float)slidedelta;
                                 //_view.BuildLookAt(_lookAt+(_eyeDistance*_eyeDir),Vec3f(0.0f,0.0f,0.0f),Vec3f(0.0f,1.0f,0.0f));
                                 _camera->Zoom(4.1f*(float)slidedelta);
@@ -459,9 +458,25 @@ void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
     _rayCastShader->Set("eyePos",_camera->GetWorldPosition());
     _rayCastShader->Set("focusWorldPos",_data->getSelectedWorldSpacePositon());
 
-    //if(left -> CTeX else (right) -CTeX
-    _rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
-    _rayCastShader->Set("cutMode",2);
+    switch(_clipMode){
+    case DICOMClipMode::none :      _rayCastShader->Set("cutMode",0); break;
+    case DICOMClipMode::CubicCut :  _rayCastShader->Set("cutMode",1); break;
+
+    case DICOMClipMode::PlaneX :    //if(left -> CTeX else (right) -CTeX
+                                    _rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
+                                    _rayCastShader->Set("cutMode",2);
+                                    break;
+
+    case DICOMClipMode::PlaneY :    //if(left -> CTeX else (right) -CTeX
+                                    _rayCastShader->Set("cutPlaneNormal",_data->getCTeY());
+                                    _rayCastShader->Set("cutMode",2);
+                                    break;
+
+    case DICOMClipMode::PlaneZ :    //if(left -> CTeX else (right) -CTeX
+                                    _rayCastShader->Set("cutPlaneNormal",_data->getCTeZ());
+                                    _rayCastShader->Set("cutMode",2);
+                                    break;
+    }
 
     _volumeBox->paint();
 
@@ -1089,36 +1104,6 @@ void DICOMRenderer::create2DGeometry(){
 
     _renderPlaneZ = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(verts,_windowSize));
 
-    /*quad[0] = topL.x;
-    quad[1] = topL.y;
-    quad[2] = topL.z;
-    quad[3] = botL.x;
-    quad[4] = botL.y;
-    quad[5] = botL.z;
-
-    quad[6] = botL.x;
-    quad[7] = botL.y;
-    quad[8] = botL.z;
-    quad[9] = botR.x;
-    quad[10] = botR.y;
-    quad[11] = botR.z;
-
-    quad[12] = botR.x;
-    quad[13] = botR.y;
-    quad[14] = botR.z;
-    quad[15] = topR.x;
-    quad[16] = topR.y;
-    quad[17] = topR.z;
-
-    quad[18] = topR.x;
-    quad[19] = topR.y;
-    quad[20] = topR.z;
-    quad[21] = topL.x;
-    quad[22] = topL.y;
-    quad[23] = topL.z;
-
-    _XAxisSlice = std::unique_ptr<GLBoundingQuad>(new GLBoundingQuad(quad));*/
-
     //XAXIS
     topL = _data->getCTeZ()*-1.0f+ _data->getCTeY()*-1.0f;
     botL = _data->getCTeZ()*-1.0f+ _data->getCTeY()*1.0f;
@@ -1155,38 +1140,6 @@ void DICOMRenderer::create2DGeometry(){
     _viewX.BuildLookAt(_data->getCTeX()*10.0f,Vec3f(0,0,0),-_data->getCTeY());
 
 
-
-   /* quad[0] = topL.x;
-    quad[1] = topL.y;
-    quad[2] = topL.z;
-    quad[3] = botL.x;
-    quad[4] = botL.y;
-    quad[5] = botL.z;
-
-    quad[6] = botL.x;
-    quad[7] = botL.y;
-    quad[8] = botL.z;
-    quad[9] = botR.x;
-    quad[10] = botR.y;
-    quad[11] = botR.z;
-
-    quad[12] = botR.x;
-    quad[13] = botR.y;
-    quad[14] = botR.z;
-    quad[15] = topR.x;
-    quad[16] = topR.y;
-    quad[17] = topR.z;
-
-    quad[18] = topR.x;
-    quad[19] = topR.y;
-    quad[20] = topR.z;
-    quad[21] = topL.x;
-    quad[22] = topL.y;
-    quad[23] = topL.z;
-
-    _ZAxisSlice = std::unique_ptr<GLBoundingQuad>(new GLBoundingQuad(quad));*/
-
-
     //YAXIS
     topL = _data->getCTeX()*-1.0f+ _data->getCTeZ()*-1.0f;
     botL = _data->getCTeX()*-1.0f+ _data->getCTeZ()*1.0f;
@@ -1215,4 +1168,15 @@ void DICOMRenderer::create2DGeometry(){
     verts[11]= topR.y;
     _renderPlaneY = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(verts,_windowSize));
 
+}
+
+DICOMClipMode DICOMRenderer::clipMode() const
+{
+    return _clipMode;
+}
+
+void DICOMRenderer::setClipMode(const DICOMClipMode &clipMode)
+{
+    _clipMode = clipMode;
+    _needsUpdate = true;
 }

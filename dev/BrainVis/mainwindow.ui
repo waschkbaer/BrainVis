@@ -66,8 +66,20 @@
      <string>Help</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuClipping">
+    <property name="title">
+     <string>Clipping</string>
+    </property>
+    <addaction name="actionCubic_Cut"/>
+    <addaction name="separator"/>
+    <addaction name="actionClip_Plane_automatic"/>
+    <addaction name="actionClip_Plane_Y_Axis"/>
+    <addaction name="actionClip_Plane_X_Axis"/>
+    <addaction name="actionClip_Plane_Z_Axis"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuWorkspace"/>
+   <addaction name="menuClipping"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -143,6 +155,31 @@
    </property>
    <property name="text">
     <string>Picking</string>
+   </property>
+  </action>
+  <action name="actionCubic_Cut">
+   <property name="text">
+    <string>Cubic Cut</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_automatic">
+   <property name="text">
+    <string>Clip Plane (automatic)</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_Y_Axis">
+   <property name="text">
+    <string>Clip Plane (Y-Axis)</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_X_Axis">
+   <property name="text">
+    <string>Clip Plane (X-Axis)</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_Z_Axis">
+   <property name="text">
+    <string>Clip Plane (Z-Axis)</string>
    </property>
   </action>
  </widget>

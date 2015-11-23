@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <BrainVisIO/DataHandle.h>
+#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,8 @@ public:
 
     int getNextRenderIDCounter();
 
+    void createNewRenderWidger();
+
 private slots:
     void on_actionAdd_RenderWidget_triggered();
 
@@ -40,6 +43,16 @@ private slots:
     void on_actionWindowing_triggered();
 
     void on_actionPicking_triggered();
+
+    void on_actionCubic_Cut_triggered();
+
+    void on_actionClip_Plane_automatic_triggered();
+
+    void on_actionClip_Plane_Y_Axis_triggered();
+
+    void on_actionClip_Plane_X_Axis_triggered();
+
+    void on_actionClip_Plane_Z_Axis_triggered();
 
 private:
     Ui::MainWindow *ui;

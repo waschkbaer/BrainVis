@@ -22,6 +22,7 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, in
 
     ui->openGLWidget->setDataHandle(data);
     ui->openGLWidget->setRendererID(_renderID);
+
 }
 
 RenderWidget::~RenderWidget()
@@ -182,3 +183,6 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
 
 }
 
+void RenderWidget::setClipMode(DICOMClipMode mode){
+    ui->openGLWidget->setClipMode(mode);
+}
