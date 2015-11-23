@@ -174,6 +174,8 @@ public:
     void NetworkUpdateThread();
     void waitForNetworkThread();
 
+    Core::Math::Vec3f getSelectedCTSpacePosition() const;
+
 private:
     void updateMRWorld();
     void incrementStatus();
@@ -220,7 +222,9 @@ private:
     //Transferfunction
     std::unique_ptr<DataIO::TransferFunction1D>     _transferFunction;
     bool                                            _tfChanged;
-    Core::Math::Vec3f                               _vSliceSelection;
+    Core::Math::Vec3f                               _vSelectedVolumeSpacePosition;
+    Core::Math::Vec3f                               _vSelectedCTSpacePosition;
+    Core::Math::Vec3f                               _vSelectedWorldSpacePositon;
 
     uint64_t                                        _dataSetStatus;
 

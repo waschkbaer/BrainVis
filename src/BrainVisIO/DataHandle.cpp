@@ -255,14 +255,39 @@ void DataHandle::setMRRotation(const Core::Math::Vec3f &MRRotation)
 
 Core::Math::Vec3f DataHandle::getSelectedSlices() const
 {
-    return _vSliceSelection;
+    return _vSelectedVolumeSpacePosition;
 }
 void DataHandle::setSelectedSlices(Core::Math::Vec3f slides)
 {
-    _vSliceSelection =slides;
-    _vSliceSelection.x = std::max(0.0f, std::min(1.0f, _vSliceSelection.x));
-    _vSliceSelection.y = std::max(0.0f, std::min(1.0f, _vSliceSelection.y));
-    _vSliceSelection.z =  std::max(0.0f, std::min(1.0f, _vSliceSelection.z));
+    _vSelectedVolumeSpacePosition =slides;
+    _vSelectedVolumeSpacePosition.x = std::max(0.0f, std::min(1.0f, _vSelectedVolumeSpacePosition.x));
+    _vSelectedVolumeSpacePosition.y = std::max(0.0f, std::min(1.0f, _vSelectedVolumeSpacePosition.y));
+    _vSelectedVolumeSpacePosition.z =  std::max(0.0f, std::min(1.0f, _vSelectedVolumeSpacePosition.z));
+
+    Mat4f s;
+    Vec3f scal;
+    scal.x = getCTAspectRatio().x*getCTDimensions().x;
+    scal.y = getCTAspectRatio().y*getCTDimensions().y;
+    scal.z = getCTAspectRatio().z*getCTDimensions().z;
+
+    s.Scaling(scal);
+
+    Vec4f worldSpacePosition = s* (Vec4f(_vSelectedVolumeSpacePosition.x,
+                                         _vSelectedVolumeSpacePosition.y,
+                                         _vSelectedVolumeSpacePosition.z,
+                                         1)
+                                         -Vec4f(0.5,0.5,0.5,0.0));
+    Vec4f worldSpaceCenter = s * (Vec4f(getCTCenter().x,getCTCenter().y,getCTCenter().z,1));
+    Vec3f distance = worldSpacePosition.xyz() - worldSpaceCenter.xyz();
+    _vSelectedCTSpacePosition =  (      distance.x * getCTeX() +
+                                        distance.y * getCTeY() +
+                                        distance.z * getCTeZ())+ Vec3f(100,100,100);
+    _vSelectedWorldSpacePositon = worldSpacePosition.xyz();
+
+    std::cout << "volumespace" << _vSelectedVolumeSpacePosition << std::endl;
+    std::cout << "worldSpacePicking" << _vSelectedWorldSpacePositon << std::endl;
+    std::cout << "CT Space Pos"<< _vSelectedCTSpacePosition<<std::endl;
+
     incrementStatus();
 }
 
@@ -617,6 +642,11 @@ bool DataHandle::calculateCTUnitVectors(){
 void DataHandle::incrementStatus(){
     _dataSetStatus++;
 }
+Core::Math::Vec3f DataHandle::getSelectedCTSpacePosition() const
+{
+    return _vSelectedCTSpacePosition;
+}
+
 bool DataHandle::getUsesNetworkMER() const
 {
     return _usesNetworkMER;

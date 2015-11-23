@@ -12,6 +12,10 @@
 #include <QSurfaceFormat>
 #include <ModiSingleton.h>
 #include <QPainter>
+#include <renderer/Context/GLMutex.h>
+
+
+using namespace Tuvok::Renderer;
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent),
@@ -59,6 +63,7 @@ void OpenGLWidget::initializeGL()
 
 int i=0;
 void OpenGLWidget::paintGL(){
+    GLMutex::getInstance().lockContext();
     if(_renderer != nullptr){
         if(_windowSize.x != width() ||_windowSize.y != height() ){
             _windowSize.x = width();
@@ -73,6 +78,7 @@ void OpenGLWidget::paintGL(){
         _renderer = std::unique_ptr<DICOMRenderer>(new DICOMRenderer());
         _renderer->Initialize();
     }
+    GLMutex::getInstance().unlockContext();
 }
 
 void OpenGLWidget::update(){
@@ -99,7 +105,9 @@ void OpenGLWidget::mouseReleaseEvent (QMouseEvent * event ){
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
+    GLMutex::getInstance().lockContext();
     if(_leftMouseDown){
+        std::cout << _rendererID << std::endl;
         if(ModiSingleton::getInstance().getActiveMode() == Mode::TFEditor){
 
             updateTF((float)event->pos().x(),(float)event->pos().y(),(float)width(),(float)height());
@@ -131,6 +139,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
     if(_rightMouseDown){
         pickPosition(Core::Math::Vec2ui(event->pos().x(),event->pos().y()));
     }
+    GLMutex::getInstance().unlockContext();
 }
 
 void OpenGLWidget::wheelEvent(QWheelEvent *event){
@@ -167,6 +176,15 @@ void OpenGLWidget::renderFont(){
         //draw all stuff needed
         _fontImage->setFontColor(255,0,255);
         _fontImage->drawText(5,12,"Hello Text in Renderer");
+        std::string pickPosition = "Picking ("+
+                                    std::to_string(_data->getSelectedCTSpacePosition().x)+
+                                    ","+
+                                    std::to_string(_data->getSelectedCTSpacePosition().y)+
+                                    ","+
+                                    std::to_string(_data->getSelectedCTSpacePosition().z)+
+                                    ")";
+
+        _fontImage->drawText(5,height()-20,pickPosition);
         _fontImage->finishText();
         _renderer->setFontData((char*)_fontImage->getImageData());
     }

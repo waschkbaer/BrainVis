@@ -883,16 +883,7 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
         if(data.x != 0 && data.y != 0 && data.z != 0)
             VolumePos = Vec4f((float)data.x/255.0f,(float)data.y/255.0f,(float)data.z/255.0f,(float)data.w/255.0f);
 
-        std::cout << VolumePos << std::endl;
-        Mat4f s;
-        Vec3f scal;
-        scal.x = _data->getCTAspectRatio().x*_data->getCTDimensions().x;
-        scal.y = _data->getCTAspectRatio().y*_data->getCTDimensions().y;
-        scal.z = _data->getCTAspectRatio().z*_data->getCTDimensions().z;
-        std::cout << "size: "<< scal << std::endl;
-        s.Scaling(scal);
-        Vec4f t = s*VolumePos;
-        std::cout << "inverscal" << t << std::endl;
+
 
         _data->setSelectedSlices(Vec3f(VolumePos.x,VolumePos.y,VolumePos.z));
 
