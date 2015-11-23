@@ -70,7 +70,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QSlider" name="verticalSlider">
+        <widget class="QSlider" name="depthSelector">
          <property name="maximumSize">
           <size>
            <width>40</width>

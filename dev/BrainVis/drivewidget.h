@@ -29,8 +29,6 @@ private:
     void addImageEntry(std::string name, int depth);
 
 private slots:
-    void on_verticalSlider_sliderMoved(int position);
-
     void on_addElectrode_clicked();
 
     void on_removeButton_clicked();
@@ -43,9 +41,11 @@ private slots:
 
     void update();
 
+    void on_depthSelector_sliderMoved(int position);
+
 private:
-    Ui::DriveWidget *ui;
-    std::shared_ptr<DataHandle> _data;
+    Ui::DriveWidget                                 *ui;
+    std::shared_ptr<DataHandle>                     _data;
 
     std::map<std::string,ElectrodeBaseFrame*>       _electrodeFrames;
     uint64_t                                        _latestStatus;

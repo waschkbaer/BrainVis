@@ -1,12 +1,23 @@
 #include "ElectrodeManager.h"
 
 ElectrodeManager::ElectrodeManager():
-_electrodes(){
+_electrodes(),
+_trackedElectrode("none"){
 }
 
 ElectrodeManager::~ElectrodeManager(){
 
 }
+std::string ElectrodeManager::getTrackedElectrode() const
+{
+    return _trackedElectrode;
+}
+
+void ElectrodeManager::setTrackedElectrode(const std::string &trackedElectrode)
+{
+    _trackedElectrode = trackedElectrode;
+}
+
 
 std::shared_ptr<iElectrode> ElectrodeManager::getElectrode(std::string name){
     if(_electrodes.find(name) != _electrodes.end()){

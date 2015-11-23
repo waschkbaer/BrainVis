@@ -35,7 +35,25 @@ int ElectrodeBaseFrame::childCount() const
 {
     return _childCount;
 }
+void ElectrodeBaseFrame::on_radioButton_clicked(){
+    if(_isSelected->isChecked()){
+        ElectrodeManager::getInstance().setTrackedElectrode(_electrodeName);
+    }else{
+        if( std::strcmp(ElectrodeManager::getInstance().getTrackedElectrode().c_str(),_electrodeName.c_str()) != 0){
+            ElectrodeManager::getInstance().setTrackedElectrode("none");
+        }
+    }
+}
 
+void ElectrodeBaseFrame::checkToDisableRadioButton(){
+    if( std::strcmp(ElectrodeManager::getInstance().getTrackedElectrode().c_str(),_electrodeName.c_str()) != 0){
+            _isSelected->setChecked(false);
+    }
+}
+
+bool ElectrodeBaseFrame::isCheckedForTracking(){
+    return _isSelected->isChecked();
+}
 
 void ElectrodeBaseFrame::resetFrame(){
     while ( QWidget* w = findChild<QWidget*>() ){
@@ -47,7 +65,16 @@ void ElectrodeBaseFrame::resetFrame(){
     QFont font("Arial",10,QFont::Bold);
     textLabel->setFont(font);
     this->layout()->addWidget(textLabel);
+
+    _isSelected = new QRadioButton("track");
+    this->layout()->addWidget(_isSelected);
+    connect(_isSelected,SIGNAL(clicked()),this,SLOT(on_radioButton_clicked()));
+
+    if( std::strcmp(ElectrodeManager::getInstance().getTrackedElectrode().c_str(),_electrodeName.c_str()) == 0){
+            _isSelected->setChecked(true);
+    }
 }
+
 
 
 void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data, ImageSetting setting){
@@ -130,6 +157,11 @@ QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,s
 
     return base;
 }
+std::string ElectrodeBaseFrame::electrodeName() const
+{
+    return _electrodeName;
+}
+
 
 
 QImage* ElectrodeBaseFrame::createFFTImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData, Core::Math::Vec2d powerRange){

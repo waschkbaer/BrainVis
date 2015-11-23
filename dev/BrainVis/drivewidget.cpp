@@ -49,12 +49,6 @@ DriveWidget::~DriveWidget()
     delete ui;
 }
 
-void DriveWidget::on_verticalSlider_sliderMoved(int position)
-{
-    _data->setDisplayedDriveRange(Vec2i(-10,position));
-}
-
-
 void DriveWidget::addTrajectory(std::string name, std::shared_ptr<iElectrode> electrode){
 
 }
@@ -91,6 +85,10 @@ void DriveWidget::on_removeButton_clicked()
         if(_electrodeFrames.find(selection) != _electrodeFrames.end()){
             ElectrodeBaseFrame* frame = _electrodeFrames.find(selection)->second;
 
+            if(ElectrodeManager::getInstance().getTrackedElectrode() == selection){
+                ElectrodeManager::getInstance().setTrackedElectrode("none");
+            }
+
             //find better solution, not sure if this will delete all children
             frame->close();
             ui->dataPanel->layout()->removeWidget(_electrodeFrames.find(selection)->second);
@@ -104,6 +102,21 @@ void DriveWidget::on_removeButton_clicked()
 
 void DriveWidget::update(){
     uint64_t curStatus = _data->getDataSetStatus();
+
+    for(auto it = _electrodeFrames.begin(); it != _electrodeFrames.end();it++){
+        ElectrodeBaseFrame* frame = it->second;
+        frame->checkToDisableRadioButton();
+
+        if(frame->isCheckedForTracking()){
+            Core::Math::Vec2d range = ElectrodeManager::getInstance().getElectrode(frame->electrodeName())->getDepthRange();
+            int curPos = _data->getDisplayedDriveRange().y;
+            if(curPos > range.y){
+                ui->depthSelector->setSliderPosition(range.y);
+                _data->setDisplayedDriveRange(Vec2i(range.x,range.y));
+            }
+            ui->depthSelector->setRange((int)range.x,(int)range.y);
+        }
+    }
 
     if(_latestStatus < curStatus || _forceUpdate){
         _latestStatus = curStatus;
@@ -144,4 +157,9 @@ void DriveWidget::on_fftButton_clicked()
     _imageSetting = ImageSetting::FFT;
     _forceUpdate = true;
     update();
+}
+
+void DriveWidget::on_depthSelector_sliderMoved(int position)
+{
+    _data->setDisplayedDriveRange(Vec2i(-10,position));
 }

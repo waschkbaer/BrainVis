@@ -58,7 +58,9 @@ void FontImagePainter::resizeImage(int width, int height){
 }
 
 void FontImagePainter::setFontColor(int r, int g, int b){
-
+    QPen myPen(Qt::white, 2, Qt::SolidLine);
+    myPen.setColor(QColor(r,g,b));
+    _painter->setPen(myPen);
 }
 
 void FontImagePainter::finishText(){

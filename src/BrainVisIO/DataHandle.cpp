@@ -642,6 +642,11 @@ bool DataHandle::calculateCTUnitVectors(){
 void DataHandle::incrementStatus(){
     _dataSetStatus++;
 }
+Core::Math::Vec3f DataHandle::getSelectedWorldSpacePositon() const
+{
+    return _vSelectedWorldSpacePositon;
+}
+
 Core::Math::Vec3f DataHandle::getSelectedCTSpacePosition() const
 {
     return _vSelectedCTSpacePosition;

@@ -455,7 +455,7 @@ void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
     _rayCastShader->Set("viewFragmentMatrix",_view);
     _rayCastShader->Set("tfScaling",tfScaling);
     _rayCastShader->Set("eyePos",_camera->GetWorldPosition());
-    _rayCastShader->Set("focusWorldPos",_data->getCTCenter()*_data->getCTScale());
+    _rayCastShader->Set("focusWorldPos",_data->getSelectedWorldSpacePositon());
 
     _volumeBox->paint();
 
@@ -1208,35 +1208,5 @@ void DICOMRenderer::create2DGeometry(){
     verts[10]= topR.z;
     verts[11]= topR.y;
     _renderPlaneY = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(verts,_windowSize));
-
-    /*quad[0] = topL.x;
-    quad[1] = topL.y;
-    quad[2] = topL.z;
-    quad[3] = botL.x;
-    quad[4] = botL.y;
-    quad[5] = botL.z;
-
-    quad[6] = botL.x;
-    quad[7] = botL.y;
-    quad[8] = botL.z;
-    quad[9] = botR.x;
-    quad[10] = botR.y;
-    quad[11] = botR.z;
-
-    quad[12] = botR.x;
-    quad[13] = botR.y;
-    quad[14] = botR.z;
-    quad[15] = topR.x;
-    quad[16] = topR.y;
-    quad[17] = topR.z;
-
-    quad[18] = topR.x;
-    quad[19] = topR.y;
-    quad[20] = topR.z;
-    quad[21] = topL.x;
-    quad[22] = topL.y;
-    quad[23] = topL.z;
-
-    _YAxisSlice = std::unique_ptr<GLBoundingQuad>(new GLBoundingQuad(quad));*/
 
 }

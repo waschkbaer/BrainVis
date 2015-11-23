@@ -176,6 +176,8 @@ public:
 
     Core::Math::Vec3f getSelectedCTSpacePosition() const;
 
+    Core::Math::Vec3f getSelectedWorldSpacePositon() const;
+
 private:
     void updateMRWorld();
     void incrementStatus();

@@ -26,6 +26,9 @@ public:
 
     void clear();
 
+    std::string getTrackedElectrode() const;
+    void setTrackedElectrode(const std::string &trackedElectrode);
+
 protected:
 
 private:
@@ -34,6 +37,10 @@ private:
 
     std::map<std::string,std::shared_ptr<iElectrode>>   _electrodes;
     std::vector<std::string>                            _names;
+
+    bool                                                _activeSide; //true = left, false = right
+
+    std::string                                         _trackedElectrode;
 };
 
 

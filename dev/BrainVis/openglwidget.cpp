@@ -174,8 +174,28 @@ void OpenGLWidget::renderFont(){
         _fontImage->clearImage();
 
         //draw all stuff needed
-        _fontImage->setFontColor(255,0,255);
-        _fontImage->drawText(5,12,"Hello Text in Renderer");
+        _fontImage->setFontColor(0,128,255);
+        //string : left electrode:[ depth -5, {LAnt: ?}{LCen: ?}{LLat: ?} ]
+        std::string leftElec = "left electrode:[ {displayed depth: "+
+                                std::to_string(_data->getDisplayedDriveRange().y)+
+                                "},{depth range:("+
+                                std::to_string((int)(_data->getElectrode("LCen")->getDepthRange().x))+
+                                ","+
+                                std::to_string((int)(_data->getElectrode("LCen")->getDepthRange().y))+
+                                "} ]";
+        _fontImage->drawText(2,14,leftElec);
+
+        _fontImage->setFontColor(0,128,255);
+        std::string rightElec = "right electrode:[ {displayed depth: "+
+                                std::to_string(_data->getDisplayedDriveRange().y)+
+                                "},{depth range:("+
+                                std::to_string((int)(_data->getElectrode("RCen")->getDepthRange().x))+
+                                ","+
+                                std::to_string((int)(_data->getElectrode("RCen")->getDepthRange().y))+
+                                "} ]";
+        _fontImage->drawText(2,28,rightElec);
+
+        _fontImage->setFontColor(255,255,0);
         std::string pickPosition = "Picking ("+
                                     std::to_string(_data->getSelectedCTSpacePosition().x)+
                                     ","+
@@ -184,7 +204,7 @@ void OpenGLWidget::renderFont(){
                                     std::to_string(_data->getSelectedCTSpacePosition().z)+
                                     ")";
 
-        _fontImage->drawText(5,height()-20,pickPosition);
+        _fontImage->drawText(2,height()-2,pickPosition);
         _fontImage->finishText();
         _renderer->setFontData((char*)_fontImage->getImageData());
     }

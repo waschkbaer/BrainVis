@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QLayout>
+#include <QRadioButton>
 #include <string>
 #include <memory>
 #include <BrainVisIO/DataHandle.h>
@@ -11,6 +12,7 @@
 
 
 class ElectrodeBaseFrame: public QFrame{
+    Q_OBJECT
 public:
     ElectrodeBaseFrame(std::string electrodeName, QWidget* parent = 0);
     ~ElectrodeBaseFrame();
@@ -21,17 +23,26 @@ public:
     void resetFrame();
 
     void createFrameEntrys(std::shared_ptr<DataHandle> data, ImageSetting setting);
+    void checkToDisableRadioButton();
+    bool isCheckedForTracking();
 
     QImage* createFFTImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData, Core::Math::Vec2d powerRange);
     QImage* createSignalImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData);
     QImage* createProbabilityImaga(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData);
+    std::string electrodeName() const;
+
+public slots:
+    void on_radioButton_clicked();
+
 
 protected:
     QFrame* createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange, ImageSetting setting);
 
+
 private:
-    int             _childCount;
-    std::string     _electrodeName;
+    int                 _childCount;
+    std::string         _electrodeName;
+    QRadioButton*       _isSelected;
 
     std::map<int,QImage*> _spectralImages;
     std::map<int,QImage*> _signalImages;
