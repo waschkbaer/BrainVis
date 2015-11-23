@@ -51,6 +51,11 @@ void main(void)
     finalColor.xyz = topBG*vScreenPosition.y + (1.0f -vScreenPosition.y)*bottomBG;
   }
 
-  outputColor = vec4(finalColor+font,1);
+  if(font.x == 0 && font.y == 0 && font.z == 0){
+    outputColor = vec4(finalColor,1);
+  }else{
+    outputColor = vec4(font,1);
+  }
+  
 }
 
