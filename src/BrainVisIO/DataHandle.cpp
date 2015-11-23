@@ -284,10 +284,6 @@ void DataHandle::setSelectedSlices(Core::Math::Vec3f slides)
                                         distance.z * getCTeZ())+ Vec3f(100,100,100);
     _vSelectedWorldSpacePositon = worldSpacePosition.xyz();
 
-    std::cout << "volumespace" << _vSelectedVolumeSpacePosition << std::endl;
-    std::cout << "worldSpacePicking" << _vSelectedWorldSpacePositon << std::endl;
-    std::cout << "CT Space Pos"<< _vSelectedCTSpacePosition<<std::endl;
-
     incrementStatus();
 }
 
@@ -667,5 +663,25 @@ std::shared_ptr<iElectrode> DataHandle::getElectrode(int i){
         return ElectrodeManager::getInstance().getElectrode(i);
     }else{
         return nullptr;
+    }
+}
+
+void DataHandle::checkFocusPoint(){
+    if(ElectrodeManager::getInstance().getTrackedElectrode() != "none"){
+        std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
+        if(elec == nullptr) return;
+
+        Vec3f CTSpacePosition = elec->getData(getDisplayedDriveRange().y)->getDataPosition();
+
+        CTSpacePosition = CTSpacePosition-Vec3f(100,100,100);
+        Vec3f worldSpace =  getCTeX()*CTSpacePosition.x +
+                            getCTeY()*CTSpacePosition.y+
+                            getCTeZ()*CTSpacePosition.z;
+        Vec3f volumeSpace = (worldSpace/_CTScale)+this->getCTCenter()+Vec3f(0.5f,0.5f,0.5f);
+
+        if(volumeSpace != getSelectedSlices()){
+            setSelectedSlices(volumeSpace);
+            incrementStatus();
+        }
     }
 }

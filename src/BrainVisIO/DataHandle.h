@@ -178,6 +178,8 @@ public:
 
     Core::Math::Vec3f getSelectedWorldSpacePositon() const;
 
+    void checkFocusPoint();
+
 private:
     void updateMRWorld();
     void incrementStatus();
