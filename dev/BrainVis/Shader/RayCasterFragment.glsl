@@ -102,11 +102,9 @@ void main(void)
           value *= tfScaling;
           vec4 color =  texture(transferfunction, value);
         	
-          finalColor.xyz = finalColor.xyz + (1.0f-finalColor.w)*color.xyz;
+          finalColor.xyz = (1.0f-color.w)*finalColor.xyz + (color.w)*color.xyz;
           finalColor.w = finalColor.w+color.w;
-      	   if(finalColor.w != 0.0){
 
-      	   }
           if(finalColor.w >= 1.0f){  
             viewPos = viewFragmentMatrix*viewPos;
             outputColor = vec4(finalColor.xyz,viewPos.z);

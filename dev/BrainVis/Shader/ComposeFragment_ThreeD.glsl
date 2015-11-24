@@ -36,6 +36,12 @@ void main(void)
   }else{
     depth = raycastColorMR.w;
   }
+  
+  if(mrctblend == 1.0){
+    depth = raycastColorCT.w;
+  }else if(mrctblend == 0.0){
+    depth = raycastColorMR.w;
+  }
 
   if(depth < boundingColor.w &&
 	(boundingColor.x != 0.0f ||
