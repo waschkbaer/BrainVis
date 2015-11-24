@@ -31,7 +31,7 @@ void main(void)
 
   float depth = -8000.0f;
 
-  if(raycastColorCT.w < raycastColorMR.w){
+  if(raycastColorCT.w > raycastColorMR.w){
     depth = raycastColorCT.w;
   }else{
     depth = raycastColorMR.w;
