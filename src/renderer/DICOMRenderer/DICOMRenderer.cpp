@@ -24,7 +24,10 @@ _viewY(),
 _viewZ(),
 _datasetStatus(0),
 _clipMode(DICOMClipMode::none),
-_electrodeGeometry(nullptr)
+_electrodeGeometry(nullptr),
+  _vXZoom(2,2,2),
+  _vYZoom(2,2,2),
+  _vZZoom(2,2,2)
 {
 _timer.start();
 _elapsedTime = _timer.elapsed();
@@ -171,15 +174,15 @@ void DICOMRenderer::ChangeSlide(int slidedelta){
                                 _view = _camera->buildLookAt();
                                 break;
         case RenderMode::ZAxis :
-                                currentSlice.z +=slidedelta* (1.0f/(float)_data->getCTDimensions().z);
+                                currentSlice.z +=slidedelta* (1.0f/(float)_data->getCTDimensions().z)/2.0f;
                                 _data->setSelectedSlices(currentSlice);
                                 break;
         case RenderMode::YAxis :
-                                currentSlice.y +=slidedelta* (1.0f/(float)_data->getCTDimensions().y);
+                                currentSlice.y +=slidedelta* (1.0f/(float)_data->getCTDimensions().y)/2.0f;
                                 _data->setSelectedSlices(currentSlice);
                                  break;
         case RenderMode::XAxis :
-                                currentSlice.x +=slidedelta* (1.0f/(float)_data->getCTDimensions().x);
+                                currentSlice.x +=slidedelta* (1.0f/(float)_data->getCTDimensions().x)/2.0f;
                                 _data->setSelectedSlices(currentSlice);
                                 break;
     }
@@ -716,13 +719,16 @@ void DICOMRenderer::SliceRendering(){
             drawSliceV2(_GL_CTVolume->GetGLID(),
                                             _data->getCTTransferScaling(),
                                             _TwoDCTVolumeFBO,
-                                            _TwoDCTPositionVolumeFBO);
+                                            _TwoDCTPositionVolumeFBO,
+                                            Vec3f(0,0,0));
 
             //drawSliceVolume(_GL_CTVolume->GetGLID(),_data->getCTTransferScaling(),_data->getCTScale(),_TwoDCTVolumeFBO,_TwoDCTPositionVolumeFBO,_data->getSelectedSlices(),Vec3f(0,0,0));
     }
     if(_GL_MRVolume != nullptr){
             drawSliceVolume(_GL_MRVolume->GetGLID(),_data->getMRTransferScaling(),_data->getMRScale(),_TwoDMRVolumeFBO,_TwoDMRPositionVolumeFBO,_data->getSelectedSlices(),_data->getMROffset(),false);
     }
+    drawSliceElectrode();
+
     drawSliceCompositing();
 }
 
@@ -858,9 +864,10 @@ void DICOMRenderer::drawSliceVolume(GLuint volumeID,
 void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                 float transferScaling,
                                 std::shared_ptr<GLFBOTex> color,
-                                std::shared_ptr<GLFBOTex> position){
+                                std::shared_ptr<GLFBOTex> position,
+                                Vec3f VolumeTranslation){
     _targetBinder->Bind(color,position);
-    ClearBackground(Vec4f(1,0,0,0));
+    ClearBackground(Vec4f(0,0,0,-2000));
 
     glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -871,7 +878,6 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
     Mat4f translation;
     Mat4f world;
     scale.Scaling(_data->getCTScale());
-    zoom.Scaling(Vec3f(2,2,2));
 
     if(_GL_CTVolume != nullptr){
         _sliceShader->Enable();
@@ -892,6 +898,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _viewZ.BuildLookAt(Vec3f(0,0,400),Vec3f(0,0,0),Vec3f(0,1,0));
                                     translation.Translation(0,0,_data->getSelectedSlices().z-0.5f);
                                     world = translation*scale;
+                                    zoom.Scaling(_vZZoom);
 
                                     _sliceShader->Set("axis",2);
                                     _sliceShader->Set("projection",_orthographicZAxis);
@@ -900,20 +907,6 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _sliceShader->Set("slide",_data->getSelectedSlices().z);
                                     _renderPlaneZ->paint();
 
-                                    //derpderp electrode---------------------
-                                    _electrodeGeometryShader->Enable();
-                                    _electrodeGeometryShader->Set("projectionMatrix",_orthographicZAxis);
-                                    _electrodeGeometryShader->Set("viewMatrix",_viewZ*zoom);
-
-                                    calculateElectrodeMatices();
-                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
-                                    _electrodeGeometry->paint();
-
-                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
-                                    _electrodeGeometry->paint();
-
-                                    _electrodeGeometryShader->Disable();
-                                    //derpderp electrode---------------------
                                     break;
                                     }
             case RenderMode::XAxis :{
@@ -922,6 +915,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _viewX.BuildLookAt(Vec3f(400,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
                                     translation.Translation(_data->getSelectedSlices().x-0.5f,0,0);
                                     world = translation*scale;
+                                    zoom.Scaling(_vXZoom);
 
                                     _sliceShader->Set("axis",0);
                                     _sliceShader->Set("projection",_orthographicXAxis);
@@ -930,20 +924,6 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _sliceShader->Set("slide",_data->getSelectedSlices().x);
                                     _renderPlaneX->paint();
 
-                                    //derpderp electrode---------------------
-                                    _electrodeGeometryShader->Enable();
-                                    _electrodeGeometryShader->Set("projectionMatrix",_orthographicXAxis);
-                                    _electrodeGeometryShader->Set("viewMatrix",_viewX*zoom);
-
-                                    calculateElectrodeMatices();
-                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
-                                    _electrodeGeometry->paint();
-
-                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
-                                    _electrodeGeometry->paint();
-
-                                    _electrodeGeometryShader->Disable();
-                                    //derpderp electrode---------------------
                                     break;
                                     }
             case RenderMode::YAxis :{
@@ -952,6 +932,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _viewY.BuildLookAt(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1));
                                     translation.Translation(0,_data->getSelectedSlices().y-0.5f,0);
                                     world = translation*scale;
+                                    zoom.Scaling(_vYZoom);
 
                                     _sliceShader->Set("axis",1);
                                     _sliceShader->Set("projection",_orthographicYAxis);
@@ -959,22 +940,6 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _sliceShader->Set("world",world);
                                     _sliceShader->Set("slide",_data->getSelectedSlices().y);
                                     _renderPlaneY->paint();
-
-
-                                    //derpderp electrode---------------------
-                                    _electrodeGeometryShader->Enable();
-                                    _electrodeGeometryShader->Set("projectionMatrix",_orthographicYAxis);
-                                    _electrodeGeometryShader->Set("viewMatrix",_viewY*zoom);
-
-                                    calculateElectrodeMatices();
-                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
-                                    _electrodeGeometry->paint();
-
-                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
-                                    _electrodeGeometry->paint();
-
-                                    _electrodeGeometryShader->Disable();
-                                    //derpderp electrode---------------------
 
                                     break;
                                     }
@@ -989,6 +954,94 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
 
 void DICOMRenderer::drawSliceElectrode(){
 
+    _targetBinder->Bind(_TwoDElectrodeFBO);
+    ClearBackground(Vec4f(0,0,0,-90000));
+
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
+    Mat4f zoom;
+
+
+    Mat4f curProj;
+    Mat4f curView;
+
+    switch(_activeRenderMode){
+        case RenderMode::ZAxis :{
+                                curProj = _orthographicZAxis;
+                                zoom.Scaling(_vZZoom);
+                                curView = _viewZ*zoom;
+                                break;
+                                }
+        case RenderMode::XAxis :{
+                                curProj = _orthographicXAxis;
+                                zoom.Scaling(_vXZoom);
+                                curView = _viewX*zoom;
+                                break;
+                                }
+        case RenderMode::YAxis :{
+                                curProj = _orthographicYAxis;
+                                zoom.Scaling(_vYZoom);
+                                curView = _viewY*zoom;
+                                break;
+                                }
+    };
+
+    _electrodeGeometryShader->Enable();
+    _electrodeGeometryShader->Set("projectionMatrix",curProj);
+    _electrodeGeometryShader->Set("viewMatrix",curView);
+
+    calculateElectrodeMatices();
+    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
+    _electrodeGeometry->paint();
+
+    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
+    _electrodeGeometry->paint();
+
+    _electrodeGeometryShader->Disable();
+
+
+    //draw the trajectories
+    Vec3f position;
+    Mat4f scaleT;
+    Mat4f transT;
+    scaleT.Scaling(1.0,1.0,1.0);
+    Mat4f worldScaling;
+    worldScaling.Scaling(_data->getCTScale());
+    Vec4f centerWorld = (worldScaling*Vec4f(_data->getCTCenter(),1));
+
+    _sphereFFTShader->Enable();
+    _sphereFFTShader->Set("projectionMatrix",curProj);
+    _sphereFFTShader->Set("viewMatrix",curView);
+    _sphereFFTShader->Set("fftRange",_data->getSpectralRange());
+    _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
+
+    for(int i = 0; i < 6;i++){
+        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if(electrode != nullptr){
+            for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
+                std::shared_ptr<iMERData> data = electrode->getData(k);
+                if(data != nullptr){
+
+                    position = data->getDataPosition()-Vec3f(100,100,100);
+                    position = centerWorld.xyz() + _data->getCTeX()*position.x + _data->getCTeY()*position.y + _data->getCTeZ()*position.z;
+                    transT.Translation(position);
+                    transT = scaleT*transT;
+                    _sphereFFTShader->Set("fftValue",(float)data->getSpectralAverage());
+                    _sphereFFTShader->Set("worldMatrix",transT);
+                    _sphereFFTShader->Set("fftRange",Vec2f(electrode->getSpectralPowerRange().x,electrode->getSpectralPowerRange().y));
+
+                    _sphere->paint();
+                }
+            }
+        }
+    }
+
+    _sphereFFTShader->Disable();
+
+
+    glDisable(GL_DEPTH_TEST);
 }
 
 void DICOMRenderer::drawSliceTop(){

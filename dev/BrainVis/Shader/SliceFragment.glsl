@@ -14,6 +14,7 @@ uniform float radius = 0.01f;
 
 // INPUT VARIABLES
 in vec3 vScreenPosition;
+in vec3 vViewPos;
 
 // OUTPUT VARIABLES
 layout(location=0) out vec4 outputColor;
@@ -32,7 +33,7 @@ void main(void)
   outputColor = texture(transferfunction, value);
   outputPosition = vec4(coord,1);
 
-  if(length(coord-target1) < radius){
+  /*if(length(coord-target1) < radius){
   	outputColor = vec4(0,1,0,1);
   }else if(length(coord-target2) < radius){
   	outputColor = vec4(0,1,0,1);
@@ -40,6 +41,7 @@ void main(void)
   	outputColor = vec4(1,0,0,1);
   }else if(length(coord-entry2) < radius){
   	outputColor = vec4(1,0,0,1);
-  }
+  }*/
+  outputColor.w = vViewPos.z;
 }
 

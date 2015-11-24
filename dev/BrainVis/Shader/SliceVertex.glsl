@@ -8,6 +8,7 @@ uniform int axis = 0;
 
 // OUTPUT VARIABLES
 out vec3 vScreenPosition;
+out vec3 vViewPos;
 
 // UNIFORM VARIABLES
 uniform mat4 projection;
@@ -37,6 +38,6 @@ void main(void)
   }
   
   gl_Position = projection*pos;
-
+  vViewPos = pos.xyz;
  
 }

@@ -24,5 +24,18 @@ void main(void)
   vec4 top = texture(topImage,vScreenPosition);
 
   outputColor = sliceCT*mrctblend+sliceMR*(1.0f-mrctblend);
+
+  /*if(electrode.w > sliceCT.w){
+  	outputColor = electrode;
+  }*/
+  if( (sliceCT.w-electrode.w)*(sliceCT.w-electrode.w) < 1.0){
+  	outputColor = electrode;
+  	
+  }else if(electrode.w > sliceCT.w){
+  	float distFactor = length(electrode.w - sliceCT.w)/5.0f;
+  	distFactor = clamp(distFactor,0,1);
+  	distFactor = pow(distFactor,2);
+  	outputColor = outputColor*(distFactor)+electrode*(1.0-distFactor);
+  }
 }
 

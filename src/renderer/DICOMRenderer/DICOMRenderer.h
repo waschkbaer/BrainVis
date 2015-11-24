@@ -114,7 +114,8 @@ private:
         void drawSliceV2(GLuint volumeID,
                          float transferScaling,
                          std::shared_ptr<GLFBOTex> color,
-                         std::shared_ptr<GLFBOTex> position);
+                         std::shared_ptr<GLFBOTex> position,
+                         Vec3f VolumeTranslation);
 
         //G-Frame
         bool _foundFrame;
@@ -168,6 +169,7 @@ private:
         std::unique_ptr<GLModel>         _NShape1;
         std::unique_ptr<GLModel>         _NShape2;
 
+        //3D View
         std::shared_ptr<GLFBOTex>       _rayEntryCT;
         std::shared_ptr<GLFBOTex>       _rayCastColorCT;
         std::shared_ptr<GLFBOTex>       _rayCastPositionCT;
@@ -176,6 +178,7 @@ private:
         std::shared_ptr<GLFBOTex>       _rayCastColorMR;
         std::shared_ptr<GLFBOTex>       _rayCastPositionMR;
 
+        //2D view
         std::shared_ptr<GLFBOTex>       _TwoDCTVolumeFBO;
         std::shared_ptr<GLFBOTex>       _TwoDCTPositionVolumeFBO;
         std::shared_ptr<GLFBOTex>       _TwoDMRVolumeFBO;
@@ -216,6 +219,10 @@ private:
 
         Mat4f                           _electrodeLeftMatrix;
         Mat4f                           _electrodeRightMatix;
+
+        Vec3f                           _vXZoom;
+        Vec3f                           _vYZoom;
+        Vec3f                           _vZZoom;
 };
 
 
