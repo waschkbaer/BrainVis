@@ -32,6 +32,14 @@ void main(void)
   outputColor = texture(transferfunction, value);
   outputPosition = vec4(coord,1);
 
- // outputColor = vec4(coord,1);
+  if(length(coord-target1) < radius){
+  	outputColor = vec4(0,1,0,1);
+  }else if(length(coord-target2) < radius){
+  	outputColor = vec4(0,1,0,1);
+  }else if(length(coord-entry1) < radius){
+  	outputColor = vec4(1,0,0,1);
+  }else if(length(coord-entry2) < radius){
+  	outputColor = vec4(1,0,0,1);
+  }
 }
 

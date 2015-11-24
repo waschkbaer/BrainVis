@@ -713,17 +713,15 @@ void DICOMRenderer::drawCompositing(){
 void DICOMRenderer::SliceRendering(){
 
     if(_GL_CTVolume != nullptr){
-        if(_activeRenderMode == RenderMode::ZAxis){
             drawSliceV2(_GL_CTVolume->GetGLID(),
                                             _data->getCTTransferScaling(),
-                        _TwoDCTVolumeFBO,_TwoDCTPositionVolumeFBO);
-        }else{
-            drawSliceVolume(_GL_CTVolume->GetGLID(),_data->getCTTransferScaling(),_data->getCTScale(),_TwoDCTVolumeFBO,_TwoDCTPositionVolumeFBO,_data->getSelectedSlices(),Vec3f(0,0,0));
+                                            _TwoDCTVolumeFBO,
+                                            _TwoDCTPositionVolumeFBO);
 
-        }
+            //drawSliceVolume(_GL_CTVolume->GetGLID(),_data->getCTTransferScaling(),_data->getCTScale(),_TwoDCTVolumeFBO,_TwoDCTPositionVolumeFBO,_data->getSelectedSlices(),Vec3f(0,0,0));
     }
     if(_GL_MRVolume != nullptr){
-        drawSliceVolume(_GL_MRVolume->GetGLID(),_data->getMRTransferScaling(),_data->getMRScale(),_TwoDMRVolumeFBO,_TwoDMRPositionVolumeFBO,_data->getSelectedSlices(),_data->getMROffset(),false);
+            drawSliceVolume(_GL_MRVolume->GetGLID(),_data->getMRTransferScaling(),_data->getMRScale(),_TwoDMRVolumeFBO,_TwoDMRPositionVolumeFBO,_data->getSelectedSlices(),_data->getMROffset(),false);
     }
     drawSliceCompositing();
 }
@@ -861,55 +859,130 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                 float transferScaling,
                                 std::shared_ptr<GLFBOTex> color,
                                 std::shared_ptr<GLFBOTex> position){
-    _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
-    //_orthographicZAxis.Ortho(-400,400,-400,400,0.001f,1000.0f);
-
-    Mat4f viewInZ;
-    viewInZ.BuildLookAt(Vec3f(0,0,400),Vec3f(0,0,0),Vec3f(0,1,0));
-
-
     _targetBinder->Bind(color,position);
-    ClearBackground(Vec4f(0,0,0,0));
+    ClearBackground(Vec4f(1,0,0,0));
 
     glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
     Mat4f scale;
+    Mat4f zoom;
     Mat4f translation;
     Mat4f world;
     scale.Scaling(_data->getCTScale());
-    translation.Translation(0,0,_data->getSelectedSlices().z-0.5f);
+    zoom.Scaling(Vec3f(2,2,2));
 
     if(_GL_CTVolume != nullptr){
         _sliceShader->Enable();
         _sliceShader->SetTexture3D("volume",volumeID,0);
         _sliceShader->SetTexture1D("transferfunction",_transferFunctionTex->GetGLID(),1);
         _sliceShader->Set("tfScaling",transferScaling);
-        _sliceShader->Set("projection",_orthographicZAxis);
-        _sliceShader->Set("view",viewInZ);
 
-        world = translation*scale;
-        std::cout << world<< std::endl;
-        _sliceShader->Set("world",world);
+        _sliceShader->Set("target1",_data->getLeftSTN()._endVolumeSpace);
+        _sliceShader->Set("target2",_data->getRightSTN()._endVolumeSpace);
+        _sliceShader->Set("entry1",_data->getLeftSTN()._startVolumeSpace);
+        _sliceShader->Set("entry2",_data->getRightSTN()._startVolumeSpace);
+        _sliceShader->Set("radius",0.03f);
 
-        _sliceShader->Set("slide",_data->getSelectedSlices().z);
+        switch(_activeRenderMode){
+            case RenderMode::ZAxis :{
+                                    //z dependend
+                                    _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
+                                    _viewZ.BuildLookAt(Vec3f(0,0,400),Vec3f(0,0,0),Vec3f(0,1,0));
+                                    translation.Translation(0,0,_data->getSelectedSlices().z-0.5f);
+                                    world = translation*scale;
 
-        _renderPlaneZ->paint();
+                                    _sliceShader->Set("axis",2);
+                                    _sliceShader->Set("projection",_orthographicZAxis);
+                                    _sliceShader->Set("view",_viewZ*zoom);
+                                    _sliceShader->Set("world",world);
+                                    _sliceShader->Set("slide",_data->getSelectedSlices().z);
+                                    _renderPlaneZ->paint();
+
+                                    //derpderp electrode---------------------
+                                    _electrodeGeometryShader->Enable();
+                                    _electrodeGeometryShader->Set("projectionMatrix",_orthographicZAxis);
+                                    _electrodeGeometryShader->Set("viewMatrix",_viewZ*zoom);
+
+                                    calculateElectrodeMatices();
+                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
+                                    _electrodeGeometry->paint();
+
+                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
+                                    _electrodeGeometry->paint();
+
+                                    _electrodeGeometryShader->Disable();
+                                    //derpderp electrode---------------------
+                                    break;
+                                    }
+            case RenderMode::XAxis :{
+                                    //x dependend
+                                    _orthographicXAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
+                                    _viewX.BuildLookAt(Vec3f(400,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
+                                    translation.Translation(_data->getSelectedSlices().x-0.5f,0,0);
+                                    world = translation*scale;
+
+                                    _sliceShader->Set("axis",0);
+                                    _sliceShader->Set("projection",_orthographicXAxis);
+                                    _sliceShader->Set("view",_viewX*zoom);
+                                    _sliceShader->Set("world",world);
+                                    _sliceShader->Set("slide",_data->getSelectedSlices().x);
+                                    _renderPlaneX->paint();
+
+                                    //derpderp electrode---------------------
+                                    _electrodeGeometryShader->Enable();
+                                    _electrodeGeometryShader->Set("projectionMatrix",_orthographicXAxis);
+                                    _electrodeGeometryShader->Set("viewMatrix",_viewX*zoom);
+
+                                    calculateElectrodeMatices();
+                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
+                                    _electrodeGeometry->paint();
+
+                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
+                                    _electrodeGeometry->paint();
+
+                                    _electrodeGeometryShader->Disable();
+                                    //derpderp electrode---------------------
+                                    break;
+                                    }
+            case RenderMode::YAxis :{
+                                    //y dependend
+                                    _orthographicYAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
+                                    _viewY.BuildLookAt(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1));
+                                    translation.Translation(0,_data->getSelectedSlices().y-0.5f,0);
+                                    world = translation*scale;
+
+                                    _sliceShader->Set("axis",1);
+                                    _sliceShader->Set("projection",_orthographicYAxis);
+                                    _sliceShader->Set("view",_viewY*zoom);
+                                    _sliceShader->Set("world",world);
+                                    _sliceShader->Set("slide",_data->getSelectedSlices().y);
+                                    _renderPlaneY->paint();
+
+
+                                    //derpderp electrode---------------------
+                                    _electrodeGeometryShader->Enable();
+                                    _electrodeGeometryShader->Set("projectionMatrix",_orthographicYAxis);
+                                    _electrodeGeometryShader->Set("viewMatrix",_viewY*zoom);
+
+                                    calculateElectrodeMatices();
+                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
+                                    _electrodeGeometry->paint();
+
+                                    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
+                                    _electrodeGeometry->paint();
+
+                                    _electrodeGeometryShader->Disable();
+                                    //derpderp electrode---------------------
+
+                                    break;
+                                    }
+        };
     }
 
-    _electrodeGeometryShader->Enable();
-    _electrodeGeometryShader->Set("projectionMatrix",_orthographicZAxis);
-    _electrodeGeometryShader->Set("viewMatrix",viewInZ);
 
-    calculateElectrodeMatices();
-    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
-    _electrodeGeometry->paint();
 
-    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
-    _electrodeGeometry->paint();
-
-    _electrodeGeometryShader->Disable();
 
     glDisable(GL_DEPTH_TEST);
 }

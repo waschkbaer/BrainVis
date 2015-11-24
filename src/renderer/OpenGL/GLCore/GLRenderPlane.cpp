@@ -24,27 +24,27 @@ static float PlaneData[32] =
 
 static float PlaneDataZ[32] =
 {
-  -1.0f, 1.0f, 0.0f,
-  -1.0f, -1.0f, 0.0f,
-  1.0f, -1.0f, 0.0f,
-  1.0f, 1.0f, 0.0f,
+  -0.5f, 0.5f, 0.0f,
+  -0.5f, -0.5f, 0.0f,
+  0.5f, -0.5f, 0.0f,
+  0.5f, 0.5f, 0.0f,
 };
 
 static float PlaneDataY[32] =
 {
-  -1.0f,  0.0f, 1.0f,
-  -1.0f,  0.0f, -1.0f,
-  1.0f,  0.0f, -1.0f,
-  1.0f,  0.0f, 1.0f,
+  -0.5f,  0.0f, 0.5f,
+  -0.5f,  0.0f, -0.5f,
+  0.5f,  0.0f, -0.5f,
+  0.5f,  0.0f, 0.5f,
 };
 
 
 static float PlaneDataX[32] =
 {
-  0.0f,-1.0f,   1.0f,
-  0.0f,-1.0f,   -1.0f,
-  0.0f,1.0f,   -1.0f,
-   0.0f,1.0f,  1.0f,
+  0.0f,-0.5f,   0.5f,
+  0.0f,-0.5f,   -0.5f,
+  0.0f,0.5f,   -0.5f,
+   0.0f,0.5f,  0.5f,
 };
 
 static int PlaneIndices[6]{
