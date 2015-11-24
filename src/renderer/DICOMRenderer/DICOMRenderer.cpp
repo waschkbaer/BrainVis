@@ -23,7 +23,8 @@ _viewX(),
 _viewY(),
 _viewZ(),
 _datasetStatus(0),
-_clipMode(DICOMClipMode::none)
+_clipMode(DICOMClipMode::none),
+_electrodeGeometry(nullptr)
 {
 _timer.start();
 _elapsedTime = _timer.elapsed();
@@ -306,6 +307,13 @@ bool DICOMRenderer::LoadShaderResources(){
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_frameSearchShader,sd)) return false;
 
+    vs.clear();
+    fs.clear();
+    vs.push_back("Shader/CubeVertex.glsl");
+    fs.push_back("Shader/ElectrodeGeometryFragment.glsl");
+    sd = ShaderDescriptor(vs,fs);
+    if(!LoadAndCheckShaders(_electrodeGeometryShader,sd)) return false;
+
     return true;
 }
 
@@ -331,6 +339,9 @@ bool DICOMRenderer::LoadGeometry(){
     _YAxisSlice = std::unique_ptr<GLBoundingQuadY>(new GLBoundingQuadY());
     _ZAxisSlice = std::unique_ptr<GLBoundingQuadZ>(new GLBoundingQuadZ());
     _sphere = std::unique_ptr<GLSphere>(new GLSphere());
+
+    _electrodeGeometry = std::unique_ptr<GLCylinder>(new GLCylinder(3,10));
+
     return true;
 }
 
@@ -607,8 +618,23 @@ void DICOMRenderer::drawPlaning(){
     _frontFaceShader->Set("worldMatrix",transT);
     _volumeBox->paint();
 
-
     _frontFaceShader->Disable();
+
+    _electrodeGeometryShader->Enable();
+    _electrodeGeometryShader->Set("projectionMatrix",_projection);
+    _electrodeGeometryShader->Set("viewMatrix",_view);
+
+    calculateElectrodeMatices();
+    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
+    _electrodeGeometry->paint();
+
+    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
+    _electrodeGeometry->paint();
+
+    _electrodeGeometryShader->Disable();
+
+
+
 
 
     //draw the trajectories
@@ -1179,4 +1205,83 @@ void DICOMRenderer::setClipMode(const DICOMClipMode &clipMode)
 {
     _clipMode = clipMode;
     _needsUpdate = true;
+}
+
+void DICOMRenderer::calculateElectrodeMatices(){
+    //left
+    Vec3f to,from;
+    float elecLength,dot,cross;
+    Mat4f Fm,G,U,S,T;
+
+    to = _data->getLeftSTN()._endWorldSpace-_data->getLeftSTN()._startWorldSpace;
+    elecLength = to.length()+5;
+    from = Vec3f(0,1,0);
+    to.normalize();
+
+    dot = from^to;
+    cross = ((from%to).length());
+
+    Fm;
+    Fm.m11 = from.x;
+    Fm.m21 = from.y;
+    Fm.m31 = from.z;
+
+    Fm.m12 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).x;
+    Fm.m22 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).y;
+    Fm.m32 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).z;
+
+    Fm.m13 = (to%from).x;
+    Fm.m23 = (to%from).y;
+    Fm.m33 = (to%from).z;
+
+
+    G;
+    G.m11 = dot;
+    G.m12 = cross;
+    G.m22 = dot;
+    G.m21 = -cross;
+
+    U = Fm*G*Fm.inverse();
+    S.Scaling(Vec3f(1,elecLength,1));
+
+    Vec3f outdir = ( _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace);
+    outdir.normalize();
+    T.Translation(_data->getLeftSTN()._startWorldSpace+  outdir*15.0f );
+
+    _electrodeLeftMatrix = S*U*T;
+    //LEFTEND;
+    to = _data->getRightSTN()._endWorldSpace-_data->getRightSTN()._startWorldSpace;
+    elecLength = to.length()+5;
+    to.normalize();
+
+    dot = from^to;
+    cross = ((from%to).length());
+
+    Fm;
+    Fm.m11 = from.x;
+    Fm.m21 = from.y;
+    Fm.m31 = from.z;
+
+    Fm.m12 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).x;
+    Fm.m22 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).y;
+    Fm.m32 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).z;
+
+    Fm.m13 = (to%from).x;
+    Fm.m23 = (to%from).y;
+    Fm.m33 = (to%from).z;
+
+
+    G;
+    G.m11 = dot;
+    G.m12 = cross;
+    G.m22 = dot;
+    G.m21 = -cross;
+
+    U = Fm*G*Fm.inverse();
+    S.Scaling(Vec3f(1,elecLength,1));
+    outdir = ( _data->getRightSTN()._startWorldSpace-_data->getRightSTN()._endWorldSpace);
+    outdir.normalize();
+    T.Translation(_data->getRightSTN()._startWorldSpace+  outdir*15.0f  );
+
+    _electrodeRightMatix = S*U*T;
 }

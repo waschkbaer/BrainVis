@@ -3,6 +3,7 @@
 
 #include <renderer/ShaderDescriptor.h>
 #include <renderer/OpenGL/GLCore/GLVolumeBox.h>
+#include <renderer/OpenGL/GLCore/GLBasicShapes.h>
 #include <renderer/OpenGL/GLCore/GLModel.h>
 #include <renderer/OpenGL/GLCore/GLBoundingBox.h>
 #include <renderer/OpenGL/GLCore/GLRenderPlane.h>
@@ -26,23 +27,9 @@
 #include <string>
 #include <vector>
 
-using Tuvok::Renderer::OpenGL::GLCore::GLProgram;
-using Tuvok::Renderer::OpenGL::GLCore::GLVolumeBox;
-using Tuvok::Renderer::OpenGL::GLCore::GLBoundingBox;
-using Tuvok::Renderer::OpenGL::GLCore::GLModel;
-using Tuvok::Renderer::OpenGL::GLCore::GLSphere;
-using Tuvok::Renderer::OpenGL::GLCore::GLBoundingQuad;
-using Tuvok::Renderer::OpenGL::GLCore::GLBoundingQuadX;
-using Tuvok::Renderer::OpenGL::GLCore::GLBoundingQuadY;
-using Tuvok::Renderer::OpenGL::GLCore::GLBoundingQuadZ;
-using Tuvok::Renderer::OpenGL::GLCore::GLRenderPlane;
-using Tuvok::Renderer::OpenGL::GLCore::GLFBOTex;
-using Tuvok::Renderer::OpenGL::GLCore::GLTexture3D;
-using Tuvok::Renderer::OpenGL::GLCore::GLTexture2D;
-using Tuvok::Renderer::OpenGL::GLCore::GLTexture1D;
-using Tuvok::Renderer::Camera;
-using Tuvok::Renderer::ShaderDescriptor;
-using Tuvok::Renderer::OpenGL::GLTargetBinder;
+using namespace Tuvok::Renderer;
+using namespace Tuvok::Renderer::OpenGL;
+using namespace Tuvok::Renderer::OpenGL::GLCore;
 using namespace Core::Math;
 
 class DICOMRenderer{
@@ -134,6 +121,8 @@ private:
 
         void searchGFrame(Vec2f range = Vec2f(0.45f,0.6f));
 
+        void calculateElectrodeMatices();
+
     private:
         RenderMode                      _activeRenderMode;
         GLint                           _displayFramebufferID;
@@ -154,11 +143,13 @@ private:
         std::shared_ptr<GLProgram>      _lineShader;
         std::shared_ptr<GLProgram>      _sphereFFTShader;
         std::shared_ptr<GLProgram>      _frameSearchShader;
+        std::shared_ptr<GLProgram>      _electrodeGeometryShader;
 
 
         std::unique_ptr<GLTargetBinder> _targetBinder;
         std::unique_ptr<GLVolumeBox>    _volumeBox;
         std::unique_ptr<GLRenderPlane>  _renderPlane;
+        std::unique_ptr<GLModel>        _electrodeGeometry;
 
         std::unique_ptr<GLRenderPlane>  _renderPlaneX;
         std::unique_ptr<GLRenderPlane>  _renderPlaneY;
@@ -217,6 +208,9 @@ private:
         uint64_t                        _datasetStatus;
 
         DICOMClipMode                   _clipMode;
+
+        Mat4f                           _electrodeLeftMatrix;
+        Mat4f                           _electrodeRightMatix;
 };
 
 
