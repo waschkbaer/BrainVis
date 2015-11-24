@@ -23,12 +23,6 @@ layout(location=1) out vec4 outputPosition;
 void main(void)
 {
   float value = 0.0f;
-  /*vec3 coord = vec3(0,0,0);
-  switch(axis){
-  	case 0 : coord = vec3(vScreenPosition.x, 1.0-vScreenPosition.y , vScreenPosition.z) ; break;
-  	case 1 : coord = vec3(vScreenPosition.x, vScreenPosition.z,  vScreenPosition.y); break;
-  	case 2 : coord = vec3(vScreenPosition.z, 1.0-vScreenPosition.y, vScreenPosition.x); break;
-  }*/
 
   vec3 coord = vScreenPosition;
   
@@ -38,14 +32,6 @@ void main(void)
   outputColor = texture(transferfunction, value);
   outputPosition = vec4(coord,1);
 
-  if(length(coord-target1) < radius){
-  	outputColor = vec4(0,1,0,1);
-  }else if(length(coord-target2) < radius){
-  	outputColor = vec4(0,1,0,1);
-  }else if(length(coord-entry1) < radius){
-  	outputColor = vec4(1,0,0,1);
-  }else if(length(coord-entry2) < radius){
-  	outputColor = vec4(1,0,0,1);
-  }
+ // outputColor = vec4(coord,1);
 }
 

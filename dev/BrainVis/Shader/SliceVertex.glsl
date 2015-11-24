@@ -18,9 +18,9 @@ uniform float slide = 0.0f;
 // Vertex Shader
 void main(void)
 {
-  //vec4 pos = world*vec4(inputPosition.xyz, 1.0);
+  vec4 pos = world*vec4(inputPosition.xyz, 1.0);
 
-  vec4 pos = view*world*vec4(inputPosition.xyz, 1.0);
+  pos = view*pos;
 
   //vScreenPosition = vec3( (inputPosition.xy+ vec2(1.0,1.0)) / vec2(2.0,2.0) ,slide);
 

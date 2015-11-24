@@ -111,6 +111,11 @@ private:
         void drawSliceFont();
         void drawSliceCompositing();
 
+        void drawSliceV2(GLuint volumeID,
+                         float transferScaling,
+                         std::shared_ptr<GLFBOTex> color,
+                         std::shared_ptr<GLFBOTex> position);
+
         //G-Frame
         bool _foundFrame;
         Vec3f                    _center;
