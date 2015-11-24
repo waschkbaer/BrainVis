@@ -7,6 +7,9 @@
         PlaneX,
         PlaneY,
         PlaneZ,
+        PlaneXn,
+        PlaneYn,
+        PlaneZn,
         PlaneManual
     };
 #endif

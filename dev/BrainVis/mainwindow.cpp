@@ -122,3 +122,24 @@ void MainWindow::on_actionClip_Plane_Z_Axis_triggered()
         ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneZ);
     }
 }
+
+void MainWindow::on_actionClip_Plane_Y_Axis_2_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneYn);
+    }
+}
+
+void MainWindow::on_actionClip_Plane_X_Axis_2_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneXn);
+    }
+}
+
+void MainWindow::on_actionClip_Plane_Z_Axis_2_triggered()
+{
+    for(QDockWidget* w : m_vActiveWidgets){
+        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneZn);
+    }
+}

@@ -473,20 +473,35 @@ void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
     case DICOMClipMode::none :      _rayCastShader->Set("cutMode",0); break;
     case DICOMClipMode::CubicCut :  _rayCastShader->Set("cutMode",1); break;
 
-    case DICOMClipMode::PlaneX :    //if(left -> CTeX else (right) -CTeX
+    case DICOMClipMode::PlaneX :
                                     _rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
                                     _rayCastShader->Set("cutMode",2);
                                     break;
 
-    case DICOMClipMode::PlaneY :    //if(left -> CTeX else (right) -CTeX
+    case DICOMClipMode::PlaneY :
                                     _rayCastShader->Set("cutPlaneNormal",_data->getCTeY());
                                     _rayCastShader->Set("cutMode",2);
                                     break;
 
-    case DICOMClipMode::PlaneZ :    //if(left -> CTeX else (right) -CTeX
+    case DICOMClipMode::PlaneZ :
                                     _rayCastShader->Set("cutPlaneNormal",_data->getCTeZ());
                                     _rayCastShader->Set("cutMode",2);
                                     break;
+    case DICOMClipMode::PlaneXn :
+                                    _rayCastShader->Set("cutPlaneNormal",-_data->getCTeX());
+                                    _rayCastShader->Set("cutMode",2);
+                                    break;
+
+    case DICOMClipMode::PlaneYn :
+                                    _rayCastShader->Set("cutPlaneNormal",-_data->getCTeY());
+                                    _rayCastShader->Set("cutMode",2);
+                                    break;
+
+    case DICOMClipMode::PlaneZn :
+                                    _rayCastShader->Set("cutPlaneNormal",-_data->getCTeZ());
+                                    _rayCastShader->Set("cutMode",2);
+                                    break;
+    default:                        _rayCastShader->Set("cutMode",0); break;
     }
 
     _volumeBox->paint();

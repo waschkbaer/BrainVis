@@ -54,6 +54,12 @@ private slots:
 
     void on_actionClip_Plane_Z_Axis_triggered();
 
+    void on_actionClip_Plane_Y_Axis_2_triggered();
+
+    void on_actionClip_Plane_X_Axis_2_triggered();
+
+    void on_actionClip_Plane_Z_Axis_2_triggered();
+
 private:
     Ui::MainWindow *ui;
 

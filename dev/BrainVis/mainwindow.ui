@@ -73,9 +73,12 @@
     <addaction name="actionCubic_Cut"/>
     <addaction name="separator"/>
     <addaction name="actionClip_Plane_automatic"/>
-    <addaction name="actionClip_Plane_Y_Axis"/>
     <addaction name="actionClip_Plane_X_Axis"/>
+    <addaction name="actionClip_Plane_Y_Axis"/>
     <addaction name="actionClip_Plane_Z_Axis"/>
+    <addaction name="actionClip_Plane_X_Axis_2"/>
+    <addaction name="actionClip_Plane_Y_Axis_2"/>
+    <addaction name="actionClip_Plane_Z_Axis_2"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuWorkspace"/>
@@ -180,6 +183,21 @@
   <action name="actionClip_Plane_Z_Axis">
    <property name="text">
     <string>Clip Plane (Z-Axis)</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_Y_Axis_2">
+   <property name="text">
+    <string>Clip Plane (-Y-Axis)</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_X_Axis_2">
+   <property name="text">
+    <string>Clip Plane(-X-Axis)</string>
+   </property>
+  </action>
+  <action name="actionClip_Plane_Z_Axis_2">
+   <property name="text">
+    <string>Clip Plane (-Z-Axis)</string>
    </property>
   </action>
  </widget>
