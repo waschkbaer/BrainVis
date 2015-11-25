@@ -92,34 +92,34 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
     //manual move
     if(event->key() == Qt::Key_1){
         Vec3f o = _data->getMROffset();
-        o.z -= 0.005f;
+        o.z -= 0.05f;
         _data->setMROffset(o);
     }
     if(event->key() == Qt::Key_2){
         Vec3f o = _data->getMROffset();
-        o.z += 0.005f;
+        o.z += 0.05f;
         _data->setMROffset(o);
     }
 
     if(event->key() == Qt::Key_3){
         Vec3f o = _data->getMROffset();
-        o.x -= 0.005f;
+        o.x -= 0.05f;
         _data->setMROffset(o);
     }
     if(event->key() == Qt::Key_4){
         Vec3f o = _data->getMROffset();
-        o.x += 0.005f;
+        o.x += 0.05f;
         _data->setMROffset(o);
     }
 
     if(event->key() == Qt::Key_5){
         Vec3f o = _data->getMROffset();
-        o.y -= 0.005f;
+        o.y -= 0.05f;
         _data->setMROffset(o);
     }
     if(event->key() == Qt::Key_6){
         Vec3f o = _data->getMROffset();
-        o.y += 0.005f;
+        o.y += 0.05f;
         _data->setMROffset(o);
     }
 

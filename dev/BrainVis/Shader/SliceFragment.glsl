@@ -43,5 +43,11 @@ void main(void)
   }else if(length(coord-entry2) < radius){
   	outputColor = vec4(1,0,0,1);
   }*/
+
+  if( coord.x > 1.0 || coord.x < 0.0 || 
+      coord.y > 1.0 || coord.y < 0.0 || 
+      coord.z > 1.0 || coord.z < 0.0){
+      outputColor = vec4(0,0,0,-20000);
+  }
 }
 

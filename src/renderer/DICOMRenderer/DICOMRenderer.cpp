@@ -741,152 +741,33 @@ void DICOMRenderer::SliceRendering(){
                                             _data->getCTTransferScaling(),
                                             _TwoDCTVolumeFBO,
                                             _TwoDCTPositionVolumeFBO,
-                                            Vec3f(0,0,0));
+                                            Vec3f(0,0,0),
+                                            _data->getCTScale());
 
-            //drawSliceVolume(_GL_CTVolume->GetGLID(),_data->getCTTransferScaling(),_data->getCTScale(),_TwoDCTVolumeFBO,_TwoDCTPositionVolumeFBO,_data->getSelectedSlices(),Vec3f(0,0,0));
     }
     if(_GL_MRVolume != nullptr){
-            drawSliceVolume(_GL_MRVolume->GetGLID(),_data->getMRTransferScaling(),_data->getMRScale(),_TwoDMRVolumeFBO,_TwoDMRPositionVolumeFBO,_data->getSelectedSlices(),_data->getMROffset(),false);
+            //drawSliceVolume(_GL_MRVolume->GetGLID(),_data->getMRTransferScaling(),_data->getMRScale(),_TwoDMRVolumeFBO,_TwoDMRPositionVolumeFBO,_data->getSelectedSlices(),_data->getMROffset(),false);
+
+            drawSliceV2(_GL_MRVolume->GetGLID(),
+                                        _data->getMRTransferScaling(),
+                                        _TwoDMRVolumeFBO,
+                                        _TwoDMRPositionVolumeFBO,
+                                        _data->getMROffset(),
+                                        _data->getMRScale(),
+                                        true);
     }
     drawSliceElectrode();
 
     drawSliceCompositing();
 }
 
-void DICOMRenderer::drawSliceVolume(GLuint volumeID,
-                                    float transferScaling,
-                                    Vec3f volumeScale,
-                                    std::shared_ptr<GLFBOTex> color,
-                                    std::shared_ptr<GLFBOTex> position,
-                                    Vec3f currentSlices,
-                                    Vec3f trans,
-                                    bool ct){
-    _targetBinder->Bind(color,position);
-
-    ClearBackground(Vec4f(0,0,0,0));
-
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    if(_GL_CTVolume != nullptr){
-    _sliceShader->Enable();
-    _sliceShader->SetTexture3D("volume",volumeID,0);
-    _sliceShader->SetTexture1D("transferfunction",_transferFunctionTex->GetGLID(),1);
-    _sliceShader->Set("tfScaling",transferScaling);
-    _sliceShader->Set("entry1",_data->getLeftSTN()._startVolumeSpace);
-    _sliceShader->Set("entry2",_data->getRightSTN()._startVolumeSpace);
-    _sliceShader->Set("target1",_data->getLeftSTN()._endVolumeSpace);
-    _sliceShader->Set("target2",_data->getRightSTN()._endVolumeSpace);
-    _sliceShader->Set("radius",0.015f);
-
-    Mat4f scale;
-    Mat4f world;
-    Mat4f translation;
-    Mat4f rotationX;
-    Mat4f rotationY;
-    Mat4f rotationZ;
-    Mat4f rotationAll;
-
-
-    if(!ct){
-        rotationX.RotationX(-_data->getMRRotation().x);
-        rotationY.RotationY(-_data->getMRRotation().y);
-        rotationZ.RotationZ(_data->getMRRotation().z);
-    }else{
-        rotationX.RotationX(0);
-        rotationY.RotationY(0);
-        rotationZ.RotationZ(0);
-    }
-    rotationAll = rotationX*rotationY*rotationZ;
-
-    Vec3f offset = Vec3f(trans.x,-trans.z,trans.y)* _data->getMRScale();
-
-
-
-    float longest = 0.0f;
-    switch(_activeRenderMode){
-        case RenderMode::ZAxis :
-                                _sliceShader->Set("axis",0);
-                                longest = std::max(_data->getCTScale().y,_data->getCTScale().x);
-                                scale.Scaling(Vec3f(volumeScale.x/longest,volumeScale.y/longest,volumeScale.z/longest));
-
-                                //translation.Translation(-Vec3f(currentSlices.x,currentSlices.y,currentSlices.z)+ Vec3f(0.5f,0.5f,0.5f));
-                                translation.Translation(trans.x,-trans.z,trans.y);
-                                world = translation*scale*rotationAll;
-                                _sliceShader->Set("world",world);
-                                _sliceShader->Set("projection",_orthographicZAxis);
-                                _sliceShader->Set("rotation",rotationAll);
-                                _sliceShader->Set("view",_viewZ);
-
-                                _sliceShader->Set("slide",currentSlices.z+trans.z);
-                                _renderPlaneZ->paint();
-
-                                break;
-        case RenderMode::YAxis :
-                                _sliceShader->Set("axis",1);
-
-                                longest = std::max(_data->getCTScale().z,_data->getCTScale().x);
-                                scale.Scaling(Vec3f(volumeScale.x/longest,volumeScale.y/longest,volumeScale.z/longest));
-                                //translation.Translation(-Vec3f(currentSlices.x,currentSlices.y,currentSlices.z)+Vec3f(0.5f,0.5f,0.5f));
-                                translation.Translation(trans.x,-trans.z,trans.y);
-
-                                world = translation*scale*rotationAll;
-                                _sliceShader->Set("world",world);
-                                _sliceShader->Set("projection",_orthographicYAxis);
-                                _sliceShader->Set("rotation",rotationAll);
-                                _sliceShader->Set("view",_viewY);
-
-                                _sliceShader->Set("slide",currentSlices.y+trans.y);
-                                _renderPlaneY->paint();
-                                break;
-        case RenderMode::XAxis :
-                                _sliceShader->Set("axis",2);
-                                longest = std::max(_data->getCTScale().y,_data->getCTScale().z);
-                                scale.Scaling(Vec3f(volumeScale.x/longest,volumeScale.z/longest,volumeScale.y/longest));
-                                //translation.Translation(-Vec3f(currentSlices.x,currentSlices.z,currentSlices.y)+Vec3f(0.5f,0.5f,0.5f));
-                                translation.Translation(trans);
-
-
-                                if(!ct){
-                                    rotationX.RotationX(-_data->getMRRotation().x);
-                                    rotationY.RotationY(_data->getMRRotation().z);
-                                    rotationZ.RotationZ(-_data->getMRRotation().y);
-                                }else{
-                                    rotationX.RotationX(0);
-                                    rotationY.RotationY(0);
-                                    rotationZ.RotationZ(0);
-                                }
-                                rotationAll = rotationX*rotationY*rotationZ;
-
-                                world = translation*scale*rotationAll;
-
-
-
-                                _sliceShader->Set("world",world);
-                                _sliceShader->Set("projection",_orthographicXAxis);
-                                _sliceShader->Set("rotation",rotationAll);
-                                _sliceShader->Set("view",_viewX);
-
-                                _sliceShader->Set("slide",currentSlices.x+trans.x);
-                                _renderPlaneX->paint();
-
-                                break;
-    }
-
-
-
-    _sliceShader->Disable();
-    }
-
-    _targetBinder->Unbind();
-}
-
 void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                 float transferScaling,
                                 std::shared_ptr<GLFBOTex> color,
                                 std::shared_ptr<GLFBOTex> position,
-                                Vec3f VolumeTranslation){
+                                Vec3f VolumeTranslation,
+                                Vec3f VolumeScale,
+                                bool secondary){
     _targetBinder->Bind(color,position);
     ClearBackground(Vec4f(0,0,0,-2000));
 
@@ -896,9 +777,26 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
 
     Mat4f scale;
     Mat4f zoom;
+    Mat4f offsetTranslation;
     Mat4f translation;
     Mat4f world;
-    scale.Scaling(_data->getCTScale());
+    scale.Scaling(VolumeScale);
+
+    offsetTranslation.Translation(VolumeTranslation);
+
+
+    Vec3f slice = _data->getSelectedSlices();
+    if(secondary){
+        slice-= Vec3f(0.5f,0.5f,0.5f);
+        slice*= _data->getCTScale(); //<- worldposition of non rotated ct volume!
+        //slice-=VolumeTranslation;
+        slice /= _data->getMRScale();
+        slice += Vec3f(0.5,0.5,0.5); //<- mr volume pos;
+
+
+        VolumeTranslation/=VolumeScale;
+    }
+    std::cout << slice << std::endl;
 
     if(_GL_CTVolume != nullptr){
         _sliceShader->Enable();
@@ -919,7 +817,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     //z dependend
                                     _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
                                     _viewZ.BuildLookAt((Vec3f(0,0,100)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,1,0));
-                                    translation.Translation(Vec3f(0,0,_data->getSelectedSlices().z-0.5f));
+                                    translation.Translation(VolumeTranslation+Vec3f(0,0,slice.z-0.5f));
                                     world = translation*scale;
                                     zoom.Scaling(_vZZoom);
 
@@ -927,7 +825,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _sliceShader->Set("projection",_orthographicZAxis);
                                     _sliceShader->Set("view",_viewZ*zoom);
                                     _sliceShader->Set("world",world);
-                                    _sliceShader->Set("slide",_data->getSelectedSlices().z);
+                                    _sliceShader->Set("slide",slice.z-VolumeTranslation.z);
                                     _renderPlaneZ->paint();
 
                                     break;
@@ -936,7 +834,8 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     //x dependend
                                     _orthographicXAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
                                     _viewX.BuildLookAt((Vec3f(100,0,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
-                                    translation.Translation(Vec3f(_data->getSelectedSlices().x-0.5f,0,0));
+                                    translation.Translation(VolumeTranslation+Vec3f(slice.x-0.5f,0,0));
+
                                     world = translation*scale;
                                     zoom.Scaling(_vXZoom);
 
@@ -944,7 +843,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _sliceShader->Set("projection",_orthographicXAxis);
                                     _sliceShader->Set("view",_viewX*zoom);
                                     _sliceShader->Set("world",world);
-                                    _sliceShader->Set("slide",_data->getSelectedSlices().x);
+                                    _sliceShader->Set("slide",slice.x-VolumeTranslation.x);
                                     _renderPlaneX->paint();
 
                                     break;
@@ -953,7 +852,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     //y dependend
                                     _orthographicYAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
                                     _viewY.BuildLookAt((Vec3f(0,-100,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
-                                    translation.Translation(Vec3f(0,_data->getSelectedSlices().y-0.5f,0));
+                                    translation.Translation(VolumeTranslation+Vec3f(0,slice.y-0.5f,0));
                                     world = translation*scale;
                                     zoom.Scaling(_vYZoom);
 
@@ -961,7 +860,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _sliceShader->Set("projection",_orthographicYAxis);
                                     _sliceShader->Set("view",_viewY*zoom);
                                     _sliceShader->Set("world",world);
-                                    _sliceShader->Set("slide",_data->getSelectedSlices().y);
+                                    _sliceShader->Set("slide",slice.y-VolumeTranslation.y);
                                     _renderPlaneY->paint();
 
                                     break;

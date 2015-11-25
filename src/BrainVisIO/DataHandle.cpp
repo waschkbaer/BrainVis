@@ -18,7 +18,8 @@ DataHandle::DataHandle():
     _dataSetStatus(0),
     _spectralRange(1000000.0f,-1000000.0f),
     _MRRotation(-0.1,0,0.1),
-    _MROffset(-0.005,-0.74,0.115),
+    //_MROffset(-0.005,-0.74,0.115),
+    _MROffset(0,0,0),
     _usesNetworkMER(false)
 {
     incrementStatus();
@@ -209,7 +210,7 @@ void DataHandle::updateMRWorld(){
     Mat4f rotX,rotY,rotZ;
     
     scale.Scaling(_MRScale);
-    trans.Translation(0.5f*(Vec3f(-_MROffset.x,_MROffset.z,_MROffset.y)*Vec3f(_MRScale.x,_MRScale.y,_MRScale.z)));
+    trans.Translation((Vec3f(-_MROffset.x,_MROffset.y,_MROffset.z)));
     rotX.RotationX(_MRRotation.x);
     rotY.RotationY(_MRRotation.y);
     rotZ.RotationZ(_MRRotation.z);

@@ -99,14 +99,6 @@ private:
 
         //slicer
         void SliceRendering();
-        void drawSliceVolume(GLuint volumeID,
-                             float transferScaling,
-                             Vec3f volumeScale,
-                             std::shared_ptr<GLFBOTex> color,
-                             std::shared_ptr<GLFBOTex> position,
-                             Vec3f currentSlices,
-                             Vec3f trans,
-                             bool ct = true);
         void drawSliceElectrode();
         void drawSliceTop();
         void drawSliceFont();
@@ -116,7 +108,9 @@ private:
                          float transferScaling,
                          std::shared_ptr<GLFBOTex> color,
                          std::shared_ptr<GLFBOTex> position,
-                         Vec3f VolumeTranslation);
+                         Vec3f VolumeTranslation,
+                         Vec3f VolumeScale,
+                         bool secondary = false);
 
         //G-Frame
         bool _foundFrame;
