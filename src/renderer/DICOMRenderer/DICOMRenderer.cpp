@@ -169,7 +169,6 @@ void DICOMRenderer::ChangeSlide(int slidedelta){
     switch(_activeRenderMode){
     case RenderMode::ThreeDMode:
                                 _eyeDistance += 4.1f*(float)slidedelta;
-                                //_view.BuildLookAt(_lookAt+(_eyeDistance*_eyeDir),Vec3f(0.0f,0.0f,0.0f),Vec3f(0.0f,1.0f,0.0f));
                                 _camera->Zoom(4.1f*(float)slidedelta);
                                 _view = _camera->buildLookAt();
                                 break;
@@ -187,6 +186,28 @@ void DICOMRenderer::ChangeSlide(int slidedelta){
                                 break;
     }
    sheduleRepaint();
+}
+
+void DICOMRenderer::ZoomTwoD(int zoomDelta){
+
+    float z = zoomDelta*0.2f;
+    switch(_activeRenderMode){
+    case RenderMode::ThreeDMode:
+                                _eyeDistance += 4.1f*(float)zoomDelta;
+                                _camera->Zoom(4.1f*(float)zoomDelta);
+                                _view = _camera->buildLookAt();
+                                break;
+        case RenderMode::ZAxis :
+                                _vZZoom += Vec3f(z,z,z);
+                                break;
+        case RenderMode::YAxis :
+                                _vYZoom += Vec3f(z,z,z);
+                                 break;
+        case RenderMode::XAxis :
+                                _vXZoom += Vec3f(z,z,z);
+                                break;
+    }
+    sheduleRepaint();
 }
 
 void DICOMRenderer::moveCamera(Vec3f dir)
@@ -891,12 +912,14 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
         _sliceShader->Set("entry2",_data->getRightSTN()._startVolumeSpace);
         _sliceShader->Set("radius",0.03f);
 
+        Vec3f CenterOffset = (_data->getSelectedSlices()-Vec3f(0.5f,0.5f,0.5f))*_data->getCTScale();
+
         switch(_activeRenderMode){
             case RenderMode::ZAxis :{
                                     //z dependend
-                                    _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
-                                    _viewZ.BuildLookAt(Vec3f(0,0,400),Vec3f(0,0,0),Vec3f(0,1,0));
-                                    translation.Translation(0,0,_data->getSelectedSlices().z-0.5f);
+                                    _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
+                                    _viewZ.BuildLookAt((Vec3f(0,0,100)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,1,0));
+                                    translation.Translation(Vec3f(0,0,_data->getSelectedSlices().z-0.5f));
                                     world = translation*scale;
                                     zoom.Scaling(_vZZoom);
 
@@ -911,9 +934,9 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     }
             case RenderMode::XAxis :{
                                     //x dependend
-                                    _orthographicXAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
-                                    _viewX.BuildLookAt(Vec3f(400,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
-                                    translation.Translation(_data->getSelectedSlices().x-0.5f,0,0);
+                                    _orthographicXAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
+                                    _viewX.BuildLookAt((Vec3f(100,0,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
+                                    translation.Translation(Vec3f(_data->getSelectedSlices().x-0.5f,0,0));
                                     world = translation*scale;
                                     zoom.Scaling(_vXZoom);
 
@@ -928,9 +951,9 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     }
             case RenderMode::YAxis :{
                                     //y dependend
-                                    _orthographicYAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-1000.0f,1000.0f);
-                                    _viewY.BuildLookAt(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1));
-                                    translation.Translation(0,_data->getSelectedSlices().y-0.5f,0);
+                                    _orthographicYAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
+                                    _viewY.BuildLookAt((Vec3f(0,-100,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
+                                    translation.Translation(Vec3f(0,_data->getSelectedSlices().y-0.5f,0));
                                     world = translation*scale;
                                     zoom.Scaling(_vYZoom);
 
@@ -1063,8 +1086,22 @@ void DICOMRenderer::drawSliceCompositing(){
   _compositingTwoDShader->SetTexture2D("sliceImageCT",_TwoDCTVolumeFBO->GetTextureHandle(),0);
   _compositingTwoDShader->SetTexture2D("sliceImageMR",_TwoDMRVolumeFBO->GetTextureHandle(),1);
   _compositingTwoDShader->SetTexture2D("electrodeImage",_TwoDElectrodeFBO->GetTextureHandle(),2);
-  _compositingTwoDShader->SetTexture2D("topImage",_TwoDTopFBO->GetTextureHandle(),3);
+  _compositingTwoDShader->SetTexture2D("CTPosition",_TwoDCTPositionVolumeFBO->GetTextureHandle(),3);
+  _compositingTwoDShader->SetTexture2D("topImage",_TwoDTopFBO->GetTextureHandle(),4);
   _compositingTwoDShader->Set("mrctblend", _data->getMRCTBlend());
+
+  Vec3f slice = _data->getSelectedSlices();
+  slice-= Vec3f(0.5f,0.5,0.5f);
+  float zoom = 0;
+
+  switch(_activeRenderMode){
+    case RenderMode::ZAxis :slice.z = 100000.0f; zoom = _vZZoom.z; break;
+    case RenderMode::XAxis :slice.x = 100000.0f; zoom = _vXZoom.x;break;
+    case RenderMode::YAxis :slice.y = 100000.0f; zoom = _vYZoom.y;break;
+  }
+  _compositingTwoDShader->Set("focusPoint",slice);
+  _compositingTwoDShader->Set("zoomFactor",zoom);
+
 
 
   _renderPlane->paint();

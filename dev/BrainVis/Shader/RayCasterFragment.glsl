@@ -107,10 +107,13 @@ void main(void)
           finalColor.xyz = (1.0f-color.w)*finalColor.xyz + (color.w)*color.xyz;
           finalColor.w = finalColor.w+color.w;
 
-          if(color.w != 0.0){
+          /*finalColor.xyz = (1.0f-color.w)*finalColor.xyz + (color.w)*color.xyz;
+          finalColor.w = finalColor.w+color.w;*/
+
+          /*if(color.w != 0.0){
             finalColor.xyz.xyz = vec3(value,value,value);
             finalColor.w =1.0f;
-          }
+          }*/
 
           if(finalColor.w >= 1.0f){  
             viewPos = viewFragmentMatrix*viewPos;
@@ -121,7 +124,7 @@ void main(void)
             break;
           }
     }
-    texturePos += rayDir/1500.0f;
+    texturePos += rayDir/2500.0f;
 
   	//early ray termination
   	if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||

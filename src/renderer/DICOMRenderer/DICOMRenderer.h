@@ -56,6 +56,7 @@ class DICOMRenderer{
         void SetWindowSize(uint32_t width, uint32_t height);
         void SetDataHandle(std::shared_ptr<DataHandle> dataHandle);
         void ChangeSlide(int slidedelta);
+        void ZoomTwoD(int zoomDelta);
 
         void moveCamera(Vec3f dir);
         void rotateCamera(Vec3f rotation);

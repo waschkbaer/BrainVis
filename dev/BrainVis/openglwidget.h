@@ -44,6 +44,10 @@ public:
         _renderer->ChangeSlide(slidedelta);
     }
 
+    void zoom(int zoomdelta){
+        _renderer->ZoomTwoD(zoomdelta);
+    }
+
     void mousePressEvent(QMouseEvent * event );
     void mouseReleaseEvent (QMouseEvent * event );
     void mouseMoveEvent(QMouseEvent *eventMove);
@@ -57,6 +61,8 @@ public:
     void setRendererID(int rendererID);
 
     void renderFont();
+
+    void switchScrollMode();
 
     void setClipMode(DICOMClipMode mode){
          _renderer->setClipMode(mode);
@@ -73,6 +79,8 @@ private:
 
     bool                            _leftMouseDown;
     bool                            _rightMouseDown;
+
+    bool                            _scrollMode;
 
     int                             _rendererID;
 signals:

@@ -173,14 +173,21 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
         scal *= 0.99;
         _data->setMRScale(scal);
     }
-
     if(event->key() == Qt::Key_W){
         _data->setMRCTBlend(_data->getMRCTBlend()+0.05f);
     }
     if(event->key() == Qt::Key_S){
         _data->setMRCTBlend(_data->getMRCTBlend()-0.05f);
     }
+    if(event->key() == Qt::Key_Alt){
+        ui->openGLWidget->switchScrollMode();
+    }
+}
 
+void RenderWidget::keyReleaseEvent(QKeyEvent *event){
+    if(event->key() == Qt::Key_Alt){
+        ui->openGLWidget->switchScrollMode();
+    }
 }
 
 void RenderWidget::setClipMode(DICOMClipMode mode){

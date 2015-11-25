@@ -31,6 +31,7 @@ void main(void)
   value *= tfScaling;
 
   outputColor = texture(transferfunction, value);
+  outputColor.w = vViewPos.z;
   outputPosition = vec4(coord,1);
 
   /*if(length(coord-target1) < radius){
@@ -42,6 +43,5 @@ void main(void)
   }else if(length(coord-entry2) < radius){
   	outputColor = vec4(1,0,0,1);
   }*/
-  outputColor.w = vViewPos.z;
 }
 

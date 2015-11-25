@@ -21,12 +21,13 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent),
       _leftMouseDown(false),
       _rightMouseDown(false),
-      _windowSize(0,0)
+      _windowSize(0,0),
+      _scrollMode(true)
 {
-_timer = new QTimer(this);
-connect(_timer, SIGNAL(timeout()), this, SLOT(update()));
-_timer->start(16);
-installEventFilter(this);
+    _timer = new QTimer(this);
+    connect(_timer, SIGNAL(timeout()), this, SLOT(update()));
+    _timer->start(16);
+    installEventFilter(this);
 }
 
 OpenGLWidget::~OpenGLWidget()
@@ -146,8 +147,16 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
     GLMutex::getInstance().unlockContext();
 }
 
+void OpenGLWidget::switchScrollMode(){
+    _scrollMode = !_scrollMode;
+}
+
 void OpenGLWidget::wheelEvent(QWheelEvent *event){
-    changeSlide(event->delta()/120);
+    if(_scrollMode){
+        changeSlide(event->delta()/120);
+    }else{
+        zoom(event->delta()/120);
+    }
 }
 
 void OpenGLWidget::updateTF(float xPos, float yPos, float widgetSizeX, float widgetSizeY){

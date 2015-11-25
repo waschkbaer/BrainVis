@@ -23,6 +23,7 @@ public:
     ~RenderWidget();
 
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
     int renderID() const;
 
