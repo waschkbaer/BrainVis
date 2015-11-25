@@ -23,11 +23,14 @@ uniform vec3 volumeOffset;
 // Vertex Shader
 void main(void)
 {
+  mat4 scaleInv = inverse(scale);
   vec4 pos = vec4(0,0,0,0);
     
-
-  pos = rotation*vec4(inputPosition.xyz, 1.0);
+  pos = scale*vec4(inputPosition.xyz, 1.0);
+  pos = rotation*pos;
+  pos = scaleInv*pos;
   pos = translate*pos;
+  
 
   vScreenPosition = pos.xyz+vec3(0.5,0.5,0.5)-volumeOffset; 
 
@@ -35,17 +38,19 @@ void main(void)
   pos = view*pos;
 
   switch(axis){
-  case 0 : vScreenPosition.x = vScreenPosition.x-volumeOffset.x;break;
-  case 1 : vScreenPosition.y = vScreenPosition.y-volumeOffset.y;break;
-  case 2 : vScreenPosition.z = vScreenPosition.z-volumeOffset.z; break;
+    case 0 :  vScreenPosition.y = inputPosition.y+0.5f;
+              vScreenPosition.z = inputPosition.z+0.5f;
+              vScreenPosition.x = vScreenPosition.x-volumeOffset.x;
+              break;
+    case 1 :  vScreenPosition.x = inputPosition.x+0.5f;
+              vScreenPosition.z = inputPosition.z+0.5f;
+              vScreenPosition.y = vScreenPosition.y-volumeOffset.y;
+              break;
+    case 2 :  vScreenPosition.x = inputPosition.x+0.5f;
+              vScreenPosition.y = inputPosition.y+0.5f;
+              vScreenPosition.z = vScreenPosition.z-volumeOffset.z; 
+              break;
   }
-
-  /*switch(axis){
-  	case 0 : vScreenPosition = vec3( slide, inputPosition.y+0.5f , inputPosition.z+0.5f) ; break; //x
-  	case 1 : vScreenPosition = vec3( inputPosition.x+0.5f ,slide , inputPosition.z+0.5f); break; //y
-  	case 2 : vScreenPosition = vec3( inputPosition.x+0.5f, inputPosition.y+0.5f, slide); break;  //z
-  }*/
-  
   gl_Position = projection*pos;
   vViewPos = pos.xyz;
  
