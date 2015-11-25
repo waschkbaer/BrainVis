@@ -17,10 +17,10 @@ DataHandle::DataHandle():
     _CTeZ(0,0,-1),
     _dataSetStatus(0),
     _spectralRange(1000000.0f,-1000000.0f),
-    //_MRRotation(-0.1,0,0.1),
-    //_MROffset(-0.005,-0.74,0.115),
-    _MRRotation(0,0,0),
-    _MROffset(0,0,0),
+    _MRRotation(-0.1,0.03,0.07),
+    _MROffset(-1.95,6.6501,-31.2998),
+    //_MRRotation(0,0,0),
+    //_MROffset(0,0,0),
     _usesNetworkMER(false)
 {
     incrementStatus();

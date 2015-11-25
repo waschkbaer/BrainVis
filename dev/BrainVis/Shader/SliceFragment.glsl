@@ -31,18 +31,9 @@ void main(void)
   value *= tfScaling;
 
   outputColor = texture(transferfunction, value);
+  outputColor = vec4(value,value,value,1);
   outputColor.w = vViewPos.z;
   outputPosition = vec4(coord,1);
-
-  /*if(length(coord-target1) < radius){
-  	outputColor = vec4(0,1,0,1);
-  }else if(length(coord-target2) < radius){
-  	outputColor = vec4(0,1,0,1);
-  }else if(length(coord-entry1) < radius){
-  	outputColor = vec4(1,0,0,1);
-  }else if(length(coord-entry2) < radius){
-  	outputColor = vec4(1,0,0,1);
-  }*/
 
   if( coord.x > 1.0 || coord.x < 0.0 || 
       coord.y > 1.0 || coord.y < 0.0 || 

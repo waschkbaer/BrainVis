@@ -25,9 +25,9 @@ _viewZ(),
 _datasetStatus(0),
 _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
-  _vXZoom(2,2,2),
-  _vYZoom(2,2,2),
-  _vZZoom(2,2,2)
+_vXZoom(2,2,2),
+_vYZoom(2,2,2),
+_vZZoom(2,2,2)
 {
 _timer.start();
 _elapsedTime = _timer.elapsed();
@@ -364,7 +364,7 @@ bool DICOMRenderer::LoadGeometry(){
     _ZAxisSlice = std::unique_ptr<GLBoundingQuadZ>(new GLBoundingQuadZ());
     _sphere = std::unique_ptr<GLSphere>(new GLSphere());
 
-    _electrodeGeometry = std::unique_ptr<GLCylinder>(new GLCylinder(3,10));
+    _electrodeGeometry = std::unique_ptr<GLCylinder>(new GLCylinder(0.5f,20));
 
     return true;
 }
@@ -659,24 +659,59 @@ void DICOMRenderer::drawPlaning(){
 
     _frontFaceShader->Disable();
 
+
+    //draw the electrode basics
+
     _electrodeGeometryShader->Enable();
     _electrodeGeometryShader->Set("projectionMatrix",_projection);
     _electrodeGeometryShader->Set("viewMatrix",_view);
 
     calculateElectrodeMatices();
-    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
-    _electrodeGeometry->paint();
 
-    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
-    _electrodeGeometry->paint();
+    Vec3f dirLeft = _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace;
+    float lengthLeft = dirLeft.length()+5;
+    dirLeft.normalize();
 
+    Vec3f dirRight = _data->getRightSTN()._startWorldSpace-_data->getRightSTN()._endWorldSpace;
+    float lengthRight = dirRight.length()+5;
+    dirRight.normalize();
+
+    Vec3f startPos;
+    Mat4f translation;
+
+    for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
+        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if((electrode->getName().c_str())[0] == 'L'){
+            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
+            startPos = (startPos-Vec3f(100,100,100));
+            startPos =  startPos.x*_data->getCTeX()+
+                        startPos.y*_data->getCTeY()+
+                        startPos.z*_data->getCTeZ()+
+                        (_data->getCTCenter()*_data->getCTScale());
+            translation.Translation(startPos+dirLeft*lengthLeft);
+
+            _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix*translation);
+            _electrodeGeometry->paint();
+        }else if((electrode->getName().c_str())[0] == 'R'){
+            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
+            startPos = (startPos-Vec3f(100,100,100));
+            startPos =  startPos.x*_data->getCTeX()+
+                        startPos.y*_data->getCTeY()+
+                        startPos.z*_data->getCTeZ()+
+                        (_data->getCTCenter()*_data->getCTScale());
+            translation.Translation(startPos+dirRight*lengthRight);
+
+            _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix*translation);
+            _electrodeGeometry->paint();
+        }
+    }
     _electrodeGeometryShader->Disable();
 
 
 
 
 
-    //draw the trajectories
+    //draw the trajectories----------------------------
     Vec3f position;
     scaleT.Scaling(1.0,1.0,1.0);
     Mat4f worldScaling;
@@ -801,9 +836,9 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
         y.RotationY(_data->getMRRotation().y);
         z.RotationZ(_data->getMRRotation().z);
         rotation = x*y*z;
-
+        //std::cout << "rot"<< _data->getMRRotation() << std::endl;
+        //std::cout << "trans"<< _data->getMROffset() << std::endl;
     }
-    std::cout << slice << std::endl;
 
     if(_GL_CTVolume != nullptr){
         _sliceShader->Enable();
@@ -932,14 +967,45 @@ void DICOMRenderer::drawSliceElectrode(){
     _electrodeGeometryShader->Enable();
     _electrodeGeometryShader->Set("projectionMatrix",curProj);
     _electrodeGeometryShader->Set("viewMatrix",curView);
-
     calculateElectrodeMatices();
-    _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix);
-    _electrodeGeometry->paint();
 
-    _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix);
-    _electrodeGeometry->paint();
+    Vec3f dirLeft = _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace;
+    float lengthLeft = dirLeft.length()+5;
+    dirLeft.normalize();
 
+    Vec3f dirRight = _data->getRightSTN()._startWorldSpace-_data->getRightSTN()._endWorldSpace;
+    float lengthRight = dirRight.length()+5;
+    dirRight.normalize();
+
+    Vec3f startPos;
+    Mat4f translation;
+
+    for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
+        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if((electrode->getName().c_str())[0] == 'L'){
+            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
+            startPos = (startPos-Vec3f(100,100,100));
+            startPos =  startPos.x*_data->getCTeX()+
+                        startPos.y*_data->getCTeY()+
+                        startPos.z*_data->getCTeZ()+
+                        (_data->getCTCenter()*_data->getCTScale());
+            translation.Translation(startPos+dirLeft*lengthLeft);
+
+            _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix*translation);
+            _electrodeGeometry->paint();
+        }else if((electrode->getName().c_str())[0] == 'R'){
+            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
+            startPos = (startPos-Vec3f(100,100,100));
+            startPos =  startPos.x*_data->getCTeX()+
+                        startPos.y*_data->getCTeY()+
+                        startPos.z*_data->getCTeZ()+
+                        (_data->getCTCenter()*_data->getCTScale());
+            translation.Translation(startPos+dirRight*lengthRight);
+
+            _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix*translation);
+            _electrodeGeometry->paint();
+        }
+    }
     _electrodeGeometryShader->Disable();
 
 
@@ -1406,7 +1472,7 @@ void DICOMRenderer::calculateElectrodeMatices(){
     outdir.normalize();
     T.Translation(_data->getLeftSTN()._startWorldSpace+  outdir*15.0f );
 
-    _electrodeLeftMatrix = S*U*T;
+    _electrodeLeftMatrix = S*U;
     //LEFTEND;
     to = _data->getRightSTN()._endWorldSpace-_data->getRightSTN()._startWorldSpace;
     elecLength = to.length()+5;
@@ -1441,5 +1507,5 @@ void DICOMRenderer::calculateElectrodeMatices(){
     outdir.normalize();
     T.Translation(_data->getRightSTN()._startWorldSpace+  outdir*15.0f  );
 
-    _electrodeRightMatix = S*U*T;
+    _electrodeRightMatix = S*U;
 }

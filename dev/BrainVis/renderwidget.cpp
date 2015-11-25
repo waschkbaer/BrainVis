@@ -126,34 +126,34 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
     //manual rot
     if(event->key() == Qt::Key_Y){
         Vec3f o = _data->getMRRotation();
-        o.z -= 0.05f;
+        o.z -= 0.01f;
         _data->setMRRotation(o);
     }
     if(event->key() == Qt::Key_X){
         Vec3f o = _data->getMRRotation();
-        o.z += 0.05f;
+        o.z += 0.01f;
         _data->setMRRotation(o);
     }
 
     if(event->key() == Qt::Key_C){
         Vec3f o = _data->getMRRotation();
-        o.x -= 0.05f;
+        o.x -= 0.01f;
         _data->setMRRotation(o);
     }
     if(event->key() == Qt::Key_V){
         Vec3f o = _data->getMRRotation();
-        o.x += 0.05f;
+        o.x += 0.01f;
         _data->setMRRotation(o);
     }
 
     if(event->key() == Qt::Key_B){
         Vec3f o = _data->getMRRotation();
-        o.y -= 0.05f;
+        o.y -= 0.01f;
         _data->setMRRotation(o);
     }
     if(event->key() == Qt::Key_N){
         Vec3f o = _data->getMRRotation();
-        o.y += 0.05f;
+        o.y += 0.01f;
         _data->setMRRotation(o);
     }
     if(event->key() == Qt::Key_A){

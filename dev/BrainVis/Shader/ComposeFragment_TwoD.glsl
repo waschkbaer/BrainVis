@@ -30,23 +30,22 @@ void main(void)
 
   outputColor = sliceCT*mrctblend+sliceMR*(1.0f-mrctblend);
 
-  if( abs(sliceCT.w-electrode.w) < 10.0){
-  	outputColor = electrode;
-  	
-  }else if(electrode.w > sliceCT.w){
-  	outputColor = outputColor+ 0.1*electrode;
+  if(electrode.w > sliceCT.w){
+    outputColor = electrode;
   }
+
+  //if(abs(electrode.w-sliceCT.w) < 3){
+  //  outputColor = electrode;
+  //}
 
   if(abs(focusPoint.x-position.x) < (0.003f/zoomFactor) ){
-    outputColor += vec4(0.5f,0,0,1);
+    outputColor += vec4(0.2f,0,0,1);
   }
   if(abs(focusPoint.y-position.y) < (0.003f/zoomFactor) ){
-    outputColor += vec4(0,0.5f,0,1);
+    outputColor += vec4(0,0.2f,0,1);
   }
   if(abs(focusPoint.z-position.z) < (0.004f/zoomFactor) ){
-    outputColor += vec4(0,0,0.5f,1);
+    outputColor += vec4(0,0,0.2f,1);
   }
-
-
 }
 
