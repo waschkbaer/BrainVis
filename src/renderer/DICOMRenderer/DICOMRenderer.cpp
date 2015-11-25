@@ -779,7 +779,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
     Mat4f zoom;
     Mat4f offsetTranslation;
     Mat4f translation;
-    Mat4f world;
+    Mat4f rotation;
     scale.Scaling(VolumeScale);
 
     offsetTranslation.Translation(VolumeTranslation);
@@ -795,6 +795,13 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
 
 
         VolumeTranslation/=VolumeScale;
+
+        Mat4f x,y,z;
+        x.RotationX(_data->getMRRotation().x);
+        y.RotationY(_data->getMRRotation().y);
+        z.RotationZ(_data->getMRRotation().z);
+        rotation = x*y*z;
+
     }
     std::cout << slice << std::endl;
 
@@ -818,13 +825,18 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
                                     _viewZ.BuildLookAt((Vec3f(0,0,100)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,1,0));
                                     translation.Translation(VolumeTranslation+Vec3f(0,0,slice.z-0.5f));
-                                    world = translation*scale;
+
                                     zoom.Scaling(_vZZoom);
 
                                     _sliceShader->Set("axis",2);
                                     _sliceShader->Set("projection",_orthographicZAxis);
+
                                     _sliceShader->Set("view",_viewZ*zoom);
-                                    _sliceShader->Set("world",world);
+
+                                    _sliceShader->Set("rotation",rotation);
+                                    _sliceShader->Set("scale",scale);
+                                    _sliceShader->Set("translate",translation);
+                                    _sliceShader->Set("volumeOffset",VolumeTranslation);
                                     _sliceShader->Set("slide",slice.z-VolumeTranslation.z);
                                     _renderPlaneZ->paint();
 
@@ -836,13 +848,16 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _viewX.BuildLookAt((Vec3f(100,0,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
                                     translation.Translation(VolumeTranslation+Vec3f(slice.x-0.5f,0,0));
 
-                                    world = translation*scale;
                                     zoom.Scaling(_vXZoom);
 
                                     _sliceShader->Set("axis",0);
                                     _sliceShader->Set("projection",_orthographicXAxis);
                                     _sliceShader->Set("view",_viewX*zoom);
-                                    _sliceShader->Set("world",world);
+
+                                    _sliceShader->Set("rotation",rotation);
+                                    _sliceShader->Set("scale",scale);
+                                    _sliceShader->Set("translate",translation);
+                                    _sliceShader->Set("volumeOffset",VolumeTranslation);
                                     _sliceShader->Set("slide",slice.x-VolumeTranslation.x);
                                     _renderPlaneX->paint();
 
@@ -853,13 +868,17 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
                                     _orthographicYAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
                                     _viewY.BuildLookAt((Vec3f(0,-100,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
                                     translation.Translation(VolumeTranslation+Vec3f(0,slice.y-0.5f,0));
-                                    world = translation*scale;
+
                                     zoom.Scaling(_vYZoom);
 
                                     _sliceShader->Set("axis",1);
                                     _sliceShader->Set("projection",_orthographicYAxis);
                                     _sliceShader->Set("view",_viewY*zoom);
-                                    _sliceShader->Set("world",world);
+
+                                    _sliceShader->Set("rotation",rotation);
+                                    _sliceShader->Set("scale",scale);
+                                    _sliceShader->Set("translate",translation);
+                                    _sliceShader->Set("volumeOffset",VolumeTranslation);
                                     _sliceShader->Set("slide",slice.y-VolumeTranslation.y);
                                     _renderPlaneY->paint();
 
