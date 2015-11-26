@@ -11,7 +11,7 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, in
 {
     setFloating(true);
     ui->setupUi(this);
-    move(0,40);
+    move(0,100);
 
     show();
 

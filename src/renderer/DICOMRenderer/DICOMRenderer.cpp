@@ -8,17 +8,12 @@ using namespace std;
 using namespace Tuvok::Renderer;
 
 DICOMRenderer::DICOMRenderer():
-_vRotation(0.0f,0.0f,0.0f),
 _activeRenderMode(ThreeDMode),
 _windowSize(512,512),
 _GL_CTVolume(nullptr),
 _GL_MRVolume(nullptr),
-_lookAt(0,0,0),
-_eyeDir(0.0f,0.0f,1.0f),
-_eyeDistance(3.0f),
 _camera(new Camera(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1))),
 _foundFrame(false),
-_vTranslation(0,0,0),
 _viewX(),
 _viewY(),
 _viewZ(),
@@ -27,10 +22,10 @@ _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
 _vXZoom(2,2,2),
 _vYZoom(2,2,2),
-_vZZoom(2,2,2)
+_vZZoom(2,2,2),
+_needsUpdate(true)
 {
-_timer.start();
-_elapsedTime = _timer.elapsed();
+
 }
 
 void DICOMRenderer::Initialize(){
@@ -55,9 +50,6 @@ void DICOMRenderer::Cleanup(){
 
 }
 
-void DICOMRenderer::Resize(){
-
-}
 
 void DICOMRenderer::SetRenderMode(RenderMode mode){
     _activeRenderMode = mode;
@@ -73,16 +65,6 @@ void DICOMRenderer::SetWindowSize(uint32_t width, uint32_t height){
         //update projection and viewport
         _projection.Perspective(45, (float)width/(float)height,0.01f, 1000.0f);
         glViewport(0,0,width,height);
-
-        //update orthographic projection and view Matrices for 2D rendering
-        _orthographicXAxis.Ortho(-1,1,  -(float)_windowSize.y/(float)_windowSize.x ,(float)_windowSize.y/(float)_windowSize.x,   -100.0f,1000.0f);
-        _viewX.BuildLookAt(Vec3f(10,0,0),Vec3f(0,0,0),Vec3f(0,1,0));
-
-        _orthographicYAxis.Ortho(-1,1,  -(float)_windowSize.y/(float)_windowSize.x ,(float)_windowSize.y/(float)_windowSize.x,   -100.0f,1000.0f);
-        _viewY.BuildLookAt(Vec3f(0,10,0),Vec3f(0,0,0),Vec3f(0,0,1));
-
-        _orthographicZAxis.Ortho(-1,1,  -(float)_windowSize.y/(float)_windowSize.x ,(float)_windowSize.y/(float)_windowSize.x,   -100.0f,1000.0f);
-        _viewZ.BuildLookAt(Vec3f(0,0,10),Vec3f(0,0,0),Vec3f(0,1,0));
 
         //recreate the framebuffers
         LoadFrameBuffer();
@@ -124,13 +106,15 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
     // calculate the center of the scan
     if(!_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
        searchGFrame();
+
+       // start slice is the center -> maybe change to center of frame!
+       _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
     }
 
     // this has to be done if the frame was found
     if(_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
         createFrameGeometry(_data->getLeftMarker(),0);
         createFrameGeometry(_data->getRightMarker(),1);
-        //create2DGeometry();
     }
 
     // creates a 1D Texture with a specified colorrange for
@@ -140,18 +124,8 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
     // sets the start rendermode
     _activeRenderMode = RenderMode::ThreeDMode;
 
-    //move to seperate function later!
-    _orthographicXAxis.Ortho(-1,1,  -(float)_windowSize.y/(float)_windowSize.x ,(float)_windowSize.y/(float)_windowSize.x,   -100.0f,1000.0f);
-    _viewX.BuildLookAt(Vec3f(10,0,0),Vec3f(0,0,0),Vec3f(0,1,0));
 
-    _orthographicYAxis.Ortho(-1,1,  -(float)_windowSize.y/(float)_windowSize.x ,(float)_windowSize.y/(float)_windowSize.x,   -100.0f,1000.0f);
-    _viewY.BuildLookAt(Vec3f(0,10,0),Vec3f(0,0,0),Vec3f(0,0,1));
-
-    _orthographicZAxis.Ortho(-1,1,  -(float)_windowSize.y/(float)_windowSize.x ,(float)_windowSize.y/(float)_windowSize.x,   -100.0f,1000.0f);
-    _viewZ.BuildLookAt(Vec3f(0,0,10),Vec3f(0,0,0),Vec3f(0,1,0));
-
-    // start slice is the center -> maybe change to center of frame!
-    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
+    calculateElectrodeMatices();
     sheduleRepaint();
 }
 
@@ -168,7 +142,6 @@ void DICOMRenderer::ChangeSlide(int slidedelta){
     Vec3f currentSlice = _data->getSelectedSlices();
     switch(_activeRenderMode){
     case RenderMode::ThreeDMode:
-                                _eyeDistance += 4.1f*(float)slidedelta;
                                 _camera->Zoom(4.1f*(float)slidedelta);
                                 _view = _camera->buildLookAt();
                                 break;
@@ -193,7 +166,6 @@ void DICOMRenderer::ZoomTwoD(int zoomDelta){
     float z = zoomDelta*0.2f;
     switch(_activeRenderMode){
     case RenderMode::ThreeDMode:
-                                _eyeDistance += 4.1f*(float)zoomDelta;
                                 _camera->Zoom(4.1f*(float)zoomDelta);
                                 _view = _camera->buildLookAt();
                                 break;
@@ -231,9 +203,6 @@ void DICOMRenderer::rotateCamera(Vec3f rotation)
     sheduleRepaint();
 }
 
-void DICOMRenderer::updateSlideView(){
-}
-
 void DICOMRenderer::sheduleRepaint(){
     _needsUpdate = true;
 }
@@ -252,23 +221,27 @@ void DICOMRenderer::checkDatasetStatus(){
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
     _data->checkFocusPoint();
-    if(ElectrodeManager::getInstance().isTrackingMode()){
-        std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
-        if(elec != nullptr){
-            Vec3f lookAt = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
-
-            lookAt = lookAt-Vec3f(100,100,100);
-            lookAt =  _data->getCTeX()*lookAt.x +
-                      _data->getCTeY()*lookAt.y +
-                      _data->getCTeZ()*lookAt.z +
-                      _data->getCTCenter()*_data->getCTScale();
-            setCameraLookAt(lookAt);
-        }
-    }
 
     checkDatasetStatus();
 
+    //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
+
+        //check if the camera has to be placed automaticly
+        if(ElectrodeManager::getInstance().isTrackingMode()){
+            std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
+            if(elec != nullptr){
+                Vec3f lookAt = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
+
+                lookAt = lookAt-Vec3f(100,100,100);
+                lookAt =  _data->getCTeX()*lookAt.x +
+                          _data->getCTeY()*lookAt.y +
+                          _data->getCTeZ()*lookAt.z +
+                          _data->getCTCenter()*_data->getCTScale();
+                setCameraLookAt(lookAt);
+            }
+        }
+
         updateTransferFunction();
 
         if(_activeRenderMode == ThreeDMode){
@@ -278,6 +251,8 @@ void DICOMRenderer::Paint(){
         }
         _needsUpdate = false;
 
+    //we have to to the compositing on each frame, qt5.5
+    //has problems with not switching the framebuffer =/
     }else{
          if(_activeRenderMode == ThreeDMode){
              drawCompositing();
@@ -287,6 +262,7 @@ void DICOMRenderer::Paint(){
     }
     Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
+
 
 bool DICOMRenderer::LoadShaderResources(){
     vector<string> fs,vs;
@@ -361,6 +337,7 @@ bool DICOMRenderer::LoadShaderResources(){
     return true;
 }
 
+
 bool DICOMRenderer::LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, ShaderDescriptor& sd){
     programPtr = std::make_shared<GLProgram>();
     programPtr->Load(sd);
@@ -371,6 +348,7 @@ bool DICOMRenderer::LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, 
     }
     return true;
 }
+
 
 bool DICOMRenderer::LoadGeometry(){
     _volumeBox = std::unique_ptr<GLVolumeBox>(new GLVolumeBox());
@@ -388,6 +366,7 @@ bool DICOMRenderer::LoadGeometry(){
 
     return true;
 }
+
 
 bool DICOMRenderer::LoadFrameBuffer(){
      _rayEntryCT                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
@@ -410,11 +389,13 @@ bool DICOMRenderer::LoadFrameBuffer(){
      return true;
  }
 
+
 bool DICOMRenderer::LoadFFTColorTex(){
     std::vector<Core::Math::Vec3f> color = _data->getFFTColorImage();
     _FFTColor = std::make_shared<GLTexture1D>(color.size(),GL_RGB32F,GL_RGB,GL_FLOAT,&(color[0]));
     return true;
 }
+
 
 void DICOMRenderer::ClearBackground(Vec4f color){
     glClearColor(color.x,color.y,color.z,color.w);
@@ -422,6 +403,7 @@ void DICOMRenderer::ClearBackground(Vec4f color){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+//----------3D-Rendering-Start--------------------------------------------------------------
 void DICOMRenderer::RayCast(){
     //get the default framebuffer (QT Sucks hard!)
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
@@ -457,10 +439,11 @@ void DICOMRenderer::RayCast(){
     drawCompositing();
 }
 
+
 void DICOMRenderer::drawCubeEntry(std::shared_ptr<GLFBOTex> target, Mat4f world){
     //------- Raycaster Rendering
     _targetBinder->Bind(target);
-    //_rayEntryCT->Write();
+
     ClearBackground(Vec4f(0,0,0,0));
 
     glEnable(GL_CULL_FACE);
@@ -488,13 +471,14 @@ void DICOMRenderer::drawCubeEntry(std::shared_ptr<GLFBOTex> target, Mat4f world)
     _targetBinder->Unbind();
 }
 
-void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
-                                  std::shared_ptr<GLFBOTex> positionTarget,
-                                  Mat4f world,
-                                  GLuint entryHandle,
-                                  GLuint volumeHandle,
-                                  GLuint tfHandle,
-                                  float tfScaling){
+
+void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
+                                        std::shared_ptr<GLFBOTex> positionTarget,
+                                        Mat4f world,
+                                        GLuint entryHandle,
+                                        GLuint volumeHandle,
+                                        GLuint tfHandle,
+                                        float tfScaling){
     _targetBinder->Bind(colorTarget,positionTarget);
     ClearBackground(Vec4f(0,0,0,-1000.0f));
 
@@ -556,8 +540,9 @@ void DICOMRenderer::drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
 }
 
 
+
 void DICOMRenderer::drawLineBoxes(){
-    //------- Bounding Box Rendering
+    //------- Bounding Box for CT Volume
     _targetBinder->Bind(_boundingBoxVolumeBuffer);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
@@ -572,6 +557,7 @@ void DICOMRenderer::drawLineBoxes(){
 
     _boundingBox->paint(GL_LINES);
 
+    //this part draws the planes which indicate the current CT slide
     Mat4f translation;
     Mat4f sliceWorld;
     Vec3f currentSlices = _data->getSelectedSlices();
@@ -594,16 +580,59 @@ void DICOMRenderer::drawLineBoxes(){
     _lineShader->Set("color",Vec3f(0,0,1));
     _ZAxisSlice->paint(GL_LINES);
 
-
     _lineShader->Disable();
     _targetBinder->Unbind();
 }
 
+
 void DICOMRenderer::drawPlaning(){
+    //we draw the electrode/g frame in the same FBO as the bounding box
+    //could be changed later
     _targetBinder->Bind(_boundingBoxVolumeBuffer);
+    drawGFrame();
+
+    drawCenterCube();
+
+    drawElectrodeCylinder();
+
+    drawElectrodeSpheres();
+
+    _targetBinder->Unbind();
+}
+
+
+void DICOMRenderer::drawCenterCube(){
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDisable(GL_BLEND);
+    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
+
+    //draws a cube in the center (coord 100,100,100 in gframe)
+    Mat4f scaleT;
+    scaleT.Scaling(1.0,1.0,1.0);
+    Mat4f transT;
+    transT.Translation(_data->getLeftSTN()._endWorldSpace);
+    transT = scaleT*transT;
+
+    _frontFaceShader->Enable();
+    _frontFaceShader->Set("projectionMatrix",_projection);
+    _frontFaceShader->Set("viewMatrix",_view);
+    transT.Translation(_data->getCTCenter()*_data->getCTScale());
+    transT = scaleT*transT;
+
+    _frontFaceShader->Set("worldMatrix",transT);
+    _volumeBox->paint();
+
+    _frontFaceShader->Disable();
+}
+
+
+void DICOMRenderer::drawGFrame(){
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
+    //check if we found the G Frame and draws it if found-------------
     _lineShader->Enable();
     if(_NShape1 != nullptr){
         _lineShader->Enable();
@@ -629,64 +658,15 @@ void DICOMRenderer::drawPlaning(){
 
     }
     _lineShader->Disable();
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glDisable(GL_BLEND);
-    glCullFace(GL_BACK);
-    glDisable(GL_CULL_FACE);
-
-    //draw cubes for the beginning for entrance and target
-    Mat4f scaleT;
-    scaleT.Scaling(1.0,1.0,1.0);
-    Mat4f transT;
-    transT.Translation(_data->getLeftSTN()._endWorldSpace);
-    transT = scaleT*transT;
-
-    _frontFaceShader->Enable();
-    _frontFaceShader->Set("projectionMatrix",_projection);
-    _frontFaceShader->Set("viewMatrix",_view);
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
-
-    scaleT.Scaling(1.0,1.0,1.0);
-    transT.Translation(_data->getLeftSTN()._startWorldSpace);
-    transT = scaleT*transT;
-
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
-
-    scaleT.Scaling(1.0,1.0,1.0);
-    transT.Translation(_data->getRightSTN()._endWorldSpace);
-    transT = scaleT*transT;
-
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
-
-    scaleT.Scaling(1.0,1.0,1.0);
-    transT.Translation(_data->getRightSTN()._startWorldSpace);
-    transT = scaleT*transT;
-
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
-
-    scaleT.Scaling(1.0,1.0,1.0);
-    transT.Translation(_data->getCTCenter()*_data->getCTScale());
-    transT = scaleT*transT;
-
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
-
-    _frontFaceShader->Disable();
+}
 
 
+void DICOMRenderer::drawElectrodeCylinder(){
     //draw the electrode basics
 
     _electrodeGeometryShader->Enable();
     _electrodeGeometryShader->Set("projectionMatrix",_projection);
     _electrodeGeometryShader->Set("viewMatrix",_view);
-
-    calculateElectrodeMatices();
 
     Vec3f dirLeft = _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace;
     float lengthLeft = dirLeft.length()+5;
@@ -726,13 +706,14 @@ void DICOMRenderer::drawPlaning(){
         }
     }
     _electrodeGeometryShader->Disable();
+}
 
 
-
-
-
-    //draw the trajectories----------------------------
+void DICOMRenderer::drawElectrodeSpheres(){
+    //draw the electrodes----------------------------
     Vec3f position;
+    Mat4f scaleT;
+    Mat4f transT;
     scaleT.Scaling(1.0,1.0,1.0);
     Mat4f worldScaling;
     worldScaling.Scaling(_data->getCTScale());
@@ -744,7 +725,7 @@ void DICOMRenderer::drawPlaning(){
     _sphereFFTShader->Set("fftRange",_data->getSpectralRange());
     _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
 
-    for(int i = 0; i < 6;i++){
+    for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();i++){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
         if(electrode != nullptr){
             for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
@@ -766,8 +747,8 @@ void DICOMRenderer::drawPlaning(){
     }
 
     _sphereFFTShader->Disable();
-    _targetBinder->Unbind();
 }
+
 
 void DICOMRenderer::drawCompositing(){
     //------- Compositing
@@ -788,11 +769,13 @@ void DICOMRenderer::drawCompositing(){
 
     _compositingThreeDShader->Disable();
 }
+//----------3D-Rendering-End--------------------------------------------------------------
+
 
 void DICOMRenderer::SliceRendering(){
 
     if(_GL_CTVolume != nullptr){
-            drawSliceV2(_GL_CTVolume->GetGLID(),
+            drawSlice(                      _GL_CTVolume->GetGLID(),
                                             _data->getCTTransferScaling(),
                                             _TwoDCTVolumeFBO,
                                             _TwoDCTPositionVolumeFBO,
@@ -801,9 +784,7 @@ void DICOMRenderer::SliceRendering(){
 
     }
     if(_GL_MRVolume != nullptr){
-            //drawSliceVolume(_GL_MRVolume->GetGLID(),_data->getMRTransferScaling(),_data->getMRScale(),_TwoDMRVolumeFBO,_TwoDMRPositionVolumeFBO,_data->getSelectedSlices(),_data->getMROffset(),false);
-
-            drawSliceV2(_GL_MRVolume->GetGLID(),
+            drawSlice(                  _GL_MRVolume->GetGLID(),
                                         _data->getMRTransferScaling(),
                                         _TwoDMRVolumeFBO,
                                         _TwoDMRPositionVolumeFBO,
@@ -816,7 +797,8 @@ void DICOMRenderer::SliceRendering(){
     drawSliceCompositing();
 }
 
-void DICOMRenderer::drawSliceV2(GLuint volumeID,
+
+void DICOMRenderer::drawSlice(GLuint volumeID,
                                 float transferScaling,
                                 std::shared_ptr<GLFBOTex> color,
                                 std::shared_ptr<GLFBOTex> position,
@@ -844,7 +826,7 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
     if(secondary){
         slice-= Vec3f(0.5f,0.5f,0.5f);
         slice*= _data->getCTScale(); //<- worldposition of non rotated ct volume!
-        //slice-=VolumeTranslation;
+
         slice /= _data->getMRScale();
         slice += Vec3f(0.5,0.5,0.5); //<- mr volume pos;
 
@@ -856,8 +838,6 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
         y.RotationY(_data->getMRRotation().y);
         z.RotationZ(_data->getMRRotation().z);
         rotation = x*y*z;
-        //std::cout << "rot"<< _data->getMRRotation() << std::endl;
-        //std::cout << "trans"<< _data->getMROffset() << std::endl;
     }
 
     if(_GL_CTVolume != nullptr){
@@ -942,11 +922,9 @@ void DICOMRenderer::drawSliceV2(GLuint volumeID,
         };
     }
 
-
-
-
     glDisable(GL_DEPTH_TEST);
 }
+
 
 void DICOMRenderer::drawSliceElectrode(){
 
@@ -987,7 +965,6 @@ void DICOMRenderer::drawSliceElectrode(){
     _electrodeGeometryShader->Enable();
     _electrodeGeometryShader->Set("projectionMatrix",curProj);
     _electrodeGeometryShader->Set("viewMatrix",curView);
-    calculateElectrodeMatices();
 
     Vec3f dirLeft = _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace;
     float lengthLeft = dirLeft.length()+5;
@@ -1071,13 +1048,16 @@ void DICOMRenderer::drawSliceElectrode(){
     glDisable(GL_DEPTH_TEST);
 }
 
+
 void DICOMRenderer::drawSliceTop(){
 
 }
 
+
 void DICOMRenderer::drawSliceFont(){
 
 }
+
 
 void DICOMRenderer::drawSliceCompositing(){
   glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
@@ -1112,6 +1092,7 @@ void DICOMRenderer::drawSliceCompositing(){
 
   _compositingTwoDShader->Disable();
 }
+
 
 void DICOMRenderer::frameSlicing(Vec2f range){
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
@@ -1150,6 +1131,7 @@ void DICOMRenderer::frameSlicing(Vec2f range){
     glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
 }
 
+
 void DICOMRenderer::updateTransferFunction(){
     std::vector<Core::Math::Vec4f> tf = *(_data->getTransferFunction().get());
     if(tf.size() > 0){
@@ -1160,6 +1142,8 @@ void DICOMRenderer::updateTransferFunction(){
         }
     }
 }
+
+
 
 void DICOMRenderer::PickPixel(Vec2ui coord){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
@@ -1199,6 +1183,7 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
     }
 Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
+
 
 std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range){
     bool firstFindEnd = false;
@@ -1292,9 +1277,8 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
     corners.push_back(bottomLeft);
 
     return corners;
-
-    //_activeRenderMode = RenderMode::ThreeDMode;
 }
+
 
 void DICOMRenderer::createFrameGeometry(std::vector<Vec3f> corners, int id){
     //create geometry
@@ -1340,116 +1324,19 @@ void DICOMRenderer::createFrameGeometry(std::vector<Vec3f> corners, int id){
    }
 }
 
-void DICOMRenderer::create2DGeometry(){
-    float verts[4*3];
-    float quad[8*3];
-
-    Mat4f Scaling;
-    float longest = std::max(_data->getCTScale().x,std::max(_data->getCTScale().y,_data->getCTScale().z));
-
-    Scaling.Scaling(_data->getCTScale().x/longest,_data->getCTScale().y/longest,_data->getCTScale().z/longest);
-
-
-    //ZAXIS
-    Vec3f topL = _data->getCTeZ()*-1.0f+ _data->getCTeY()*-1.0f;
-    Vec3f botL = _data->getCTeZ()*-1.0f+ _data->getCTeY()*1.0f;
-    Vec3f botR = _data->getCTeZ()*1.0f+ _data->getCTeY()*1.0f;
-    Vec3f topR = _data->getCTeZ()*1.0f+ _data->getCTeY()*-1.0f;
-
-    verts[0]= topL.z;
-    verts[1]= topL.y;
-    verts[2]= topL.x;
-
-    verts[3]= botL.z;
-    verts[4]= botL.y;
-    verts[5]= botL.x;
-
-    verts[6]= botR.z;
-    verts[7]= botR.y;
-    verts[8]= botR.x;
-
-    verts[9]= topR.z;
-    verts[10]= topR.y;
-    verts[11]= topR.x;
-
-    _renderPlaneZ = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(verts,_windowSize));
-
-    //XAXIS
-    topL = _data->getCTeZ()*-1.0f+ _data->getCTeY()*-1.0f;
-    botL = _data->getCTeZ()*-1.0f+ _data->getCTeY()*1.0f;
-    botR = _data->getCTeZ()*1.0f+ _data->getCTeY()*1.0f;
-    topR = _data->getCTeZ()*1.0f+ _data->getCTeY()*-1.0f;
-
-    std::cout << topL<<std::endl;
-    std::cout << botL<<std::endl;
-    std::cout << botR<<std::endl;
-    std::cout << topR<<std::endl;
-    std::cout << "lol"<< std::endl;
-    std::cout << _data->getCTeX()<<std::endl;
-    std::cout << _data->getCTeY()<<std::endl;
-    std::cout << _data->getCTeZ()<<std::endl;
-
-
-    verts[0]= topL.x;
-    verts[1]= topL.y;
-    verts[2]= topL.z;
-
-    verts[3]= botL.x;
-    verts[4]= botL.y;
-    verts[5]= botL.z;
-
-    verts[6]= botR.x;
-    verts[7]= botR.y;
-    verts[8]= botR.z;
-
-    verts[9]= topR.x;
-    verts[10]= topR.y;
-    verts[11]= topR.z;
-    _renderPlaneX = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(verts,_windowSize));
-
-    _viewX.BuildLookAt(_data->getCTeX()*10.0f,Vec3f(0,0,0),-_data->getCTeY());
-
-
-    //YAXIS
-    topL = _data->getCTeX()*-1.0f+ _data->getCTeZ()*-1.0f;
-    botL = _data->getCTeX()*-1.0f+ _data->getCTeZ()*1.0f;
-    botR = _data->getCTeX()*1.0f+ _data->getCTeZ()*1.0f;
-    topR = _data->getCTeX()*1.0f+ _data->getCTeZ()*-1.0f;
-
-    topL*= 0.5f;
-    botL*= 0.5f;
-    botR*= 0.5f;
-    topR*= 0.5f;
-
-    verts[0]= topL.x;
-    verts[1]= topL.z;
-    verts[2]= topL.y;
-
-    verts[3]= botL.x;
-    verts[4]= botL.z;
-    verts[5]= botL.y;
-
-    verts[6]= botR.x;
-    verts[7]= botR.z;
-    verts[8]= botR.y;
-
-    verts[9]= topR.x;
-    verts[10]= topR.z;
-    verts[11]= topR.y;
-    _renderPlaneY = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(verts,_windowSize));
-
-}
 
 DICOMClipMode DICOMRenderer::clipMode() const
 {
     return _clipMode;
 }
 
+
 void DICOMRenderer::setClipMode(const DICOMClipMode &clipMode)
 {
     _clipMode = clipMode;
     _needsUpdate = true;
 }
+
 
 void DICOMRenderer::calculateElectrodeMatices(){
     //left
