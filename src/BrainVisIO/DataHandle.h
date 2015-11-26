@@ -179,10 +179,10 @@ public:
     Core::Math::Vec3f getSelectedWorldSpacePositon() const;
 
     void checkFocusPoint();
-
+    void incrementStatus();
 private:
     void updateMRWorld();
-    void incrementStatus();
+
 
     //MR Volume
     std::string                                     _MRPath;

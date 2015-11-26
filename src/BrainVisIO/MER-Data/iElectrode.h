@@ -13,7 +13,8 @@ public:
         _name(name),
         _SpectralPowerRange(Core::Math::Vec2d(100000.0,-100000.0)),
         _analysisRange(range),
-        _depthRange(Core::Math::Vec2d(100000.0,-1000000.0))
+        _depthRange(Core::Math::Vec2d(100000.0,-1000000.0)),
+        _isSelected(false)
     {}
     virtual ~iElectrode(){}
 
@@ -61,6 +62,14 @@ public:
         return _depthRange;
     }
 
+    bool getIsSelected() const
+    {
+    return _isSelected;
+    }
+    void setIsSelected(bool isSelected)
+    {
+    _isSelected = isSelected;
+    }
 protected:
     std::map<int8_t,std::shared_ptr<iMERData>>      _electrodeData;
     std::string                                     _name;
@@ -68,6 +77,8 @@ protected:
     double                                          _SpectralAverage;
     Core::Math::Vec2d                               _analysisRange;
     Core::Math::Vec2d                               _depthRange;
+
+    bool                                            _isSelected;
 
 private:
 

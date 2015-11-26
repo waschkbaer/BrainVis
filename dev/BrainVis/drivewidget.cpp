@@ -73,7 +73,7 @@ void DriveWidget::on_addElectrode_clicked()
 
         ui->dataPanel->layout()->addWidget(frame);
         _electrodeFrames.insert(std::pair<std::string,ElectrodeBaseFrame*>(selection,frame));
-
+        _data->incrementStatus();
     }
     this->resize(this->minimumWidth(),this->minimumHeight());
 }
@@ -95,6 +95,8 @@ void DriveWidget::on_removeButton_clicked()
 
             _electrodeFrames.erase(selection);
             delete frame;
+
+            _data->incrementStatus();
         }
         this->resize(this->minimumWidth(),this->minimumHeight());
 }

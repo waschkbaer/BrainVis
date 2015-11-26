@@ -24,6 +24,7 @@ ElectrodeBaseFrame::~ElectrodeBaseFrame(){
     while ( QWidget* w = findChild<QWidget*>() ){
         delete w;
     }
+   ElectrodeManager::getInstance().getElectrode(_electrodeName)->setIsSelected(false);
 }
 
 
@@ -79,6 +80,7 @@ void ElectrodeBaseFrame::resetFrame(){
 
 void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data, ImageSetting setting){
     std::shared_ptr<iElectrode> electrode = data->getElectrode(_electrodeName);
+    electrode->setIsSelected(true);
     if(electrode == nullptr){
         return;
     }

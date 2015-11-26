@@ -681,6 +681,7 @@ void DICOMRenderer::drawElectrodeCylinder(){
 
     for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if(!electrode->getIsSelected()) continue;
         if((electrode->getName().c_str())[0] == 'L'){
             startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
             startPos = (startPos-Vec3f(100,100,100));
@@ -727,6 +728,7 @@ void DICOMRenderer::drawElectrodeSpheres(){
 
     for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();i++){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if(!electrode->getIsSelected()) continue;
         if(electrode != nullptr){
             for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
                 std::shared_ptr<iMERData> data = electrode->getData(k);
@@ -979,6 +981,7 @@ void DICOMRenderer::drawSliceElectrode(){
 
     for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if(!electrode->getIsSelected()) continue;
         if((electrode->getName().c_str())[0] == 'L'){
             startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
             startPos = (startPos-Vec3f(100,100,100));
@@ -1023,6 +1026,7 @@ void DICOMRenderer::drawSliceElectrode(){
 
     for(int i = 0; i < 6;i++){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
+        if(!electrode->getIsSelected()) continue;
         if(electrode != nullptr){
             for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
                 std::shared_ptr<iMERData> data = electrode->getData(k);
