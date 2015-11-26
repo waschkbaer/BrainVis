@@ -39,14 +39,14 @@ void ElectrodeBaseFrame::on_radioButton_clicked(){
     if(_isSelected->isChecked()){
         ElectrodeManager::getInstance().setTrackedElectrode(_electrodeName);
     }else{
-        if( std::strcmp(ElectrodeManager::getInstance().getTrackedElectrode().c_str(),_electrodeName.c_str()) != 0){
+        if( ElectrodeManager::getInstance().getTrackedElectrode() == _electrodeName){
             ElectrodeManager::getInstance().setTrackedElectrode("none");
         }
     }
 }
 
 void ElectrodeBaseFrame::checkToDisableRadioButton(){
-    if( std::strcmp(ElectrodeManager::getInstance().getTrackedElectrode().c_str(),_electrodeName.c_str()) != 0){
+    if( ElectrodeManager::getInstance().getTrackedElectrode() != _electrodeName){
             _isSelected->setChecked(false);
     }
 }

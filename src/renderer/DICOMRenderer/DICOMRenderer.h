@@ -59,6 +59,7 @@ class DICOMRenderer{
         void ZoomTwoD(int zoomDelta);
 
         void moveCamera(Vec3f dir);
+        void setCameraLookAt(Vec3f lookAt);
         void rotateCamera(Vec3f rotation);
         void updateSlideView();
 

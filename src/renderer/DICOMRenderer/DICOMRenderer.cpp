@@ -217,6 +217,12 @@ void DICOMRenderer::moveCamera(Vec3f dir)
     sheduleRepaint();
 }
 
+void DICOMRenderer::setCameraLookAt(Vec3f lookAt){
+    _camera->setLookAt(lookAt);
+    _view = _camera->buildLookAt();
+    sheduleRepaint();
+}
+
 void DICOMRenderer::rotateCamera(Vec3f rotation)
 {
     //change rotate camera
@@ -246,6 +252,20 @@ void DICOMRenderer::checkDatasetStatus(){
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
     _data->checkFocusPoint();
+    if(ElectrodeManager::getInstance().isTrackingMode()){
+        std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
+        if(elec != nullptr){
+            Vec3f lookAt = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
+
+            lookAt = lookAt-Vec3f(100,100,100);
+            lookAt =  _data->getCTeX()*lookAt.x +
+                      _data->getCTeY()*lookAt.y +
+                      _data->getCTeZ()*lookAt.z +
+                      _data->getCTCenter()*_data->getCTScale();
+            setCameraLookAt(lookAt);
+        }
+    }
+
     checkDatasetStatus();
 
     if(_needsUpdate){

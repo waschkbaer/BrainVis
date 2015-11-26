@@ -41,6 +41,9 @@ namespace Tuvok{
       Core::Math::Vec3f getLookAt() const{
           return m_vLookAt;
       }
+      void setLookAt(Core::Math::Vec3f lookAt){
+            m_vLookAt = lookAt;
+      }
 
 	  void ResetCamera();
 

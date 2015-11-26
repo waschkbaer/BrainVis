@@ -187,7 +187,7 @@ void Camera::pivit(float theta)
 	//Assumption: Camera Position remains unchanged, but the cameraLookAt is modified through rotation
 	//Plan of Attack:	Find new cameraLookAt by rotating x degrees around the upVector axis
 	m_vUp.normalize();
-	Vec3f rotateAroundVector = m_vUp;
+    Vec3f rotateAroundVector = m_vUp;
 
 	//Now find the new point of cameraLookAt using quaternians: Rotate theta around "rotateAroundVector" at point cameraPos
 	//q = cos(qTheta) + (i)sin(qTheta)
@@ -258,7 +258,7 @@ void Camera::tilt(float theta)
 	Vec3f rotateAroundVector;
 
 	//Calculate Cross Product: lookAtVector X upVector
-	rotateAroundVector = lookAtVector % m_vUp;
+    rotateAroundVector = lookAtVector % m_vUp;
 
 
 
@@ -327,7 +327,7 @@ void Camera::tilt(float theta)
 	resultantMatrix = q * p * qi;
 
 	Vec3f resultantPoint2(resultantMatrix.m21, resultantMatrix.m31, resultantMatrix.m41);
-	m_vUp = resultantPoint2;
+    //m_vUp = resultantPoint2;
 
 	m_vUp.normalize();
 	m_vDir.normalize();

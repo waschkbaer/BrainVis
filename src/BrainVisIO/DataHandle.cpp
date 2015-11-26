@@ -677,7 +677,7 @@ void DataHandle::checkFocusPoint(){
 
         CTSpacePosition = CTSpacePosition-Vec3f(100,100,100);
         Vec3f worldSpace =  getCTeX()*CTSpacePosition.x +
-                            getCTeY()*CTSpacePosition.y+
+                            getCTeY()*CTSpacePosition.y +
                             getCTeZ()*CTSpacePosition.z;
         Vec3f volumeSpace = (worldSpace/_CTScale)+this->getCTCenter()+Vec3f(0.5f,0.5f,0.5f);
 

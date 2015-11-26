@@ -55,3 +55,7 @@ void ElectrodeManager::clear(){
     _electrodes.clear();
     _names.clear();
 }
+
+bool ElectrodeManager::isTrackingMode(){
+    return _trackedElectrode != "none";
+}

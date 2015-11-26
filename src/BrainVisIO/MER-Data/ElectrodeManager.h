@@ -28,6 +28,7 @@ public:
 
     std::string getTrackedElectrode() const;
     void setTrackedElectrode(const std::string &trackedElectrode);
+    bool isTrackingMode();
 
 protected:
 
