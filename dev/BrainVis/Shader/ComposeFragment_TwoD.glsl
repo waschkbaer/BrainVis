@@ -4,7 +4,7 @@ uniform sampler2D sliceImageCT;
 uniform sampler2D sliceImageMR;
 uniform sampler2D electrodeImage;
 uniform sampler2D CTPosition;
-uniform sampler2D topImage;
+uniform sampler2D fontTexture;
 
 uniform int axis = 0;
 uniform float mrctblend = 0.5f;
@@ -24,7 +24,7 @@ void main(void)
   vec4 sliceMR = texture(sliceImageMR,vScreenPosition);
   vec4 electrode = texture(electrodeImage,vScreenPosition);
   vec3 position = texture(CTPosition,vScreenPosition).xyz;
-  vec4 top = texture(topImage,vScreenPosition);
+  vec3 font = texture(fontTexture,vec2(vScreenPosition.x,1.0-vScreenPosition.y)).xyz;
 
   position -= vec3(0.5f,0.5f,0.5f);
 
@@ -46,6 +46,10 @@ void main(void)
   }
   if(abs(focusPoint.z-position.z) < (0.004f/zoomFactor) ){
     outputColor += vec4(0,0,0.2f,1);
+  }
+
+  if(!(font.x == 0 && font.y == 0 && font.z == 0)){
+    outputColor = vec4(font,1);
   }
 }
 

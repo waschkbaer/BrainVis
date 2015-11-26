@@ -1075,7 +1075,7 @@ void DICOMRenderer::drawSliceCompositing(){
   _compositingTwoDShader->SetTexture2D("sliceImageMR",_TwoDMRVolumeFBO->GetTextureHandle(),1);
   _compositingTwoDShader->SetTexture2D("electrodeImage",_TwoDElectrodeFBO->GetTextureHandle(),2);
   _compositingTwoDShader->SetTexture2D("CTPosition",_TwoDCTPositionVolumeFBO->GetTextureHandle(),3);
-  _compositingTwoDShader->SetTexture2D("topImage",_TwoDTopFBO->GetTextureHandle(),4);
+  _compositingTwoDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),4);
   _compositingTwoDShader->Set("mrctblend", _data->getMRCTBlend());
 
   Vec3f slice = _data->getSelectedSlices();

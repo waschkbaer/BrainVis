@@ -207,6 +207,7 @@ void DataHandle::setDisplayedDriveRange(const Core::Math::Vec2i &displayedDriveR
 
 void DataHandle::updateMRWorld(){
     Mat4f scale;
+    Mat4f scaleInv;
     Mat4f trans;
     Mat4f rotX,rotY,rotZ;
     
@@ -216,7 +217,8 @@ void DataHandle::updateMRWorld(){
     rotY.RotationY(_MRRotation.y);
     rotZ.RotationZ(_MRRotation.z);
 
-    _MRWorld = scale*trans*rotX*rotY*rotZ;
+    scaleInv = scale.inverse();
+    _MRWorld = scale*rotX*rotY*rotZ*trans;
     incrementStatus();
 }
 uint64_t DataHandle::getDataSetStatus() const
