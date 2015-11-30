@@ -1264,9 +1264,9 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
                 framePosition.push_back(curValue);
             }
         }
-        if(foundOnSlice){
-                            screenshot(counter++);
-        }
+        /*if(foundOnSlice){
+          screenshot(counter++);
+        }*/
 
 
 
