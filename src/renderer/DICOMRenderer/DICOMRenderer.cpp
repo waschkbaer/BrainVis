@@ -1188,6 +1188,44 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
 Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
+static int screenshot(int i)
+{
+    unsigned char *pixels;
+    FILE *image;
+
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    pixels = new unsigned char[viewport[2] * viewport[3] * 3];
+
+    glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB,
+        GL_UNSIGNED_BYTE, pixels);
+
+    char tempstring[50];
+    sprintf(tempstring, "screenshot_%i.tga", i);
+    if ((image = fopen(tempstring, "wb")) == NULL) return 1;
+
+    unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    unsigned char header[6] = { static_cast<unsigned char>(((int)(viewport[2] % 256))),
+        static_cast<unsigned char>(((int)(viewport[2] / 256))),
+        static_cast<unsigned char>(((int)(viewport[3] % 256))),
+        static_cast<unsigned char>(((int)(viewport[3] / 256))), 24, 0 };
+
+    // TGA header schreiben
+    fwrite(TGAheader, sizeof(unsigned char), 12, image);
+    // Header schreiben
+    fwrite(header, sizeof(unsigned char), 6, image);
+
+    fwrite(pixels, sizeof(unsigned char),
+        viewport[2] * viewport[3] * 3, image);
+
+    fclose(image);
+    delete[] pixels;
+
+    return 0;
+}
+static int counter= 0;
 
 std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range){
     bool firstFindEnd = false;
@@ -1212,6 +1250,8 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
         glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
         glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&(framebuffer[0]));
 
+
+
         foundOnSlice = false;
         for(int i = 0; i < framebuffer.size();++i){
             curValue = Vec3f((float)framebuffer[i].x/255.0f,(float)framebuffer[i].y/255.0f,(float)framebuffer[i].z/255.0f);
@@ -1224,6 +1264,10 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
                 framePosition.push_back(curValue);
             }
         }
+        if(foundOnSlice){
+                            screenshot(counter++);
+        }
+
 
 
         //go to next slice
@@ -1238,6 +1282,40 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
             firstFindEnd = true;
         }
     }
+
+
+    //creating clusters
+    float minDistance = 0.05f;
+    bool foundN = false;
+    std::vector<Vec3f> cluster;
+
+    cluster.push_back(framePosition[framePosition.size()/2]);
+    framePosition.erase(framePosition.begin());
+
+    int frameCount = framePosition.size();
+    do{
+        foundN = false;
+        for(int c = 0; c < cluster.size();++c){
+            Vec3f cPos = cluster[c];
+                frameCount = framePosition.size();
+                for(int i = 0; i < frameCount;i++){
+                    Vec3f fPos = framePosition[i];
+                    float length = (fPos-cPos).length();
+                    if(length < minDistance){
+                        cluster.push_back(fPos);
+                        foundN = true;
+                        framePosition.erase(framePosition.begin()+i);
+                        frameCount--;
+                        i--;
+                    }
+                }
+        }
+    }while(foundN);
+    std::cout << framePosition.size() << "LEFT ELEMENTS IN FRAMEPOSITION WITH ONLY ONE CLUSTER!!!"<<std::endl;
+    std::cout << cluster.size() << "ELEMENTS IN CLUSTER"<<std::endl;
+
+    framePosition = cluster;
+
 
     //finding the corners of the N shape
     Vec3f topLeft(0,0,0);
