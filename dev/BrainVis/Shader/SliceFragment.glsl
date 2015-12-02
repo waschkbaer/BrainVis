@@ -6,12 +6,6 @@ uniform sampler1D transferfunction;
 uniform int axis = 0;
 uniform float tfScaling;
 
-uniform vec3 target1 = vec3(0,0,0);
-uniform vec3 target2 = vec3(0,0,0);
-uniform vec3 entry1 = vec3(0,0,0);
-uniform vec3 entry2 = vec3(0,0,0);
-uniform float radius = 0.01f;
-
 // INPUT VARIABLES
 in vec3 vScreenPosition;
 in vec3 vViewPos;

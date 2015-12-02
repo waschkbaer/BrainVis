@@ -41,11 +41,6 @@ void OpenGLWidget::cleanup(){
 
 void OpenGLWidget::initializeGL()
 {
-    QSurfaceFormat format;
-    format.setMajorVersion(4);
-    format.setMinorVersion(1);
-    format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
-    this->setFormat(format);
     initializeOpenGLFunctions();
 
 
@@ -64,7 +59,7 @@ void OpenGLWidget::initializeGL()
 
 int i=0;
 void OpenGLWidget::paintGL(){
-    GLMutex::getInstance().lockContext();
+    //GLMutex::getInstance().lockContext();
     if(_renderer != nullptr){
         if(_windowSize.x != width() ||_windowSize.y != height() ){
             _windowSize.x = width();
@@ -79,7 +74,7 @@ void OpenGLWidget::paintGL(){
         _renderer = std::unique_ptr<DICOMRenderer>(new DICOMRenderer());
         _renderer->Initialize();
     }
-    GLMutex::getInstance().unlockContext();
+    //GLMutex::getInstance().unlockContext();
 }
 
 void OpenGLWidget::update(){

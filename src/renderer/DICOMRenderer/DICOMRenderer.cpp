@@ -31,8 +31,11 @@ _needsUpdate(true)
 void DICOMRenderer::Initialize(){
     //loading shaders, geometry and framebuffers
     if(!LoadShaderResources()) cout << "error in load shaders" << endl;
+    checkForErrorCodes("@ after Load Shader");
     if(!LoadGeometry()) cout << "error in load geometry" << endl;
+    checkForErrorCodes("@ after Load Geometry");
     if(!LoadFrameBuffer()) cout << "error in load framebuffer" << endl;
+    checkForErrorCodes("@ after Load FrameBuffer");
 
     //creating a targetBinder to simplify switching between framebuffers
     _targetBinder = std::unique_ptr<GLTargetBinder>(new GLTargetBinder());
@@ -218,15 +221,22 @@ void DICOMRenderer::checkDatasetStatus(){
     }
 }
 
+
+bool regisDown=false;
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
     _data->checkFocusPoint();
 
     checkDatasetStatus();
 
+    if(!regisDown){
+        subVolumes(Vec3f(0,0,0),Vec3f(0,0,0));
+        regisDown = true;
+    }
+
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
-
+        std::cout << "complete new"<<std::endl;
         //check if the camera has to be placed automaticly
         if(ElectrodeManager::getInstance().isTrackingMode()){
             std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
@@ -265,11 +275,13 @@ void DICOMRenderer::Paint(){
 
 
 bool DICOMRenderer::LoadShaderResources(){
+    checkForErrorCodes("@ start Load Shader - clean error");
     vector<string> fs,vs;
     vs.push_back("Shader/CubeVertex.glsl");
     fs.push_back("Shader/CubeFragment.glsl");
     ShaderDescriptor sd(vs,fs);
     if(!LoadAndCheckShaders(_frontFaceShader,sd)) return false;
+    checkForErrorCodes("@ Load CubeShader");
 
     vs.clear();
     fs.clear();
@@ -277,6 +289,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/NearPlaneFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_NearPlanShader,sd)) return false;
+    checkForErrorCodes("@ Load NearPlaneShader");
 
     vs.clear();
     fs.clear();
@@ -284,6 +297,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/RayCasterFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_rayCastShader,sd)) return false;
+    checkForErrorCodes("@ Load RayCastShader");
 
     vs.clear();
     fs.clear();
@@ -291,6 +305,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/ComposeFragment_ThreeD.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_compositingThreeDShader,sd)) return false;
+    checkForErrorCodes("@ Load Compositing3DShader");
 
     vs.clear();
     fs.clear();
@@ -298,6 +313,17 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/ComposeFragment_TwoD.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_compositingTwoDShader,sd)) return false;
+    checkForErrorCodes("@ Load Compositing2DShader");
+
+    vs.clear();
+    fs.clear();
+    vs.push_back("Shader/ComposeVertex.glsl");
+    fs.push_back("Shader/ComposeFragmenVolumeSubstraction.glsl");
+    sd = ShaderDescriptor(vs,fs);
+    if(!LoadAndCheckShaders(_compositingVolumeSubstraction,sd)) return false;
+    checkForErrorCodes("@ Load Compositing2DShader");
+
+
 
     vs.clear();
     fs.clear();
@@ -305,6 +331,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/SliceFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_sliceShader,sd)) return false;
+    checkForErrorCodes("@ Load SliceShader");
 
     vs.clear();
     fs.clear();
@@ -312,6 +339,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/LineFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_lineShader,sd)) return false;
+    checkForErrorCodes("@ Load LineShader");
 
     vs.clear();
     fs.clear();
@@ -319,6 +347,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/FFTColorFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_sphereFFTShader,sd)) return false;
+    checkForErrorCodes("@ Load SphereShader");
 
     vs.clear();
     fs.clear();
@@ -326,6 +355,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/FrameFindFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_frameSearchShader,sd)) return false;
+    checkForErrorCodes("@ Load GFrameShader");
 
     vs.clear();
     fs.clear();
@@ -333,6 +363,7 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/ElectrodeGeometryFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_electrodeGeometryShader,sd)) return false;
+    checkForErrorCodes("@ Load ElectrodeShader");
 
     return true;
 }
@@ -351,6 +382,7 @@ bool DICOMRenderer::LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, 
 
 
 bool DICOMRenderer::LoadGeometry(){
+    checkForErrorCodes("@start LoadGeometry - clean error");
     _volumeBox = std::unique_ptr<GLVolumeBox>(new GLVolumeBox());
     _renderPlane = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(_windowSize));
     _renderPlaneX = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(_windowSize,0));
@@ -369,6 +401,7 @@ bool DICOMRenderer::LoadGeometry(){
 
 
 bool DICOMRenderer::LoadFrameBuffer(){
+     checkForErrorCodes("@start LoadFrameBuffer - clean error");
      _rayEntryCT                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _rayCastColorCT                = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _rayCastPositionCT             = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
@@ -386,8 +419,24 @@ bool DICOMRenderer::LoadFrameBuffer(){
 
      //fontbuffer
      _FontTexture                   = std::make_shared<GLTexture2D>(_windowSize.x, _windowSize.y, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
+     checkForErrorCodes("@end LoadFrameBuffer - clean error");
      return true;
  }
+
+void DICOMRenderer::checkForErrorCodes(std::string note){
+    uint32_t errorCode = glGetError();
+    if(errorCode != GL_NO_ERROR){
+        std::cout << "ERROR @ note:"<< note.c_str() <<std::endl;
+        switch(errorCode){
+            case GL_INVALID_ENUM : std::cout << "INVALID ENUM"<<std::endl;break;
+            case GL_INVALID_VALUE : std::cout << "INVALID VALUE"<<std::endl;break;
+            case GL_INVALID_OPERATION : std::cout << "INVALID OPERATION"<<std::endl;break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION : std::cout << "INVALID FRAMEBUFFER OPERATION"<<std::endl;break;
+            case GL_OUT_OF_MEMORY : std::cout << "OUT OF MEMORY"<<std::endl;break;
+            default : std::cout << "UNKNOWN ERRORCODE"<<std::endl;
+        }
+    }
+}
 
 
 bool DICOMRenderer::LoadFFTColorTex(){
@@ -782,6 +831,7 @@ void DICOMRenderer::SliceRendering(){
                                             _TwoDCTVolumeFBO,
                                             _TwoDCTPositionVolumeFBO,
                                             Vec3f(0,0,0),
+                                            Vec3f(0,0,0),
                                             _data->getCTScale());
 
     }
@@ -791,6 +841,7 @@ void DICOMRenderer::SliceRendering(){
                                         _TwoDMRVolumeFBO,
                                         _TwoDMRPositionVolumeFBO,
                                         _data->getMROffset(),
+                                        _data->getMRRotation(),
                                         _data->getMRScale(),
                                         true);
     }
@@ -805,6 +856,7 @@ void DICOMRenderer::drawSlice(GLuint volumeID,
                                 std::shared_ptr<GLFBOTex> color,
                                 std::shared_ptr<GLFBOTex> position,
                                 Vec3f VolumeTranslation,
+                                Vec3f VolumeRotation,
                                 Vec3f VolumeScale,
                                 bool secondary){
     _targetBinder->Bind(color,position);
@@ -829,16 +881,16 @@ void DICOMRenderer::drawSlice(GLuint volumeID,
         slice-= Vec3f(0.5f,0.5f,0.5f);
         slice*= _data->getCTScale(); //<- worldposition of non rotated ct volume!
 
-        slice /= _data->getMRScale();
+        slice /= VolumeScale;
         slice += Vec3f(0.5,0.5,0.5); //<- mr volume pos;
 
 
         VolumeTranslation/=VolumeScale;
 
         Mat4f x,y,z;
-        x.RotationX(_data->getMRRotation().x);
-        y.RotationY(_data->getMRRotation().y);
-        z.RotationZ(_data->getMRRotation().z);
+        x.RotationX(VolumeRotation.x);
+        y.RotationY(VolumeRotation.y);
+        z.RotationZ(VolumeRotation.z);
         rotation = x*y*z;
     }
 
@@ -847,12 +899,6 @@ void DICOMRenderer::drawSlice(GLuint volumeID,
         _sliceShader->SetTexture3D("volume",volumeID,0);
         _sliceShader->SetTexture1D("transferfunction",_transferFunctionTex->GetGLID(),1);
         _sliceShader->Set("tfScaling",transferScaling);
-
-        _sliceShader->Set("target1",_data->getLeftSTN()._endVolumeSpace);
-        _sliceShader->Set("target2",_data->getRightSTN()._endVolumeSpace);
-        _sliceShader->Set("entry1",_data->getLeftSTN()._startVolumeSpace);
-        _sliceShader->Set("entry2",_data->getRightSTN()._startVolumeSpace);
-        _sliceShader->Set("radius",0.03f);
 
         Vec3f CenterOffset = (_data->getSelectedSlices()-Vec3f(0.5f,0.5f,0.5f))*_data->getCTScale();
 
@@ -927,6 +973,142 @@ void DICOMRenderer::drawSlice(GLuint volumeID,
     glDisable(GL_DEPTH_TEST);
 }
 
+
+
+static int screenshot(int i)
+{
+    unsigned char *pixels;
+    FILE *image;
+
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    pixels = new unsigned char[viewport[2] * viewport[3] * 3];
+
+    glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB,
+        GL_UNSIGNED_BYTE, pixels);
+
+    char tempstring[50];
+    sprintf(tempstring, "screenshot_%i.tga", i);
+    if ((image = fopen(tempstring, "wb")) == NULL) return 1;
+
+    unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    unsigned char header[6] = { static_cast<unsigned char>(((int)(viewport[2] % 256))),
+        static_cast<unsigned char>(((int)(viewport[2] / 256))),
+        static_cast<unsigned char>(((int)(viewport[3] % 256))),
+        static_cast<unsigned char>(((int)(viewport[3] / 256))), 24, 0 };
+
+    // TGA header schreiben
+    fwrite(TGAheader, sizeof(unsigned char), 12, image);
+    // Header schreiben
+    fwrite(header, sizeof(unsigned char), 6, image);
+
+    fwrite(pixels, sizeof(unsigned char),
+        viewport[2] * viewport[3] * 3, image);
+
+    fclose(image);
+    delete[] pixels;
+
+    return 0;
+}
+static int counter= 0;
+
+//first we test for CT -> CT matching
+int32_t DICOMRenderer::subVolumes(Vec3f MROffset, Vec3f MRRotation){
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
+    std::cout << "FramebufferID:" << _displayFramebufferID <<std::endl;
+    Vec3f currentTranslation = Vec3f(1,0,0);
+    Vec3f currentRotation = Vec3f(0,0,0);
+    std::shared_ptr<GLFBOTex>   CTFBO;
+    std::shared_ptr<GLFBOTex>   MRFBO;
+    std::shared_ptr<GLFBOTex>   COMPOSITING;
+
+    CTFBO = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+    MRFBO = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+    COMPOSITING = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+
+    checkForErrorCodes("@sub volumes1");
+    _activeRenderMode = RenderMode::ZAxis;
+
+    std::vector<Vec4f> frameBuffer;
+    frameBuffer.resize(_windowSize.x*_windowSize.y);
+
+    float volumeValue = 0.0f;
+
+    //loop from slice 0 to last slice
+    for(float i = 0.0f; i < 1.0f; i+=1.0f/(float)_data->getCTScale().z){
+        _data->setSelectedSlices(Vec3f(0.5,0.5,i));
+
+        //draw CT slice \todo add slide selection to draw function
+        drawSlice(_GL_CTVolume->GetGLID(),
+                  _data->getCTTransferScaling(),
+                  CTFBO,
+                  nullptr,
+                  Vec3f(0,0,0),
+                  Vec3f(0,0,0),
+                  _data->getCTScale());
+
+        //draw MR slice -> NO ONLY CT CT MERGE!
+        drawSlice(_GL_CTVolume->GetGLID(),
+                  _data->getCTTransferScaling(),
+                  MRFBO,
+                  nullptr,
+                  currentTranslation,
+                  currentRotation,
+                  _data->getCTScale(),
+                  true);
+
+        //to compositing of both!
+        _targetBinder->Bind(COMPOSITING);
+        //glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
+
+        glCullFace(GL_BACK);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        ClearBackground(Vec4f(0,0,0,0));
+        _compositingVolumeSubstraction->Enable();
+        _compositingVolumeSubstraction->SetTexture2D("sliceImageCT",CTFBO->GetTextureHandle(),0);
+        _compositingVolumeSubstraction->SetTexture2D("sliceImageMR",MRFBO->GetTextureHandle(),1);
+
+        Vec3f slice = _data->getSelectedSlices();
+        slice-= Vec3f(0.5f,0.5,0.5f);
+        float zoom = 0;
+
+        switch(_activeRenderMode){
+          case RenderMode::ZAxis :slice.z = 100000.0f; zoom = _vZZoom.z; break;
+          case RenderMode::XAxis :slice.x = 100000.0f; zoom = _vXZoom.x;break;
+          case RenderMode::YAxis :slice.y = 100000.0f; zoom = _vYZoom.y;break;
+        }
+        _compositingVolumeSubstraction->Set("focusPoint",slice);
+        _compositingVolumeSubstraction->Set("zoomFactor",zoom);
+
+
+
+        _renderPlane->paint();
+
+        _compositingVolumeSubstraction->Disable();
+
+        screenshot(counter++);
+
+        //read pixeldata!
+        _targetBinder->Bind(COMPOSITING);
+        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(frameBuffer[0]));
+
+
+        for(int x = 0; x < frameBuffer.size();++x){
+            volumeValue += frameBuffer[x].x;
+        }
+
+        //go to next slide
+    }
+    _activeRenderMode = RenderMode::ThreeDMode;
+    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
+
+    std::cout << volumeValue << std::endl;
+    return volumeValue;
+}
 
 void DICOMRenderer::drawSliceElectrode(){
 
@@ -1188,44 +1370,6 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
 Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
-static int screenshot(int i)
-{
-    unsigned char *pixels;
-    FILE *image;
-
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    pixels = new unsigned char[viewport[2] * viewport[3] * 3];
-
-    glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB,
-        GL_UNSIGNED_BYTE, pixels);
-
-    char tempstring[50];
-    sprintf(tempstring, "screenshot_%i.tga", i);
-    if ((image = fopen(tempstring, "wb")) == NULL) return 1;
-
-    unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-    unsigned char header[6] = { static_cast<unsigned char>(((int)(viewport[2] % 256))),
-        static_cast<unsigned char>(((int)(viewport[2] / 256))),
-        static_cast<unsigned char>(((int)(viewport[3] % 256))),
-        static_cast<unsigned char>(((int)(viewport[3] / 256))), 24, 0 };
-
-    // TGA header schreiben
-    fwrite(TGAheader, sizeof(unsigned char), 12, image);
-    // Header schreiben
-    fwrite(header, sizeof(unsigned char), 6, image);
-
-    fwrite(pixels, sizeof(unsigned char),
-        viewport[2] * viewport[3] * 3, image);
-
-    fclose(image);
-    delete[] pixels;
-
-    return 0;
-}
-static int counter= 0;
 
 std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range){
     bool firstFindEnd = false;

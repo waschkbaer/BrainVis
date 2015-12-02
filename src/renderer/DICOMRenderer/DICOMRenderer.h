@@ -140,6 +140,7 @@ private:
                          std::shared_ptr<GLFBOTex> color,
                          std::shared_ptr<GLFBOTex> position,
                          Vec3f VolumeTranslation,
+                         Vec3f VolumeRotation,
                          Vec3f VolumeScale,
                          bool secondary = false);
 
@@ -153,6 +154,9 @@ private:
         void searchGFrame(Vec2f range = Vec2f(0.45f,0.6f));
 
         void calculateElectrodeMatices();
+        void checkForErrorCodes(std::string note);
+
+        int32_t subVolumes(Vec3f MROffset, Vec3f MRRotation);
 
     private:
         RenderMode                      _activeRenderMode;
@@ -175,6 +179,7 @@ private:
         std::shared_ptr<GLProgram>      _sliceShader;
         std::shared_ptr<GLProgram>      _compositingThreeDShader;
         std::shared_ptr<GLProgram>      _compositingTwoDShader;
+        std::shared_ptr<GLProgram>      _compositingVolumeSubstraction;
         std::shared_ptr<GLProgram>      _lineShader;
         std::shared_ptr<GLProgram>      _sphereFFTShader;
         std::shared_ptr<GLProgram>      _frameSearchShader;
