@@ -180,6 +180,9 @@ public:
 
     void checkFocusPoint();
     void incrementStatus();
+    bool getDoGradientDecent() const;
+    void setDoGradientDecent(bool doGradientDecent);
+
 private:
     void updateMRWorld();
 
@@ -235,6 +238,7 @@ private:
     bool                                            _usesNetworkMER;
     std::unique_ptr<std::thread>                    _networkUpdateThread;
 
+    bool                                            _doGradientDecent;
 };
 
 #endif // DATAHANDLER_H

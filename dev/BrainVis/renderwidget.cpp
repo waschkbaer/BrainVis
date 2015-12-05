@@ -92,34 +92,34 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
     //manual move
     if(event->key() == Qt::Key_1){
         Vec3f o = _data->getMROffset();
-        o.z -= 0.05f;
+        o.z -= 0.1f;
         _data->setMROffset(o);
     }
     if(event->key() == Qt::Key_2){
         Vec3f o = _data->getMROffset();
-        o.z += 0.05f;
+        o.z += 0.1f;
         _data->setMROffset(o);
     }
 
     if(event->key() == Qt::Key_3){
         Vec3f o = _data->getMROffset();
-        o.x -= 0.05f;
+        o.x -= 0.1f;
         _data->setMROffset(o);
     }
     if(event->key() == Qt::Key_4){
         Vec3f o = _data->getMROffset();
-        o.x += 0.05f;
+        o.x += 0.1f;
         _data->setMROffset(o);
     }
 
     if(event->key() == Qt::Key_5){
         Vec3f o = _data->getMROffset();
-        o.y -= 0.05f;
+        o.y -= 0.1f;
         _data->setMROffset(o);
     }
     if(event->key() == Qt::Key_6){
         Vec3f o = _data->getMROffset();
-        o.y += 0.05f;
+        o.y += 0.1f;
         _data->setMROffset(o);
     }
 
@@ -162,17 +162,6 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
     if(event->key() == Qt::Key_Q){
         _data->setMROffset(Vec3f(0,0,0));
     }
-
-    if(event->key() == Qt::Key_9){
-        Vec3f scal = _data->getMRScale();
-        scal *= 1.01;
-        _data->setMRScale(scal);
-    }
-    if(event->key() == Qt::Key_0){
-        Vec3f scal = _data->getMRScale();
-        scal *= 0.99;
-        _data->setMRScale(scal);
-    }
     if(event->key() == Qt::Key_W){
         _data->setMRCTBlend(_data->getMRCTBlend()+0.05f);
     }
@@ -181,6 +170,9 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
     }
     if(event->key() == Qt::Key_Alt){
         ui->openGLWidget->switchScrollMode();
+    }
+    if(event->key() == Qt::Key_0){
+        _data->setDoGradientDecent(true);
     }
 }
 

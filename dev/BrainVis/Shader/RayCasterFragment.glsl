@@ -4,13 +4,16 @@ uniform sampler2D rayStartPoint;
 uniform sampler3D volume;
 uniform sampler1D transferfunction;
 
-uniform mat4 viewFragmentMatrix;
-uniform mat4 worldFragmentMatrix;
-uniform float tfScaling;
-uniform vec3 eyePos;
-uniform vec3 focusWorldPos = vec3(7.97907,18.9604,-24.2198);
-uniform vec3 cutPlaneNormal = vec3(1,0,0);
-uniform int cutMode = 1;
+uniform mat4    viewFragmentMatrix;
+uniform mat4    worldFragmentMatrix;
+uniform float   tfScaling;
+uniform vec3    eyePos;
+uniform vec3    focusWorldPos = vec3(7.97907,18.9604,-24.2198);
+uniform vec3    cutPlaneNormal = vec3(1,0,0);
+uniform int     cutMode = 1;
+
+uniform float   stepSize = 2500.0f;
+uniform float   isCTImage = 0.0f;
 
 // INPUT VARIABLES
 in vec3 normalview;
@@ -27,6 +30,7 @@ bool isPositiv(float x){
   else
     return false;
 }
+
 
 bool isPlaneCut(vec3 curPos, vec3 focusPos, vec3 normal){
   vec3 dirPos = curPos-focusPos;
@@ -80,17 +84,18 @@ void main(void)
   float value = 0;
   vec4 viewPos = vec4(0,0,0,0);
   bool isCut = false;
+  
   for(int i = 0; i < 4000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
     switch(cutMode){
-      case 0 : isCut = false;
+      case 0 : isCut = false;     //no cut
                        break;
-      case 1 : isCut = isCubicCut( viewPos.xyz,
+      case 1 : isCut = isCubicCut( viewPos.xyz,     //cubic cut
                               focusWorldPos,
                               eyePos);
                         break;
-      case 2 : isCut = isPlaneCut( viewPos.xyz,
+      case 2 : isCut = isPlaneCut( viewPos.xyz,     //plane cut
                               focusWorldPos,
                               cutPlaneNormal);
                         break;
@@ -104,17 +109,18 @@ void main(void)
 
           finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
         	finalColor.w = finalColor.w+color.w;
-
           if(finalColor.w >= 1.0f){  
             viewPos = viewFragmentMatrix*viewPos;
+            
             outputColor = vec4(finalColor.xyz,viewPos.z);
+
             outputPosition = vec4(texturePos,viewPos.z);
-            //outputColor = vec4(texturePos,viewPos.z);
+
             i = 1000;
             break;
           }
     }
-    texturePos += rayDir/2500.0f;
+    texturePos += rayDir/stepSize;
 
   	//early ray termination
   	if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||

@@ -17,11 +17,12 @@ DataHandle::DataHandle():
     _CTeZ(0,0,-1),
     _dataSetStatus(0),
     _spectralRange(1000000.0f,-1000000.0f),
-    _MRRotation(-0.1,0.03,0.07),
-    _MROffset(-1.95,6.6501,-31.2998),
-    //_MRRotation(0,0,0),
-    //_MROffset(0,0,0),
-    _usesNetworkMER(false)
+    //_MRRotation(-0.1,0.03,0.07),
+    //_MROffset(-1.95,6.6501,-31.2998),
+    _MRRotation(0,0,0),
+    _MROffset(0,0,0),
+    _usesNetworkMER(false),
+    _doGradientDecent(false)
 {
     incrementStatus();
     createFFTColorImage();
@@ -44,9 +45,9 @@ void DataHandle::loadMRData(std::string& path)
     _MRScale.y = _MRVolume->getAspectRatio().y * _MRVolume->getDimensions().y;
     _MRScale.z = _MRVolume->getAspectRatio().z * _MRVolume->getDimensions().z;
 
-    std::cout << "MRAspectRatio: "<<_MRVolume->getAspectRatio() <<std::endl;
-    std::cout << "MRDimensions: "<<_MRVolume->getDimensions() <<std::endl;
-    std::cout << "data scale(MR): "<< _MRScale<< std::endl;
+    std::cout << "[DataHandle] MRAspectRatio: "<<_MRVolume->getAspectRatio() <<std::endl;
+    std::cout << "[DataHandle] MRDimensions: "<<_MRVolume->getDimensions() <<std::endl;
+    std::cout << "[DataHandle] data scale(MR): "<< _MRScale<< std::endl;
 
     updateMRWorld();
     _MRLoaded = true;
@@ -65,9 +66,9 @@ void DataHandle::loadCTData(std::string& path)
     _CTScale.z = _CTVolume->getAspectRatio().z * _CTVolume->getDimensions().z;
 
     //cacluate the world space scaling for CT
-    std::cout << "CTAspectRatio: "<<_CTVolume->getAspectRatio() <<std::endl;
-    std::cout << "CTDimensions: "<<_CTVolume->getDimensions() <<std::endl;
-    std::cout << "data scale(CT): "<< _CTScale << std::endl;
+    std::cout << "[DataHandle] CTAspectRatio: "<<_CTVolume->getAspectRatio() <<std::endl;
+    std::cout << "[DataHandle] CTDimensions: "<<_CTVolume->getDimensions() <<std::endl;
+    std::cout << "[DataHandle] data scale(CT): "<< _CTScale << std::endl;
 
     _CTWorld.Scaling(_CTScale);
     _CTLoaded = true;
@@ -217,10 +218,25 @@ void DataHandle::updateMRWorld(){
     rotY.RotationY(_MRRotation.y);
     rotZ.RotationZ(_MRRotation.z);
 
+
     scaleInv = scale.inverse();
+
+
+
     _MRWorld = scale*rotX*rotY*rotZ*trans;
+
     incrementStatus();
 }
+bool DataHandle::getDoGradientDecent() const
+{
+    return _doGradientDecent;
+}
+
+void DataHandle::setDoGradientDecent(bool doGradientDecent)
+{
+    _doGradientDecent = doGradientDecent;
+}
+
 uint64_t DataHandle::getDataSetStatus() const
 {
     return _dataSetStatus;
@@ -366,6 +382,7 @@ Core::Math::Vec3f DataHandle::getCTScale() const
 void DataHandle::setCTScale(const Core::Math::Vec3f &CTScale)
 {
     _CTScale = CTScale;
+    _CTWorld.Scaling(_CTScale);
     incrementStatus();
 }
 float DataHandle::getFCTScalingFactor() const
@@ -616,24 +633,24 @@ bool DataHandle::calculateCTUnitVectors(){
     _CTOffset = -_CTCenter;
 
     //debug out!
-    std::cout << "------------------"<<std::endl;
-    std::cout << "Center (volume Space) " << _CTCenter << std::endl;
-    std::cout << "Center (world Space) " << worldcenter << std::endl;
-    std::cout << "------------------"<<std::endl;
-    std::cout << "Ex: " << _CTeX << std::endl;
-    std::cout << "Ey: " << _CTeY << std::endl;
-    std::cout << "Ez: " << _CTeZ << std::endl;
-    std::cout << "------------------"<<std::endl;
-    std::cout << "target left : "<< leftSTN._endWorldSpace <<std::endl;
-    std::cout << "target right : "<< rightSTN._endWorldSpace <<std::endl;
-    std::cout << "entry left : "<< leftSTN._startWorldSpace <<std::endl;
-    std::cout << "entry right : "<< rightSTN._startWorldSpace <<std::endl;
-    std::cout << "------------------"<<std::endl;
-    std::cout << "target leftvs : "<< leftSTN._endVolumeSpace <<std::endl;
-    std::cout << "target rightvs : "<< rightSTN._endVolumeSpace <<std::endl;
-    std::cout << "entry leftvs : "<< leftSTN._startVolumeSpace <<std::endl;
-    std::cout << "entry rightvs : "<< rightSTN._startVolumeSpace <<std::endl;
-    std::cout << "------------------"<<std::endl;
+    std::cout << "[DataHandle] ------------------"<<std::endl;
+    std::cout << "[DataHandle] Center (volume Space) " << _CTCenter << std::endl;
+    std::cout << "[DataHandle] Center (world Space) " << worldcenter << std::endl;
+    std::cout << "[DataHandle] ------------------"<<std::endl;
+    std::cout << "[DataHandle] Ex: " << _CTeX << std::endl;
+    std::cout << "[DataHandle] Ey: " << _CTeY << std::endl;
+    std::cout << "[DataHandle] Ez: " << _CTeZ << std::endl;
+    std::cout << "[DataHandle] ------------------"<<std::endl;
+    std::cout << "[DataHandle] target left : "<< leftSTN._endWorldSpace <<std::endl;
+    std::cout << "[DataHandle] target right : "<< rightSTN._endWorldSpace <<std::endl;
+    std::cout << "[DataHandle] entry left : "<< leftSTN._startWorldSpace <<std::endl;
+    std::cout << "[DataHandle] entry right : "<< rightSTN._startWorldSpace <<std::endl;
+    std::cout << "[DataHandle] ------------------"<<std::endl;
+    std::cout << "[DataHandle] target leftvs : "<< leftSTN._endVolumeSpace <<std::endl;
+    std::cout << "[DataHandle] target rightvs : "<< rightSTN._endVolumeSpace <<std::endl;
+    std::cout << "[DataHandle] entry leftvs : "<< leftSTN._startVolumeSpace <<std::endl;
+    std::cout << "[DataHandle] entry rightvs : "<< rightSTN._startVolumeSpace <<std::endl;
+    std::cout << "[DataHandle] ------------------"<<std::endl;
 
     incrementStatus();
     return true;

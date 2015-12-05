@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <renderer/Context/ContextMutex.h>
 #include <BrainVisIO/MER-Data/ElectrodeManager.h>
+#include <cstdlib>
 
 using namespace std;
 using namespace Tuvok::Renderer;
@@ -15,17 +16,15 @@ _GL_MRVolume(nullptr),
 _camera(new Camera(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1))),
 _foundFrame(false),
 _viewX(),
-_viewY(),
-_viewZ(),
 _datasetStatus(0),
 _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
-_vXZoom(2,2,2),
-_vYZoom(2,2,2),
-_vZZoom(2,2,2),
+_vZoom(1,1,1),
 _needsUpdate(true)
 {
-
+translationStepSize = 4.0f;
+rotationStepSize = 0.1f;
+scaleStepSize = 2.0f;
 }
 
 void DICOMRenderer::Initialize(){
@@ -47,6 +46,7 @@ void DICOMRenderer::Initialize(){
 
     glViewport(0,0,512,512);
     sheduleRepaint();
+
 }
 
 void DICOMRenderer::Cleanup(){
@@ -130,6 +130,9 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
 
     calculateElectrodeMatices();
     sheduleRepaint();
+
+
+    calculateRotation();
 }
 
 void DICOMRenderer::searchGFrame(Vec2f range){
@@ -173,13 +176,13 @@ void DICOMRenderer::ZoomTwoD(int zoomDelta){
                                 _view = _camera->buildLookAt();
                                 break;
         case RenderMode::ZAxis :
-                                _vZZoom += Vec3f(z,z,z);
+                                _vZoom.z += z;
                                 break;
         case RenderMode::YAxis :
-                                _vYZoom += Vec3f(z,z,z);
+                               _vZoom.y += z;
                                  break;
         case RenderMode::XAxis :
-                                _vXZoom += Vec3f(z,z,z);
+                                _vZoom.x += z;
                                 break;
     }
     sheduleRepaint();
@@ -229,14 +232,31 @@ void DICOMRenderer::Paint(){
 
     checkDatasetStatus();
 
-    if(!regisDown){
-        subVolumes(Vec3f(0,0,0),Vec3f(0,0,0));
-        regisDown = true;
+    if(_data->getDoGradientDecent()){
+        float done = gradientDecentStep(_data->getMROffset(),_data->getMRRotation());
+
+        if(done < 0.0f){
+            if(translationStepSize < 0.5f || rotationStepSize < 0.000001){
+                 _data->setDoGradientDecent(false);
+
+                 translationStepSize = 10.0f;
+                 rotationStepSize = 0.1f;
+
+                 std::cout << "end gdc"<<std::endl;
+            }else{
+
+            translationStepSize *= 0.75f;
+            rotationStepSize *= 0.73f;
+
+            scaleStepSize *= 0.75f;
+            }
+        }
+        _data->setMRCTBlend( 0.5f);
     }
 
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
-        std::cout << "complete new"<<std::endl;
+        //std::cout << "complete new"<<std::endl;
         //check if the camera has to be placed automaticly
         if(ElectrodeManager::getInstance().isTrackingMode()){
             std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
@@ -327,7 +347,7 @@ bool DICOMRenderer::LoadShaderResources(){
 
     vs.clear();
     fs.clear();
-    vs.push_back("Shader/SliceVertex.glsl");
+    vs.push_back("Shader/RayCasterVertex.glsl");
     fs.push_back("Shader/SliceFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_sliceShader,sd)) return false;
@@ -462,6 +482,7 @@ void DICOMRenderer::RayCast(){
 
         drawVolumeRayCast(  _rayCastColorCT,
                             _rayCastPositionCT,
+                            _rayCastShader,
                             _data->getCTWorld(),
                             _rayEntryCT->GetTextureHandle(),
                             _GL_CTVolume->GetGLID(),
@@ -474,14 +495,16 @@ void DICOMRenderer::RayCast(){
 
         drawVolumeRayCast(  _rayCastColorMR,
                             _rayCastPositionMR,
+                            _rayCastShader,
                             _data->getMRWorld(),
                             _rayEntryMR->GetTextureHandle(),
                             _GL_MRVolume->GetGLID(),
                             _transferFunctionTex->GetGLID(),
-                            _data->getMRTransferScaling());
+                            _data->getMRTransferScaling(),
+                            false);
     }
 
-    drawLineBoxes();
+    drawLineBoxes(_boundingBoxVolumeBuffer);
 
     drawPlaning();
 
@@ -523,76 +546,123 @@ void DICOMRenderer::drawCubeEntry(std::shared_ptr<GLFBOTex> target, Mat4f world)
 
 void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
                                         std::shared_ptr<GLFBOTex> positionTarget,
+                                        std::shared_ptr<GLProgram> shader,
                                         Mat4f world,
                                         GLuint entryHandle,
                                         GLuint volumeHandle,
                                         GLuint tfHandle,
-                                        float tfScaling){
+                                        float tfScaling,
+                                        bool isCT,
+                                        float rayStepPara){
     _targetBinder->Bind(colorTarget,positionTarget);
     ClearBackground(Vec4f(0,0,0,-1000.0f));
 
 
     glCullFace(GL_FRONT);
-    _rayCastShader->Enable();
-    _rayCastShader->Set("projectionMatrix",_projection);
-    _rayCastShader->Set("viewMatrix",_view);
-    _rayCastShader->Set("worldMatrix",world);
-    _rayCastShader->SetTexture2D("rayStartPoint",entryHandle,0);
-    _rayCastShader->SetTexture3D("volume",volumeHandle,1);
-    _rayCastShader->SetTexture1D("transferfunction",tfHandle,2);
-    _rayCastShader->Set("worldFragmentMatrix",world);
-    _rayCastShader->Set("viewFragmentMatrix",_view);
-    _rayCastShader->Set("tfScaling",tfScaling);
-    _rayCastShader->Set("eyePos",_camera->GetWorldPosition());
-    _rayCastShader->Set("focusWorldPos",_data->getSelectedWorldSpacePositon());
+    shader->Enable();
+    shader->Set("projectionMatrix",_projection);
+    shader->Set("viewMatrix",_view);
+    shader->Set("worldMatrix",world);
+    shader->SetTexture2D("rayStartPoint",entryHandle,0);
+    shader->SetTexture3D("volume",volumeHandle,1);
+    shader->SetTexture1D("transferfunction",tfHandle,2);
+    shader->Set("worldFragmentMatrix",world);
+    shader->Set("viewFragmentMatrix",_view);
+    shader->Set("tfScaling",tfScaling);
+    shader->Set("eyePos",_camera->GetWorldPosition());
+    shader->Set("focusWorldPos",_data->getSelectedWorldSpacePositon());
+    shader->Set("stepSize",rayStepPara);
+
+    if(isCT){
+        shader->Set("isCTImage",1.0f);
+    }else{
+        shader->Set("isCTImage",0.0f);
+    }
 
     switch(_clipMode){
-    case DICOMClipMode::none :      _rayCastShader->Set("cutMode",0); break;
-    case DICOMClipMode::CubicCut :  _rayCastShader->Set("cutMode",1); break;
+    case DICOMClipMode::none :      shader->Set("cutMode",0); break;
+    case DICOMClipMode::CubicCut :  shader->Set("cutMode",1); break;
 
     case DICOMClipMode::PlaneX :
-                                    _rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
-                                    _rayCastShader->Set("cutMode",2);
+                                    //_rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
+                                    shader->Set("cutPlaneNormal",Vec3f(1,0,0));
+
+                                    if(_activeRenderMode == RenderMode::XAxis){
+                                        shader->Set("cutMode",3);
+                                    }else{
+                                        shader->Set("cutMode",2);
+                                    }
+
                                     break;
 
     case DICOMClipMode::PlaneY :
-                                    _rayCastShader->Set("cutPlaneNormal",_data->getCTeY());
-                                    _rayCastShader->Set("cutMode",2);
+                                    shader->Set("cutPlaneNormal",Vec3f(0,-1,0));
+
+                                    if(_activeRenderMode == RenderMode::YAxis){
+                                        shader->Set("cutMode",3);
+                                    }else{
+                                        shader->Set("cutMode",2);
+                                    }
+
                                     break;
 
     case DICOMClipMode::PlaneZ :
-                                    _rayCastShader->Set("cutPlaneNormal",_data->getCTeZ());
-                                    _rayCastShader->Set("cutMode",2);
+                                    shader->Set("cutPlaneNormal",Vec3f(0,0,1));
+
+                                    if(_activeRenderMode == RenderMode::ZAxis){
+                                        shader->Set("cutMode",3);
+                                    }else{
+                                        shader->Set("cutMode",2);
+                                    }
+
                                     break;
     case DICOMClipMode::PlaneXn :
-                                    _rayCastShader->Set("cutPlaneNormal",-_data->getCTeX());
-                                    _rayCastShader->Set("cutMode",2);
+                                    shader->Set("cutPlaneNormal",-_data->getCTeX());
+
+                                    if(_activeRenderMode == RenderMode::XAxis){
+                                        shader->Set("cutMode",3);
+                                    }else{
+                                        shader->Set("cutMode",2);
+                                    }
+
                                     break;
 
     case DICOMClipMode::PlaneYn :
-                                    _rayCastShader->Set("cutPlaneNormal",-_data->getCTeY());
-                                    _rayCastShader->Set("cutMode",2);
+                                    shader->Set("cutPlaneNormal",-_data->getCTeY());
+
+                                    if(_activeRenderMode == RenderMode::YAxis){
+                                        shader->Set("cutMode",3);
+                                    }else{
+                                        shader->Set("cutMode",2);
+                                    }
+
                                     break;
 
     case DICOMClipMode::PlaneZn :
-                                    _rayCastShader->Set("cutPlaneNormal",-_data->getCTeZ());
-                                    _rayCastShader->Set("cutMode",2);
+                                    shader->Set("cutPlaneNormal",-_data->getCTeZ());
+
+                                    if(_activeRenderMode == RenderMode::XAxis){
+                                        shader->Set("cutMode",3);
+                                    }else{
+                                        shader->Set("cutMode",2);
+                                    }
+
                                     break;
-    default:                        _rayCastShader->Set("cutMode",0); break;
+    default:                        shader->Set("cutMode",0); break;
     }
 
     _volumeBox->paint();
 
-    _rayCastShader->Disable();
+    shader->Disable();
 
     _targetBinder->Unbind();
 }
 
 
 
-void DICOMRenderer::drawLineBoxes(){
+void DICOMRenderer::drawLineBoxes(std::shared_ptr<GLFBOTex> target){
     //------- Bounding Box for CT Volume
-    _targetBinder->Bind(_boundingBoxVolumeBuffer);
+    _targetBinder->Bind(target);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
@@ -637,20 +707,21 @@ void DICOMRenderer::drawLineBoxes(){
 void DICOMRenderer::drawPlaning(){
     //we draw the electrode/g frame in the same FBO as the bounding box
     //could be changed later
-    _targetBinder->Bind(_boundingBoxVolumeBuffer);
-    drawGFrame();
 
-    drawCenterCube();
+    drawGFrame(_boundingBoxVolumeBuffer);
 
-    drawElectrodeCylinder();
+    drawCenterCube(_boundingBoxVolumeBuffer);
 
-    drawElectrodeSpheres();
+    drawElectrodeCylinder(_boundingBoxVolumeBuffer);
 
-    _targetBinder->Unbind();
+    drawElectrodeSpheres(_boundingBoxVolumeBuffer);
+
+
 }
 
 
-void DICOMRenderer::drawCenterCube(){
+void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
+    _targetBinder->Bind(target);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glDisable(GL_BLEND);
@@ -671,13 +742,60 @@ void DICOMRenderer::drawCenterCube(){
     transT = scaleT*transT;
 
     _frontFaceShader->Set("worldMatrix",transT);
+    //_volumeBox->paint();
+
+
+    Vec3f AC(98.5,112.9,102.4);
+    Vec3f PC(98.1,85.2,106.3);
+
+
+    AC = AC-Vec3f(100,100,100);
+    PC = PC-Vec3f(100,100,100);
+
+    AC = AC.x*_data->getCTeX()+
+            AC.y*_data->getCTeY()+
+            AC.z*_data->getCTeZ()+
+            _data->getCTCenter()*_data->getCTScale();
+    PC = PC.x*_data->getCTeX()+
+            PC.y*_data->getCTeY()+
+            PC.z*_data->getCTeZ()+
+            _data->getCTCenter()*_data->getCTScale();
+
+
+    transT.Translation(AC);
+    transT = scaleT*transT;
+
+    _frontFaceShader->Set("worldMatrix",transT);
+    _sphere->paint();
+
+    transT.Translation(PC);
+    transT = scaleT*transT;
+
+    _frontFaceShader->Set("worldMatrix",transT);
+    _sphere->paint();
+
+    transT.Translation(_ACMRWorldPosition);
+    transT = scaleT*transT;
+
+    _frontFaceShader->Set("worldMatrix",transT);
     _volumeBox->paint();
 
+    transT.Translation(_PCMRWorldPosition);
+    transT = scaleT*transT;
+
+    _frontFaceShader->Set("worldMatrix",transT);
+    _volumeBox->paint();
+
+
+
     _frontFaceShader->Disable();
+
+    _targetBinder->Unbind();
 }
 
 
-void DICOMRenderer::drawGFrame(){
+void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
+    _targetBinder->Bind(target);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
@@ -707,10 +825,13 @@ void DICOMRenderer::drawGFrame(){
 
     }
     _lineShader->Disable();
+
+    _targetBinder->Unbind();
 }
 
 
-void DICOMRenderer::drawElectrodeCylinder(){
+void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
+    _targetBinder->Bind(target);
     //draw the electrode basics
 
     _electrodeGeometryShader->Enable();
@@ -756,10 +877,13 @@ void DICOMRenderer::drawElectrodeCylinder(){
         }
     }
     _electrodeGeometryShader->Disable();
+
+    _targetBinder->Unbind();
 }
 
 
-void DICOMRenderer::drawElectrodeSpheres(){
+void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
+    _targetBinder->Bind(target);
     //draw the electrodes----------------------------
     Vec3f position;
     Mat4f scaleT;
@@ -798,6 +922,8 @@ void DICOMRenderer::drawElectrodeSpheres(){
     }
 
     _sphereFFTShader->Disable();
+
+    _targetBinder->Unbind();
 }
 
 
@@ -825,153 +951,108 @@ void DICOMRenderer::drawCompositing(){
 
 void DICOMRenderer::SliceRendering(){
 
+
+
+
     if(_GL_CTVolume != nullptr){
-            drawSlice(                      _GL_CTVolume->GetGLID(),
-                                            _data->getCTTransferScaling(),
-                                            _TwoDCTVolumeFBO,
-                                            _TwoDCTPositionVolumeFBO,
-                                            Vec3f(0,0,0),
-                                            Vec3f(0,0,0),
-                                            _data->getCTScale());
+        drawSliceV3(true,true);
 
     }
-    if(_GL_MRVolume != nullptr){
-            drawSlice(                  _GL_MRVolume->GetGLID(),
-                                        _data->getMRTransferScaling(),
-                                        _TwoDMRVolumeFBO,
-                                        _TwoDMRPositionVolumeFBO,
-                                        _data->getMROffset(),
-                                        _data->getMRRotation(),
-                                        _data->getMRScale(),
-                                        true);
+    if(_GL_MRVolume != nullptr){   
+        drawSliceV3(false,false);
     }
-    drawSliceElectrode();
+
+
+
 
     drawSliceCompositing();
 }
 
+void DICOMRenderer::drawSliceV3(bool isCT,bool full){
+    Mat4f oldProjectionMatrix = _projection;
+    Mat4f oldViewMatrix = _view;
+    DICOMClipMode oldClipMode = _clipMode;
 
-void DICOMRenderer::drawSlice(GLuint volumeID,
-                                float transferScaling,
-                                std::shared_ptr<GLFBOTex> color,
-                                std::shared_ptr<GLFBOTex> position,
-                                Vec3f VolumeTranslation,
-                                Vec3f VolumeRotation,
-                                Vec3f VolumeScale,
-                                bool secondary){
-    _targetBinder->Bind(color,position);
-    ClearBackground(Vec4f(0,0,0,-2000));
-
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    Mat4f scale;
-    Mat4f zoom;
-    Mat4f offsetTranslation;
-    Mat4f translation;
-    Mat4f rotation;
-    scale.Scaling(VolumeScale);
-
-    offsetTranslation.Translation(VolumeTranslation);
+    Vec3f CTScaleOld = _data->getCTScale();
+    Vec3f MRScaleOld = _data->getMRScale();
 
 
-    Vec3f slice = _data->getSelectedSlices();
-    if(secondary){
-        slice-= Vec3f(0.5f,0.5f,0.5f);
-        slice*= _data->getCTScale(); //<- worldposition of non rotated ct volume!
+    float stepsize = 0;
 
-        slice /= VolumeScale;
-        slice += Vec3f(0.5,0.5,0.5); //<- mr volume pos;
+    switch(_activeRenderMode){
+    case RenderMode::XAxis :
+        _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
+        _view.BuildLookAt(Vec3f(300,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
 
+        stepsize = _data->getCTScale().x*2;
 
-        VolumeTranslation/=VolumeScale;
+        _clipMode = DICOMClipMode::PlaneX;
+        break;
 
-        Mat4f x,y,z;
-        x.RotationX(VolumeRotation.x);
-        y.RotationY(VolumeRotation.y);
-        z.RotationZ(VolumeRotation.z);
-        rotation = x*y*z;
+    case RenderMode::YAxis :
+        _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.y,(int32_t)_windowSize.x/2*_vZoom.y,-(int32_t)_windowSize.y/2*_vZoom.y,(int32_t)_windowSize.y/2*_vZoom.y,-5000.0f,5000.0f);
+        _view.BuildLookAt(Vec3f(0,-300,0),Vec3f(0,0,0),Vec3f(0,0,1));
+
+        stepsize = _data->getCTScale().y*2;
+
+        _clipMode = DICOMClipMode::PlaneY;
+        break;
+
+    case RenderMode::ZAxis :
+        _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.z,(int32_t)_windowSize.x/2*_vZoom.z,-(int32_t)_windowSize.y/2*_vZoom.z,(int32_t)_windowSize.y/2*_vZoom.z,-5000.0f,5000.0f);
+        _view.BuildLookAt(Vec3f(0,0,300),Vec3f(0,0,0),Vec3f(0,1,0));
+
+        stepsize = _data->getCTScale().z*2;
+
+        _clipMode = DICOMClipMode::PlaneZ;
+        break;
+
     }
 
-    if(_GL_CTVolume != nullptr){
-        _sliceShader->Enable();
-        _sliceShader->SetTexture3D("volume",volumeID,0);
-        _sliceShader->SetTexture1D("transferfunction",_transferFunctionTex->GetGLID(),1);
-        _sliceShader->Set("tfScaling",transferScaling);
 
-        Vec3f CenterOffset = (_data->getSelectedSlices()-Vec3f(0.5f,0.5f,0.5f))*_data->getCTScale();
+    if(isCT){
+        drawCubeEntry(_rayEntryCT,_data->getCTWorld());
 
-        switch(_activeRenderMode){
-            case RenderMode::ZAxis :{
-                                    //z dependend
-                                    _orthographicZAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
-                                    _viewZ.BuildLookAt((Vec3f(0,0,100)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,1,0));
-                                    translation.Translation(VolumeTranslation+Vec3f(0,0,slice.z-0.5f));
+        drawVolumeRayCast(  _rayCastColorCT,
+                            _rayCastPositionCT,
+                            _sliceShader,
+                            _data->getCTWorld(),
+                            _rayEntryCT->GetTextureHandle(),
+                            _GL_CTVolume->GetGLID(),
+                            _transferFunctionTex->GetGLID(),
+                            _data->getCTTransferScaling(),
+                            true,
+                            stepsize);
 
-                                    zoom.Scaling(_vZZoom);
 
-                                    _sliceShader->Set("axis",2);
-                                    _sliceShader->Set("projection",_orthographicZAxis);
+    }else{
+        drawCubeEntry(_rayEntryMR,_data->getMRWorld());
 
-                                    _sliceShader->Set("view",_viewZ*zoom);
-
-                                    _sliceShader->Set("rotation",rotation);
-                                    _sliceShader->Set("scale",scale);
-                                    _sliceShader->Set("translate",translation);
-                                    _sliceShader->Set("volumeOffset",VolumeTranslation);
-                                    _sliceShader->Set("slide",slice.z-VolumeTranslation.z);
-                                    _renderPlaneZ->paint();
-
-                                    break;
-                                    }
-            case RenderMode::XAxis :{
-                                    //x dependend
-                                    _orthographicXAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
-                                    _viewX.BuildLookAt((Vec3f(100,0,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
-                                    translation.Translation(VolumeTranslation+Vec3f(slice.x-0.5f,0,0));
-
-                                    zoom.Scaling(_vXZoom);
-
-                                    _sliceShader->Set("axis",0);
-                                    _sliceShader->Set("projection",_orthographicXAxis);
-                                    _sliceShader->Set("view",_viewX*zoom);
-
-                                    _sliceShader->Set("rotation",rotation);
-                                    _sliceShader->Set("scale",scale);
-                                    _sliceShader->Set("translate",translation);
-                                    _sliceShader->Set("volumeOffset",VolumeTranslation);
-                                    _sliceShader->Set("slide",slice.x-VolumeTranslation.x);
-                                    _renderPlaneX->paint();
-
-                                    break;
-                                    }
-            case RenderMode::YAxis :{
-                                    //y dependend
-                                    _orthographicYAxis.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
-                                    _viewY.BuildLookAt((Vec3f(0,-100,0)*zoom)+CenterOffset,Vec3f(0,0,0)+CenterOffset,Vec3f(0,0,1));
-                                    translation.Translation(VolumeTranslation+Vec3f(0,slice.y-0.5f,0));
-
-                                    zoom.Scaling(_vYZoom);
-
-                                    _sliceShader->Set("axis",1);
-                                    _sliceShader->Set("projection",_orthographicYAxis);
-                                    _sliceShader->Set("view",_viewY*zoom);
-
-                                    _sliceShader->Set("rotation",rotation);
-                                    _sliceShader->Set("scale",scale);
-                                    _sliceShader->Set("translate",translation);
-                                    _sliceShader->Set("volumeOffset",VolumeTranslation);
-                                    _sliceShader->Set("slide",slice.y-VolumeTranslation.y);
-                                    _renderPlaneY->paint();
-
-                                    break;
-                                    }
-        };
+        drawVolumeRayCast(  _rayCastColorMR,
+                            _rayCastPositionMR,
+                            _sliceShader,
+                            _data->getMRWorld(),
+                            _rayEntryMR->GetTextureHandle(),
+                            _GL_MRVolume->GetGLID(),
+                            _transferFunctionTex->GetGLID(),
+                            _data->getMRTransferScaling(),
+                            false,
+                            stepsize);
     }
 
-    glDisable(GL_DEPTH_TEST);
+    if(full){
+        _targetBinder->Bind(_boundingBoxVolumeBuffer);
+        ClearBackground(Vec4f(0,0,0,-800.0f));
+        drawElectrodeCylinder(_boundingBoxVolumeBuffer);
+        drawElectrodeSpheres(_boundingBoxVolumeBuffer);
+    }
+
+    _projection = oldProjectionMatrix;
+    _view = oldViewMatrix;
+    _data->setCTScale(CTScaleOld);
+    _data->setMRScale(MRScaleOld);
 }
+
 
 
 
@@ -1014,234 +1095,188 @@ static int screenshot(int i)
 }
 static int counter= 0;
 
-//first we test for CT -> CT matching
-int32_t DICOMRenderer::subVolumes(Vec3f MROffset, Vec3f MRRotation){
+float DICOMRenderer::gradientDecentStep(Vec3f MROffset, Vec3f MRRotation){
+    //store the current "default" framebuffer QT-Shit
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-    std::cout << "FramebufferID:" << _displayFramebufferID <<std::endl;
-    Vec3f currentTranslation = Vec3f(1,0,0);
-    Vec3f currentRotation = Vec3f(0,0,0);
-    std::shared_ptr<GLFBOTex>   CTFBO;
-    std::shared_ptr<GLFBOTex>   MRFBO;
-    std::shared_ptr<GLFBOTex>   COMPOSITING;
 
-    CTFBO = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-    MRFBO = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-    COMPOSITING = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+    Vec2ui subWindowSize(_windowSize.x,_windowSize.y);
 
+    //create the needed framebuffer, if they do not exist
+    if(COMPOSITING == nullptr) COMPOSITING = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, subWindowSize.x, subWindowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+
+    //we just render on half the resolution
+    //much faster, maybe more inaccurate
+    glViewport(0,0,subWindowSize.x,subWindowSize.y);
+
+    //chaning the default "zoom/scale" to fit the complete volume inside the 1/2 viewport
+
+    //select rendermode
+    _activeRenderMode = RenderMode::XAxis;
+    Vec3f scaleCurrent = _data->getMRScale();
+
+    //subtract Both Volumes and store the value
+    float subValueCurrent = subVolumes(MROffset,MRRotation,scaleCurrent,subWindowSize);
+
+    //store possible translation/rotation in a vector
+    std::vector<float> subValues;
+    //xP,xM,yP,yM,zP,zM
+    //xPr,xMr,yPr,yMr,zPr,zMr
+
+
+    //calculate the substraction-value for each axis after moving the volume
+    _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0));
+    subValues.push_back(subVolumes(MROffset+Vec3f(translationStepSize,0,0),MRRotation,scaleCurrent,subWindowSize));
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0));
+    subValues.push_back(subVolumes(MROffset+Vec3f(-translationStepSize,0,0),MRRotation,scaleCurrent,subWindowSize));
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0));
+    subValues.push_back(subVolumes(MROffset+Vec3f(0,translationStepSize,0),MRRotation,scaleCurrent,subWindowSize));
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0));
+    subValues.push_back(subVolumes(MROffset+Vec3f(0,-translationStepSize,0),MRRotation,scaleCurrent,subWindowSize));
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize));
+    subValues.push_back(subVolumes(MROffset+Vec3f(0,0,translationStepSize),MRRotation,scaleCurrent,subWindowSize));
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize));
+    subValues.push_back(subVolumes(MROffset+Vec3f(0,0,-translationStepSize),MRRotation,scaleCurrent,subWindowSize));
+    _data->setMROffset(MROffset);
+
+    //same for rotation
+    _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(rotationStepSize,0,0),scaleCurrent,subWindowSize));
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(-rotationStepSize,0,0),scaleCurrent,subWindowSize));
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,rotationStepSize,0),scaleCurrent,subWindowSize));
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,-rotationStepSize,0),scaleCurrent,subWindowSize));
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,0,rotationStepSize),scaleCurrent,subWindowSize));
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,0,-rotationStepSize),scaleCurrent,subWindowSize));
+    _data->setMRRotation(MRRotation);
+
+    //adding scaling
+    _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(rotationStepSize,0,0),scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize),subWindowSize));
+    _data->setMRScale(scaleCurrent);
+    _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));
+    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(-rotationStepSize,0,0),scaleCurrent*Vec3f(1.0f -scaleStepSize,1.0f -scaleStepSize,1.0f -scaleStepSize),subWindowSize));
+    _data->setMRScale(scaleCurrent);
+
+
+
+    //reset some values which are no longer needed
+    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
+    glViewport(0,0,_windowSize.x,_windowSize.y);
+
+    //iterate over the vector to find the smalles substraction value
+    float minSubstraction = std::abs(subValues[0]);
+    int bestIndex = 0;
+    for(int i = 1; i < subValues.size();++i){
+        if(minSubstraction > std::abs(subValues[i])){
+            minSubstraction = std::abs(subValues[i]);
+            bestIndex = i;
+        }
+    }
+    //std::cout << "best value"<< minSubstraction << " at index"<< bestIndex<<std::endl;
+    std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
+    std::cout << "[DicomRenderer] stepM "<< translationStepSize << "stepR " << rotationStepSize << std::endl;
+
+    //IFF the substraction is better after any translation we have to continue
+    //no minimum found!
+    if(minSubstraction < std::abs(subValueCurrent)){
+        std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
+        switch(bestIndex){
+            case 0: _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0));std::cout << "case0 xP"<<std::endl; break;
+            case 1: _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0));std::cout << "case1 xM"<<std::endl; break;
+            case 2: _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0));std::cout << "case2 yP"<<std::endl; break;
+            case 3: _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0));std::cout << "case3 yM"<<std::endl; break;
+            case 4: _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize));std::cout << "case4 zP"<<std::endl; break;
+            case 5: _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize));std::cout << "case5 zM"<<std::endl; break;
+
+            case 6: _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));std::cout << "case6 xR"<<std::endl;break;
+            case 7: _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));std::cout << "case7 xR"<<std::endl;break;
+            case 8: _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));std::cout << "case8 YR"<<std::endl;break;
+            case 9: _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));std::cout << "case9 YR"<<std::endl;break;
+            case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));std::cout << "case10 ZR"<<std::endl;break;
+            case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));std::cout << "case11 ZR"<<std::endl;break;
+
+            case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));std::cout << "case0 scaleP"<<std::endl;break;
+            case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));std::cout << "case0 scaleM"<<std::endl;break;
+
+
+        }
+
+        return 1.0f; // 1 = continue
+    }
+
+    return -1.0f; // -1 finish
+}
+
+
+float DICOMRenderer::subVolumes(Vec3f MROffset, Vec3f MRRotation,Vec3f MRScale, Vec2ui windowSize){
+    //checking for glerrors
     checkForErrorCodes("@sub volumes1");
-    _activeRenderMode = RenderMode::ZAxis;
 
+    //vector to store the framebuffer of each slice
     std::vector<Vec4f> frameBuffer;
-    frameBuffer.resize(_windowSize.x*_windowSize.y);
+    frameBuffer.resize(windowSize.x*windowSize.y);
 
+    //will store the substraction value
     float volumeValue = 0.0f;
 
+    _targetBinder->Bind(COMPOSITING);
+    ClearBackground(Vec4f(0,0,0,0));
+
     //loop from slice 0 to last slice
-    for(float i = 0.0f; i < 1.0f; i+=1.0f/(float)_data->getCTScale().z){
-        _data->setSelectedSlices(Vec3f(0.5,0.5,i));
+    for(float i = 0.0f; i <= 1.0f; i+=2.0f/(float)_data->getCTScale().x){
+        _data->setSelectedSlices(Vec3f(i,0.5f,0.5f));
 
-        //draw CT slice \todo add slide selection to draw function
-        drawSlice(_GL_CTVolume->GetGLID(),
-                  _data->getCTTransferScaling(),
-                  CTFBO,
-                  nullptr,
-                  Vec3f(0,0,0),
-                  Vec3f(0,0,0),
-                  _data->getCTScale());
+        drawSliceV3(true,false);
+        drawSliceV3(false,false);
 
-        //draw MR slice -> NO ONLY CT CT MERGE!
-        drawSlice(_GL_CTVolume->GetGLID(),
-                  _data->getCTTransferScaling(),
-                  MRFBO,
-                  nullptr,
-                  currentTranslation,
-                  currentRotation,
-                  _data->getCTScale(),
-                  true);
-
-        //to compositing of both!
+        //seperate shader to substract both volumes
         _targetBinder->Bind(COMPOSITING);
-        //glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
-
+        //ClearBackground(Vec4f(0,0,0,0));
         glCullFace(GL_BACK);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
-        ClearBackground(Vec4f(0,0,0,0));
-        _compositingVolumeSubstraction->Enable();
-        _compositingVolumeSubstraction->SetTexture2D("sliceImageCT",CTFBO->GetTextureHandle(),0);
-        _compositingVolumeSubstraction->SetTexture2D("sliceImageMR",MRFBO->GetTextureHandle(),1);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE,GL_ONE);
 
         Vec3f slice = _data->getSelectedSlices();
-        slice-= Vec3f(0.5f,0.5,0.5f);
-        float zoom = 0;
+        slice -= Vec3f(0.5f,0.5,10000.0f); //to "world" space
 
-        switch(_activeRenderMode){
-          case RenderMode::ZAxis :slice.z = 100000.0f; zoom = _vZZoom.z; break;
-          case RenderMode::XAxis :slice.x = 100000.0f; zoom = _vXZoom.x;break;
-          case RenderMode::YAxis :slice.y = 100000.0f; zoom = _vYZoom.y;break;
-        }
+        _compositingVolumeSubstraction->Enable();
+        _compositingVolumeSubstraction->SetTexture2D("sliceImageCT",_rayCastColorCT->GetTextureHandle(),0);
+        _compositingVolumeSubstraction->SetTexture2D("sliceImageMR",_rayCastColorMR->GetTextureHandle(),1);
         _compositingVolumeSubstraction->Set("focusPoint",slice);
-        _compositingVolumeSubstraction->Set("zoomFactor",zoom);
-
-
+        _compositingVolumeSubstraction->Set("zoomFactor",0);
 
         _renderPlane->paint();
 
         _compositingVolumeSubstraction->Disable();
-
-        screenshot(counter++);
-
-        //read pixeldata!
-        _targetBinder->Bind(COMPOSITING);
-        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(frameBuffer[0]));
-
-
-        for(int x = 0; x < frameBuffer.size();++x){
-            volumeValue += frameBuffer[x].x;
-        }
-
-        //go to next slide
     }
-    _activeRenderMode = RenderMode::ThreeDMode;
-    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
 
-    std::cout << volumeValue << std::endl;
+    //read pixeldata!
+    _targetBinder->Bind(COMPOSITING);
+    glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+    glReadPixels(0, 0, windowSize.x, windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(frameBuffer[0]));
+
+    for(int x = 0; x < frameBuffer.size();++x){
+        volumeValue += frameBuffer[x].x;
+    }
+
     return volumeValue;
-}
-
-void DICOMRenderer::drawSliceElectrode(){
-
-    _targetBinder->Bind(_TwoDElectrodeFBO);
-    ClearBackground(Vec4f(0,0,0,-90000));
-
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    Mat4f zoom;
-
-
-    Mat4f curProj;
-    Mat4f curView;
-
-    switch(_activeRenderMode){
-        case RenderMode::ZAxis :{
-                                curProj = _orthographicZAxis;
-                                zoom.Scaling(_vZZoom);
-                                curView = _viewZ*zoom;
-                                break;
-                                }
-        case RenderMode::XAxis :{
-                                curProj = _orthographicXAxis;
-                                zoom.Scaling(_vXZoom);
-                                curView = _viewX*zoom;
-                                break;
-                                }
-        case RenderMode::YAxis :{
-                                curProj = _orthographicYAxis;
-                                zoom.Scaling(_vYZoom);
-                                curView = _viewY*zoom;
-                                break;
-                                }
-    };
-
-    _electrodeGeometryShader->Enable();
-    _electrodeGeometryShader->Set("projectionMatrix",curProj);
-    _electrodeGeometryShader->Set("viewMatrix",curView);
-
-    Vec3f dirLeft = _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace;
-    float lengthLeft = dirLeft.length()+5;
-    dirLeft.normalize();
-
-    Vec3f dirRight = _data->getRightSTN()._startWorldSpace-_data->getRightSTN()._endWorldSpace;
-    float lengthRight = dirRight.length()+5;
-    dirRight.normalize();
-
-    Vec3f startPos;
-    Mat4f translation;
-
-    for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
-        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
-        if(!electrode->getIsSelected()) continue;
-        if((electrode->getName().c_str())[0] == 'L'){
-            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
-            startPos = (startPos-Vec3f(100,100,100));
-            startPos =  startPos.x*_data->getCTeX()+
-                        startPos.y*_data->getCTeY()+
-                        startPos.z*_data->getCTeZ()+
-                        (_data->getCTCenter()*_data->getCTScale());
-            translation.Translation(startPos+dirLeft*lengthLeft);
-
-            _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix*translation);
-            _electrodeGeometry->paint();
-        }else if((electrode->getName().c_str())[0] == 'R'){
-            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
-            startPos = (startPos-Vec3f(100,100,100));
-            startPos =  startPos.x*_data->getCTeX()+
-                        startPos.y*_data->getCTeY()+
-                        startPos.z*_data->getCTeZ()+
-                        (_data->getCTCenter()*_data->getCTScale());
-            translation.Translation(startPos+dirRight*lengthRight);
-
-            _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix*translation);
-            _electrodeGeometry->paint();
-        }
-    }
-    _electrodeGeometryShader->Disable();
-
-
-    //draw the trajectories
-    Vec3f position;
-    Mat4f scaleT;
-    Mat4f transT;
-    scaleT.Scaling(1.0,1.0,1.0);
-    Mat4f worldScaling;
-    worldScaling.Scaling(_data->getCTScale());
-    Vec4f centerWorld = (worldScaling*Vec4f(_data->getCTCenter(),1));
-
-    _sphereFFTShader->Enable();
-    _sphereFFTShader->Set("projectionMatrix",curProj);
-    _sphereFFTShader->Set("viewMatrix",curView);
-    _sphereFFTShader->Set("fftRange",_data->getSpectralRange());
-    _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
-
-    for(int i = 0; i < 6;i++){
-        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
-        if(!electrode->getIsSelected()) continue;
-        if(electrode != nullptr){
-            for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
-                std::shared_ptr<iMERData> data = electrode->getData(k);
-                if(data != nullptr){
-
-                    position = data->getDataPosition()-Vec3f(100,100,100);
-                    position = centerWorld.xyz() + _data->getCTeX()*position.x + _data->getCTeY()*position.y + _data->getCTeZ()*position.z;
-                    transT.Translation(position);
-                    transT = scaleT*transT;
-                    _sphereFFTShader->Set("fftValue",(float)data->getSpectralAverage());
-                    _sphereFFTShader->Set("worldMatrix",transT);
-                    _sphereFFTShader->Set("fftRange",Vec2f(electrode->getSpectralPowerRange().x,electrode->getSpectralPowerRange().y));
-
-                    _sphere->paint();
-                }
-            }
-        }
-    }
-
-    _sphereFFTShader->Disable();
-
-
-    glDisable(GL_DEPTH_TEST);
-}
-
-
-void DICOMRenderer::drawSliceTop(){
-
-}
-
-
-void DICOMRenderer::drawSliceFont(){
-
 }
 
 
@@ -1253,9 +1288,9 @@ void DICOMRenderer::drawSliceCompositing(){
   glDisable(GL_BLEND);
   ClearBackground(Vec4f(0,1,1,0));
   _compositingTwoDShader->Enable();
-  _compositingTwoDShader->SetTexture2D("sliceImageCT",_TwoDCTVolumeFBO->GetTextureHandle(),0);
-  _compositingTwoDShader->SetTexture2D("sliceImageMR",_TwoDMRVolumeFBO->GetTextureHandle(),1);
-  _compositingTwoDShader->SetTexture2D("electrodeImage",_TwoDElectrodeFBO->GetTextureHandle(),2);
+  _compositingTwoDShader->SetTexture2D("sliceImageCT",_rayCastColorCT->GetTextureHandle(),0);
+  _compositingTwoDShader->SetTexture2D("sliceImageMR",_rayCastColorMR->GetTextureHandle(),1);
+  _compositingTwoDShader->SetTexture2D("electrodeImage",_boundingBoxVolumeBuffer->GetTextureHandle(),2);
   _compositingTwoDShader->SetTexture2D("CTPosition",_TwoDCTPositionVolumeFBO->GetTextureHandle(),3);
   _compositingTwoDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),4);
   _compositingTwoDShader->Set("mrctblend", _data->getMRCTBlend());
@@ -1264,11 +1299,6 @@ void DICOMRenderer::drawSliceCompositing(){
   slice-= Vec3f(0.5f,0.5,0.5f);
   float zoom = 0;
 
-  switch(_activeRenderMode){
-    case RenderMode::ZAxis :slice.z = 100000.0f; zoom = _vZZoom.z; break;
-    case RenderMode::XAxis :slice.x = 100000.0f; zoom = _vXZoom.x;break;
-    case RenderMode::YAxis :slice.y = 100000.0f; zoom = _vYZoom.y;break;
-  }
   _compositingTwoDShader->Set("focusPoint",slice);
   _compositingTwoDShader->Set("zoomFactor",zoom);
 
@@ -1350,20 +1380,20 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
 
         _targetBinder->Unbind();
     }else{
-        _targetBinder->Bind(_TwoDCTPositionVolumeFBO);
+        _targetBinder->Bind(_TwoDMRPositionVolumeFBO);
         glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
         glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&data);
 
         if(data.x != 0 && data.y != 0 && data.z != 0){
             VolumePos = Vec4f((float)data.x/255.0f,(float)data.y/255.0f,(float)data.z/255.0f,(float)data.w/255.0f);
             std::cout << VolumePos << "    -    "   << _data->getSelectedSlices() << std::endl;
-            if(_activeRenderMode == RenderMode::XAxis && VolumePos.x == _data->getSelectedSlices().x){
+            /*if(_activeRenderMode == RenderMode::XAxis && VolumePos.x == _data->getSelectedSlices().x){
                 _data->setSelectedSlices(VolumePos.xyz());
             }else if(_activeRenderMode == RenderMode::YAxis && VolumePos.y == _data->getSelectedSlices().y){
                 _data->setSelectedSlices(VolumePos.xyz());
             }else if(_activeRenderMode == RenderMode::ZAxis && VolumePos.z == _data->getSelectedSlices().z){
                 _data->setSelectedSlices(VolumePos.xyz());
-            }
+            }*/
         }
         _targetBinder->Unbind();
     }
@@ -1641,4 +1671,50 @@ void DICOMRenderer::calculateElectrodeMatices(){
     T.Translation(_data->getRightSTN()._startWorldSpace+  outdir*15.0f  );
 
     _electrodeRightMatix = S*U;
+}
+
+
+void DICOMRenderer::calculateRotation(){
+    Vec3f ACstx(98.5f,112.9f,102.4f);
+    Vec3f PCstx(98.1f,85.2f,106.3f);
+
+    ACstx -= Vec3f(100,100,100);
+    PCstx -= Vec3f(100,100,100);
+
+    ACstx = ACstx.x*_data->getCTeX()+
+            ACstx.y*_data->getCTeY()+
+            ACstx.z*_data->getCTeZ()+
+            _data->getCTCenter()*_data->getCTScale();
+
+    PCstx = PCstx.x*_data->getCTeX()+
+            PCstx.y*_data->getCTeY()+
+            PCstx.z*_data->getCTeZ()+
+            _data->getCTCenter()*_data->getCTScale();
+
+    Vec3f ACmr(0.490196,0.470588,0.682275);
+    Vec3f PCmr(0.494118,0.588235,0.647059);
+
+    ACmr -= Vec3f(0.5f,0.5f,0.5f);
+    PCmr -= Vec3f(0.5f,0.5f,0.5f);
+
+    ACmr*= _data->getMRScale();
+    PCmr*= _data->getMRScale();
+
+    float length = (ACmr-PCmr).length();
+
+    std::cout << "AC MR"<< ACmr << std::endl;
+    std::cout << "PC MR"<< PCmr << std::endl;
+    std::cout << "MR LENGTH"<< length << std::endl;
+
+    std::cout << "AC STX"<< ACstx << std::endl;
+    std::cout << "PC STX"<< PCstx << std::endl;
+    std::cout << "STX LENGTH"<< (ACstx-PCstx).length() << std::endl;
+
+    Vec3f ACmrstxTranslation = ACstx-ACmr;
+
+     std::cout << "AC translation"<< ACmrstxTranslation << std::endl;
+
+    _ACMRWorldPosition = ACmr;
+    _PCMRWorldPosition = PCmr;
+    _data->setMROffset(ACmrstxTranslation);
 }

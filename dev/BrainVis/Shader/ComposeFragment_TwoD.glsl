@@ -38,7 +38,7 @@ void main(void)
   //  outputColor = electrode;
   //}
 
-  if(abs(focusPoint.x-position.x) < (0.003f/zoomFactor) ){
+  /*if(abs(focusPoint.x-position.x) < (0.003f/zoomFactor) ){
     outputColor += vec4(0.2f,0,0,1);
   }
   if(abs(focusPoint.y-position.y) < (0.003f/zoomFactor) ){
@@ -46,7 +46,7 @@ void main(void)
   }
   if(abs(focusPoint.z-position.z) < (0.004f/zoomFactor) ){
     outputColor += vec4(0,0,0.2f,1);
-  }
+  }*/
 
   if(!(font.x == 0 && font.y == 0 && font.z == 0)){
     outputColor = vec4(font,1);

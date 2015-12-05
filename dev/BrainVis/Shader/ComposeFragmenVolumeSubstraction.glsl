@@ -20,6 +20,6 @@ void main(void)
   vec4 sliceCT = texture(sliceImageCT,vScreenPosition);
   vec4 sliceMR = texture(sliceImageMR,vScreenPosition);
  
-  outputColor = sliceCT-sliceMR;
+  outputColor = (sliceCT-sliceMR)*(sliceCT-sliceMR);
 }
 

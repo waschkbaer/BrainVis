@@ -111,18 +111,21 @@ private:
         void drawCubeEntry(std::shared_ptr<GLFBOTex> target, Mat4f world);
         void drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
                            std::shared_ptr<GLFBOTex> positionTarget,
+                           std::shared_ptr<GLProgram> shader,
                            Mat4f world,
                            GLuint entryHandle,
                            GLuint volumeHandle,
                            GLuint tfHandle,
-                           float tfScaling);
-        void drawLineBoxes();
+                           float tfScaling,
+                           bool isCT = true,
+                           float rayStepPara = 1000.0f);
+        void drawLineBoxes(std::shared_ptr<GLFBOTex> target);
 
         void drawPlaning();
-        void drawCenterCube();
-        void drawGFrame();
-        void drawElectrodeCylinder();
-        void drawElectrodeSpheres();
+        void drawCenterCube(std::shared_ptr<GLFBOTex> target);
+        void drawGFrame(std::shared_ptr<GLFBOTex> target);
+        void drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target);
+        void drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target);
 
         void drawCompositing();
 
@@ -130,19 +133,8 @@ private:
 
         //slicer--------------------------------
         void SliceRendering();
-        void drawSliceElectrode();
-        void drawSliceTop();
-        void drawSliceFont();
         void drawSliceCompositing();
-
-        void drawSlice(GLuint volumeID,
-                         float transferScaling,
-                         std::shared_ptr<GLFBOTex> color,
-                         std::shared_ptr<GLFBOTex> position,
-                         Vec3f VolumeTranslation,
-                         Vec3f VolumeRotation,
-                         Vec3f VolumeScale,
-                         bool secondary = false);
+        void drawSliceV3(bool isCT = true,bool full = true);
 
         //G-Frame-------------------------------
         bool _foundFrame;
@@ -156,7 +148,10 @@ private:
         void calculateElectrodeMatices();
         void checkForErrorCodes(std::string note);
 
-        int32_t subVolumes(Vec3f MROffset, Vec3f MRRotation);
+        float gradientDecentStep(Vec3f MROffset, Vec3f MRRotation);
+        float subVolumes(Vec3f MROffset, Vec3f MRRotation,Vec3f MRScale, Vec2ui windowSize);
+
+        void calculateRotation();
 
     private:
         RenderMode                      _activeRenderMode;
@@ -228,13 +223,8 @@ private:
         Vec2ui                          _windowSize;
         Mat4f                           _projection;
         Mat4f                           _orthographicXAxis;
-        Mat4f                           _orthographicYAxis;
-        Mat4f                           _orthographicZAxis;
-        Mat4f                           _orthonormalProjection;
         Mat4f                           _view;
         Mat4f                           _viewX;
-        Mat4f                           _viewY;
-        Mat4f                           _viewZ;
 
         std::unique_ptr<Camera>         _camera;
 
@@ -248,9 +238,19 @@ private:
         Mat4f                           _electrodeRightMatix;
 
         //zoom for the slide renderer
-        Vec3f                           _vXZoom;
-        Vec3f                           _vYZoom;
-        Vec3f                           _vZZoom;
+        Vec3f                           _vZoom;
+
+
+        //gradient decent testing
+        std::shared_ptr<GLFBOTex>       CTFBO;
+        std::shared_ptr<GLFBOTex>       MRFBO;
+        std::shared_ptr<GLFBOTex>       COMPOSITING;
+        float translationStepSize;
+        float rotationStepSize;
+        float scaleStepSize;
+
+        Vec3f                           _ACMRWorldPosition;
+        Vec3f                           _PCMRWorldPosition;
 };
 
 

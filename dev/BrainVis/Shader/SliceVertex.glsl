@@ -15,7 +15,9 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 scale;
 uniform mat4 translate;
-uniform mat4 rotation;
+uniform mat4 rotationX;
+uniform mat4 rotationY;
+uniform mat4 rotationZ;
 uniform float slide = 0.0f;
 
 uniform vec3 volumeOffset;
@@ -27,7 +29,9 @@ void main(void)
   vec4 pos = vec4(0,0,0,0);
     
   pos = scale*vec4(inputPosition.xyz, 1.0);
-  pos = rotation*pos;
+  pos = rotationX*pos;
+  pos = rotationY*pos;
+  pos = rotationZ*pos;
   pos = scaleInv*pos;
   pos = translate*pos;
   

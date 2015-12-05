@@ -40,8 +40,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>347</width>
-         <height>410</height>
+         <width>309</width>
+         <height>364</height>
         </rect>
        </property>
        <attribute name="label">
@@ -870,7 +870,7 @@
            <item>
             <widget class="QLineEdit" name="MRPath">
              <property name="text">
-              <string>C:\Users\wisar\Dropbox\MasterThesis\Data\MER Imagedata\MRKopf_1118\t2_spc_n_3657</string>
+              <string>C:\Users\andre\Dropbox\MasterThesis\Data\MER Imagedata\MRKopf_1118\t2_spc_n_3657</string>
              </property>
             </widget>
            </item>
@@ -900,7 +900,7 @@
            <item>
             <widget class="QLineEdit" name="CTPath">
              <property name="text">
-              <string>C:\Users\wisar\Dropbox\MasterThesis\CTFrameduen</string>
+              <string>C:\Users\andre\Dropbox\MasterThesis\CTFrameduen</string>
              </property>
             </widget>
            </item>
@@ -954,7 +954,7 @@
               <item>
                <widget class="QLineEdit" name="MERPath_2">
                 <property name="text">
-                 <string>D:\Dev\build\bin\MER</string>
+                 <string>C:\Users\andre\Documents\BrainVis\build\bin\MER</string>
                 </property>
                </widget>
               </item>

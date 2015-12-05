@@ -26,7 +26,7 @@ bool DicomVolume::initData(std::string& DICOMpath){
 
   //multiple files in folder, don't know which to take
   if(m_DicomParser.m_FileStacks.size() < 1){
-  std::cout <<"no correct dicom file "<<m_DicomParser.m_FileStacks.size()<<std::endl;
+  std::cout <<"[DICOMVolume] no correct dicom file "<<m_DicomParser.m_FileStacks.size()<<std::endl;
     return false;
   }
 
@@ -36,19 +36,35 @@ bool DicomVolume::initData(std::string& DICOMpath){
     m_vDimensions.z = m_DicomParser.m_FileStacks[0]->m_Elements.size();
 
     m_vAspectRatio =  m_DicomParser.m_FileStacks[0]->m_fvfAspect;
-    std::cout << "dimensions"<< m_DicomParser.m_FileStacks[0]->m_fvfAspect << std::endl;
+    std::cout << "[DICOMVolume] dimensions"<< m_DicomParser.m_FileStacks[0]->m_fvfAspect << std::endl;
+
+    Vec3f minPos(1000.0f,1000.0f,1000.0f);
+    Vec3f maxPos(-1000.0f,-1000.0f,-1000.0f);
+    for(int i = 0; i < m_DicomParser.m_FileStacks[0]->m_Elements.size();++i){
+            SimpleDICOMFileInfo* dicomInfo = (SimpleDICOMFileInfo*)(m_DicomParser.m_FileStacks[0]->m_Elements[i]);
+            if(dicomInfo->m_fvPatientPosition.x < minPos.x){ minPos.x = dicomInfo->m_fvPatientPosition.x; }
+            if(dicomInfo->m_fvPatientPosition.y < minPos.y){ minPos.y = dicomInfo->m_fvPatientPosition.y; }
+            if(dicomInfo->m_fvPatientPosition.z < minPos.z){ minPos.z = dicomInfo->m_fvPatientPosition.z; }
+
+            if(dicomInfo->m_fvPatientPosition.x > maxPos.x){ maxPos.x = dicomInfo->m_fvPatientPosition.x; }
+            if(dicomInfo->m_fvPatientPosition.y > maxPos.y){ maxPos.y = dicomInfo->m_fvPatientPosition.y; }
+            if(dicomInfo->m_fvPatientPosition.z > maxPos.z){ maxPos.z = dicomInfo->m_fvPatientPosition.z; }
+    }
+    std::cout <<"[DICOMVolume] Patient minPos: "<< minPos << std::endl;
+    std::cout <<"[DICOMVolume] Patient maxPos: "<< maxPos << std::endl;
+
     SimpleDICOMFileInfo* test = (SimpleDICOMFileInfo*)(m_DicomParser.m_FileStacks[0]->m_Elements[0]);
-    std::cout <<"Patient Position: "<< test->m_fvPatientPosition << std::endl;
-    std::cout <<"Patient scale: "<< test->m_fScale << std::endl;
-    std::cout <<"Patient Bias: "<< test->m_fBias << std::endl;
-    std::cout <<"Patient windowwidth: "<< test->m_fWindowWidth << std::endl;
-    std::cout <<"Patient windowcenter: "<< test->m_fWindowCenter << std::endl;
+    //std::cout <<"[DICOMVolume] Patient Position: "<< test->m_fvPatientPosition << std::endl;
+    std::cout <<"[DICOMVolume] Patient scale: "<< test->m_fScale << std::endl;
+    std::cout <<"[DICOMVolume] Patient Bias: "<< test->m_fBias << std::endl;
+    std::cout <<"[DICOMVolume] Patient windowwidth: "<< test->m_fWindowWidth << std::endl;
+    std::cout <<"[DICOMVolume] Patient windowcenter: "<< test->m_fWindowCenter << std::endl;
 
     uint32_t voxelCount = m_vDimensions.x*m_vDimensions.y*m_vDimensions.z;
     uint32_t bytePerElement = m_DicomParser.m_FileStacks[0]->m_iAllocated/8;
 
     std::cout << voxelCount << " " << m_DicomParser.m_FileStacks[0]->m_ivSize << " " <<m_DicomParser.m_FileStacks[0]->m_Elements.size() << std::endl;
-    std::cout <<"byte per element: "<< bytePerElement << std::endl;
+    std::cout <<"[DICOMVolume] byte per element: "<< bytePerElement << std::endl;
 
     //resize the vector to fit the complete volume
     m_vData.resize(voxelCount*bytePerElement);
@@ -82,7 +98,7 @@ bool DicomVolume::initData(std::string& DICOMpath){
     }
     m_vHistogram.resize(largestValue);
 
-    std::cout <<"largest found value: "<< largestValue << std::endl;
+    std::cout <<"[DICOMVolume] largest found value: "<< largestValue << std::endl;
 
     return true;
 };
