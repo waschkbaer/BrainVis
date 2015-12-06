@@ -26,15 +26,15 @@ layout(location=1) out vec4 outputPosition;
 
 bool isTwoDCut(vec3 curPos, vec3 focusPos, vec3 axis){
   if(axis.x == 1.0 || axis.x == -1.0){
-      if(abs(focusPos.x - curPos.x) < 0.5){
+      if(abs(focusPos.x - curPos.x) < 0.7){
         return false;
       }
   }else if(axis.y == 1.0 || axis.y == -1.0){
-      if(abs(focusPos.y - curPos.y) < 0.5){
+      if(abs(focusPos.y - curPos.y) < 0.7){
         return false;
       }
   }else if(axis.z == 1.0 || axis.z == -1.0){
-      if(abs(focusPos.z - curPos.z) < 0.5){
+      if(abs(focusPos.z - curPos.z) < 0.7){
         return false;
       }
   }

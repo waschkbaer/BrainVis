@@ -134,7 +134,7 @@ private:
         //slicer--------------------------------
         void SliceRendering();
         void drawSliceCompositing();
-        void drawSliceV3(bool isCT = true,bool full = true);
+        void drawSliceV3(bool isCT = true,bool full = true, bool noCTBones = false);
 
         //G-Frame-------------------------------
         bool _foundFrame;
@@ -148,8 +148,8 @@ private:
         void calculateElectrodeMatices();
         void checkForErrorCodes(std::string note);
 
-        float gradientDecentStep(Vec3f MROffset, Vec3f MRRotation);
-        float subVolumes(Vec3f MROffset, Vec3f MRRotation,Vec3f MRScale, Vec2ui windowSize);
+        float gradientDecentStep();
+        float subVolumes(Vec2ui windowSize);
 
         void calculateRotation();
 

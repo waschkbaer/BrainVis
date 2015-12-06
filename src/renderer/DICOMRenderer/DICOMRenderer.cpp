@@ -24,7 +24,7 @@ _needsUpdate(true)
 {
 translationStepSize = 4.0f;
 rotationStepSize = 0.1f;
-scaleStepSize = 2.0f;
+//scaleStepSize = 2.0f;
 }
 
 void DICOMRenderer::Initialize(){
@@ -132,7 +132,7 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
     sheduleRepaint();
 
 
-    calculateRotation();
+    //calculateRotation();
 }
 
 void DICOMRenderer::searchGFrame(Vec2f range){
@@ -233,13 +233,13 @@ void DICOMRenderer::Paint(){
     checkDatasetStatus();
 
     if(_data->getDoGradientDecent()){
-        float done = gradientDecentStep(_data->getMROffset(),_data->getMRRotation());
+        float done = gradientDecentStep();
 
         if(done < 0.0f){
             if(translationStepSize < 0.5f || rotationStepSize < 0.000001){
                  _data->setDoGradientDecent(false);
 
-                 translationStepSize = 10.0f;
+                 translationStepSize = 4.0f;
                  rotationStepSize = 0.1f;
 
                  std::cout << "end gdc"<<std::endl;
@@ -248,7 +248,7 @@ void DICOMRenderer::Paint(){
             translationStepSize *= 0.75f;
             rotationStepSize *= 0.73f;
 
-            scaleStepSize *= 0.75f;
+            //scaleStepSize *= 0.75f;
             }
         }
         _data->setMRCTBlend( 0.5f);
@@ -436,6 +436,7 @@ bool DICOMRenderer::LoadFrameBuffer(){
      _TwoDFontFBO                   = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _TwoDTopFBO                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _boundingBoxVolumeBuffer       = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+     COMPOSITING                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
 
      //fontbuffer
      _FontTexture                   = std::make_shared<GLTexture2D>(_windowSize.x, _windowSize.y, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
@@ -951,11 +952,8 @@ void DICOMRenderer::drawCompositing(){
 
 void DICOMRenderer::SliceRendering(){
 
-
-
-
     if(_GL_CTVolume != nullptr){
-        drawSliceV3(true,true);
+        drawSliceV3(true,true,false);
 
     }
     if(_GL_MRVolume != nullptr){   
@@ -968,7 +966,7 @@ void DICOMRenderer::SliceRendering(){
     drawSliceCompositing();
 }
 
-void DICOMRenderer::drawSliceV3(bool isCT,bool full){
+void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
     Mat4f oldProjectionMatrix = _projection;
     Mat4f oldViewMatrix = _view;
     DICOMClipMode oldClipMode = _clipMode;
@@ -1013,6 +1011,10 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full){
     if(isCT){
         drawCubeEntry(_rayEntryCT,_data->getCTWorld());
 
+        if(!noCTBones){
+            isCT = false;
+        }
+
         drawVolumeRayCast(  _rayCastColorCT,
                             _rayCastPositionCT,
                             _sliceShader,
@@ -1021,7 +1023,7 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full){
                             _GL_CTVolume->GetGLID(),
                             _transferFunctionTex->GetGLID(),
                             _data->getCTTransferScaling(),
-                            true,
+                            isCT,
                             stepsize);
 
 
@@ -1095,7 +1097,7 @@ static int screenshot(int i)
 }
 static int counter= 0;
 
-float DICOMRenderer::gradientDecentStep(Vec3f MROffset, Vec3f MRRotation){
+float DICOMRenderer::gradientDecentStep(){
     //store the current "default" framebuffer QT-Shit
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
 
@@ -1108,69 +1110,72 @@ float DICOMRenderer::gradientDecentStep(Vec3f MROffset, Vec3f MRRotation){
     //much faster, maybe more inaccurate
     glViewport(0,0,subWindowSize.x,subWindowSize.y);
 
-    //chaning the default "zoom/scale" to fit the complete volume inside the 1/2 viewport
-
     //select rendermode
     _activeRenderMode = RenderMode::XAxis;
+
+    Vec3f MROffset = _data->getMROffset();
+    Vec3f MRRotation = _data->getMRRotation();
     Vec3f scaleCurrent = _data->getMRScale();
+    std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
+    std::cout << "[DicomRenderer] stepM "<< translationStepSize << "stepR " << rotationStepSize << std::endl;
+
 
     //subtract Both Volumes and store the value
-    float subValueCurrent = subVolumes(MROffset,MRRotation,scaleCurrent,subWindowSize);
+    float subValueCurrent = subVolumes(subWindowSize);
 
     //store possible translation/rotation in a vector
     std::vector<float> subValues;
     //xP,xM,yP,yM,zP,zM
     //xPr,xMr,yPr,yMr,zPr,zMr
 
-
     //calculate the substraction-value for each axis after moving the volume
     _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0));
-    subValues.push_back(subVolumes(MROffset+Vec3f(translationStepSize,0,0),MRRotation,scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0));
-    subValues.push_back(subVolumes(MROffset+Vec3f(-translationStepSize,0,0),MRRotation,scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0));
-    subValues.push_back(subVolumes(MROffset+Vec3f(0,translationStepSize,0),MRRotation,scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0));
-    subValues.push_back(subVolumes(MROffset+Vec3f(0,-translationStepSize,0),MRRotation,scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize));
-    subValues.push_back(subVolumes(MROffset+Vec3f(0,0,translationStepSize),MRRotation,scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize));
-    subValues.push_back(subVolumes(MROffset+Vec3f(0,0,-translationStepSize),MRRotation,scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
 
     //same for rotation
     _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(rotationStepSize,0,0),scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(-rotationStepSize,0,0),scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,rotationStepSize,0),scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,-rotationStepSize,0),scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,0,rotationStepSize),scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(0,0,-rotationStepSize),scaleCurrent,subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
 
     //adding scaling
-    _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(rotationStepSize,0,0),scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize),subWindowSize));
+    /*_data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRScale(scaleCurrent);
     _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));
-    subValues.push_back(subVolumes(MROffset,MRRotation+Vec3f(-rotationStepSize,0,0),scaleCurrent*Vec3f(1.0f -scaleStepSize,1.0f -scaleStepSize,1.0f -scaleStepSize),subWindowSize));
+    subValues.push_back(subVolumes(subWindowSize));
     _data->setMRScale(scaleCurrent);
-
+    */
 
 
     //reset some values which are no longer needed
@@ -1186,35 +1191,29 @@ float DICOMRenderer::gradientDecentStep(Vec3f MROffset, Vec3f MRRotation){
             bestIndex = i;
         }
     }
-    //std::cout << "best value"<< minSubstraction << " at index"<< bestIndex<<std::endl;
-    std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
-    std::cout << "[DicomRenderer] stepM "<< translationStepSize << "stepR " << rotationStepSize << std::endl;
 
     //IFF the substraction is better after any translation we have to continue
     //no minimum found!
     if(minSubstraction < std::abs(subValueCurrent)){
         std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
         switch(bestIndex){
-            case 0: _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0));std::cout << "case0 xP"<<std::endl; break;
-            case 1: _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0));std::cout << "case1 xM"<<std::endl; break;
-            case 2: _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0));std::cout << "case2 yP"<<std::endl; break;
-            case 3: _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0));std::cout << "case3 yM"<<std::endl; break;
-            case 4: _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize));std::cout << "case4 zP"<<std::endl; break;
-            case 5: _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize));std::cout << "case5 zM"<<std::endl; break;
+            case 0: _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0)); break;
+            case 1: _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0)); break;
+            case 2: _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0)); break;
+            case 3: _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0)); break;
+            case 4: _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize)); break;
+            case 5: _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize)); break;
 
-            case 6: _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));std::cout << "case6 xR"<<std::endl;break;
-            case 7: _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));std::cout << "case7 xR"<<std::endl;break;
-            case 8: _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));std::cout << "case8 YR"<<std::endl;break;
-            case 9: _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));std::cout << "case9 YR"<<std::endl;break;
-            case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));std::cout << "case10 ZR"<<std::endl;break;
-            case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));std::cout << "case11 ZR"<<std::endl;break;
+            case 6: _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));break;
+            case 7: _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));break;
+            case 8: _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));break;
+            case 9: _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));break;
+            case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));break;
+            case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));break;
 
-            case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));std::cout << "case0 scaleP"<<std::endl;break;
-            case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));std::cout << "case0 scaleM"<<std::endl;break;
-
-
+            //case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));break;
+            //case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));break;
         }
-
         return 1.0f; // 1 = continue
     }
 
@@ -1222,7 +1221,7 @@ float DICOMRenderer::gradientDecentStep(Vec3f MROffset, Vec3f MRRotation){
 }
 
 
-float DICOMRenderer::subVolumes(Vec3f MROffset, Vec3f MRRotation,Vec3f MRScale, Vec2ui windowSize){
+float DICOMRenderer::subVolumes(Vec2ui windowSize){
     //checking for glerrors
     checkForErrorCodes("@sub volumes1");
 
@@ -1233,14 +1232,15 @@ float DICOMRenderer::subVolumes(Vec3f MROffset, Vec3f MRRotation,Vec3f MRScale, 
     //will store the substraction value
     float volumeValue = 0.0f;
 
+    //initial cleaning of the targetframebuffer
     _targetBinder->Bind(COMPOSITING);
     ClearBackground(Vec4f(0,0,0,0));
 
-    //loop from slice 0 to last slice
+    //loop from slice 0 to last slice (skip each 2. slide)
     for(float i = 0.0f; i <= 1.0f; i+=2.0f/(float)_data->getCTScale().x){
         _data->setSelectedSlices(Vec3f(i,0.5f,0.5f));
 
-        drawSliceV3(true,false);
+        drawSliceV3(true,false, true);
         drawSliceV3(false,false);
 
         //seperate shader to substract both volumes
@@ -1253,14 +1253,9 @@ float DICOMRenderer::subVolumes(Vec3f MROffset, Vec3f MRRotation,Vec3f MRScale, 
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE,GL_ONE);
 
-        Vec3f slice = _data->getSelectedSlices();
-        slice -= Vec3f(0.5f,0.5,10000.0f); //to "world" space
-
         _compositingVolumeSubstraction->Enable();
         _compositingVolumeSubstraction->SetTexture2D("sliceImageCT",_rayCastColorCT->GetTextureHandle(),0);
         _compositingVolumeSubstraction->SetTexture2D("sliceImageMR",_rayCastColorMR->GetTextureHandle(),1);
-        _compositingVolumeSubstraction->Set("focusPoint",slice);
-        _compositingVolumeSubstraction->Set("zoomFactor",0);
 
         _renderPlane->paint();
 
@@ -1295,13 +1290,13 @@ void DICOMRenderer::drawSliceCompositing(){
   _compositingTwoDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),4);
   _compositingTwoDShader->Set("mrctblend", _data->getMRCTBlend());
 
-  Vec3f slice = _data->getSelectedSlices();
+  /*Vec3f slice = _data->getSelectedSlices();
   slice-= Vec3f(0.5f,0.5,0.5f);
   float zoom = 0;
 
   _compositingTwoDShader->Set("focusPoint",slice);
   _compositingTwoDShader->Set("zoomFactor",zoom);
-
+    */
 
 
   _renderPlane->paint();
