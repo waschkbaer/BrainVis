@@ -25,6 +25,22 @@ CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<Data
     ui->currentRotationY->setText(QString(std::to_string(_data->getMRRotation().y).c_str()));
     ui->currentRotationZ->setText(QString(std::to_string(_data->getMRRotation().z).c_str()));
 
+    _data->setFTranslationStep(ui->translationStepSize->value()/100.0f);
+    _data->setFTranslationStepScale(ui->translationDegSize->value()/100.0f);
+    _data->setFRotationStep(ui->rotatioStepSize->value()/100.0f);
+    _data->setFRotationStepScale(ui->rotatioDegSize->value()/100.0f);
+
+    ui->translationStepCurrent->setText(QString(std::to_string(ui->translationStepSize->value()/100.0f).c_str()));
+    ui->translationDegCurrent->setText(QString(std::to_string(ui->translationDegSize->value()/100.0f).c_str()));
+    ui->rotatioStepCurrent->setText(QString(std::to_string(ui->rotatioStepSize->value()/100.0f).c_str()));
+    ui->rotatioDegCurrent->setText(QString(std::to_string(ui->rotatioDegSize->value()/100.0f).c_str()));
+
+
+    _translationStep = ui->translationStepSize->value()/100.0f;
+    _translationScaling = ui->translationDegSize->value()/100.0f;
+    _rotationStep = ui->rotatioStepSize->value()/100.0f;
+    _rotationScaling = ui->rotatioDegSize->value()/100.0f;
+
     this->setFloating(true);
     this->show();
 }
@@ -42,6 +58,10 @@ void CtRegistrationWidget::on_resetButton_clicked()
 
 void CtRegistrationWidget::on_registerButton_clicked()
 {
+    //_data->setFTranslationStep(_translationStep);
+    //_data->setFTranslationStepScale(_translationScaling);
+    //_data->setFRotationStep(_rotationStep);
+    //_data->setFRotationStepScale(_rotationScaling);
     MainWindow* parent = (MainWindow*)this->parent();
     parent->getWorkingRenderer()->startGradientDescent();
 }
@@ -51,6 +71,7 @@ void CtRegistrationWidget::on_translationStepSize_sliderMoved(int position)
     float value = (float)position/100.0f;
     ui->translationStepCurrent->setText(QString(std::to_string(value).c_str()));
     _data->setFTranslationStep(value);
+    _translationStep = value;
 }
 
 void CtRegistrationWidget::on_translationDegSize_sliderMoved(int position)
@@ -58,6 +79,7 @@ void CtRegistrationWidget::on_translationDegSize_sliderMoved(int position)
     float value = (float)position/100.0f;
     ui->translationDegCurrent->setText(QString(std::to_string(value).c_str()));
     _data->setFTranslationStepScale(value);
+    _translationScaling = value;
 }
 
 void CtRegistrationWidget::on_rotatioStepSize_sliderMoved(int position)
@@ -65,6 +87,7 @@ void CtRegistrationWidget::on_rotatioStepSize_sliderMoved(int position)
     float value = (float)position/100.0f;
     ui->rotatioStepCurrent->setText(QString(std::to_string(value).c_str()));
     _data->setFRotationStep(value);
+    _rotationStep = value;
 }
 
 void CtRegistrationWidget::on_rotatioDegSize_sliderMoved(int position)
@@ -72,6 +95,7 @@ void CtRegistrationWidget::on_rotatioDegSize_sliderMoved(int position)
     float value = (float)position/100.0f;
     ui->rotatioDegCurrent->setText(QString(std::to_string(value).c_str()));
     _data->setFRotationStepScale(value);
+    _rotationScaling = value;
 }
 
 void CtRegistrationWidget::update(){

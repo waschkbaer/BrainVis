@@ -228,6 +228,7 @@ void DICOMRenderer::Paint(){
 
     checkDatasetStatus();
 
+    //while(_doesGradientDescent){
     if(_doesGradientDescent){
         float done = gradientDecentStep();
 
@@ -247,7 +248,7 @@ void DICOMRenderer::Paint(){
 
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
-        //std::cout << "complete new"<<std::endl;
+        std::cout << "[DICOM Renderer] starting complete new frame :" << _data->getDataSetStatus() <<std::endl;
         //check if the camera has to be placed automaticly
         if(ElectrodeManager::getInstance().isTrackingMode()){
             std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
@@ -1042,8 +1043,8 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
 
     _projection = oldProjectionMatrix;
     _view = oldViewMatrix;
-    _data->setCTScale(CTScaleOld);
-    _data->setMRScale(MRScaleOld);
+    //_data->setCTScale(CTScaleOld);
+    //_data->setMRScale(MRScaleOld);
 }
 
 

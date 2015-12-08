@@ -37,6 +37,11 @@ private slots:
 private:
     Ui::CtRegistrationWidget *ui;
     std::shared_ptr<DataHandle> _data;
+
+    float _translationStep;
+    float _translationScaling;
+    float _rotationStep;
+    float _rotationScaling;
 };
 
 #endif // CTREGISTRATIONWIDGET_H
