@@ -32,6 +32,8 @@ public:
     void createNewRenderWidger();
 
     std::shared_ptr<RenderWidget> getWorkingRenderer();
+    void removeRenderer(int id);
+    void closeRegistrationWidget();
 
 private slots:
     void on_actionAdd_RenderWidget_triggered();
@@ -68,12 +70,12 @@ private:
     Ui::MainWindow *ui;
 
     std::vector<QDockWidget*>       m_vActiveWidgets;
-    std::vector<std::shared_ptr<RenderWidget>>       m_vActiveRenderer;
+    std::vector<std::shared_ptr<RenderWidget>>          m_vActiveRenderer;
     std::shared_ptr<DataHandle>     _data;
     bool                            _reloadData;
     int                             _renderIDCounter;
 
-    std::shared_ptr<CtRegistrationWidget> _registrationWidget;
+    std::shared_ptr<CtRegistrationWidget>               _registrationWidget;
 };
 
 #endif // MAINWINDOW_H

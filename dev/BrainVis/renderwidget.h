@@ -7,7 +7,7 @@
 #include <QWheelEvent>
 
 #include "ModiSingleton.h"
-
+#include <QCloseEvent>
 
 
 namespace Ui {
@@ -30,6 +30,8 @@ public:
     void setClipMode(DICOMClipMode mode);
 
     void startGradientDescent();
+
+    void closeEvent(QCloseEvent *bar);
 
 private slots:
     void on_ThreeD_clicked();

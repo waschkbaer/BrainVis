@@ -17,6 +17,8 @@ public:
     explicit CtRegistrationWidget(QWidget *parent = 0, std::shared_ptr<DataHandle> data = nullptr);
     ~CtRegistrationWidget();
 
+    void closeEvent(QCloseEvent *bar);
+
 private slots:
     void on_resetButton_clicked();
 

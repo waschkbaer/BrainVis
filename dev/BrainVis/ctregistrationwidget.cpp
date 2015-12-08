@@ -83,3 +83,10 @@ void CtRegistrationWidget::update(){
     ui->currentRotationY->setText(QString(std::to_string(_data->getMRRotation().y).c_str()));
     ui->currentRotationZ->setText(QString(std::to_string(_data->getMRRotation().z).c_str()));
 }
+
+void CtRegistrationWidget::closeEvent(QCloseEvent *bar){
+    MainWindow* w = (MainWindow*)this->parent();
+    if(w != NULL){
+        w->closeRegistrationWidget();
+    }
+}

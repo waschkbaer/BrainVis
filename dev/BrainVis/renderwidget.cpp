@@ -2,6 +2,7 @@
 #include "ui_renderwidget.h"
 
 #include <QMainWindow>
+#include "mainwindow.h"
 
 RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, int renderID) :
     QDockWidget(parent),
@@ -188,4 +189,11 @@ void RenderWidget::setClipMode(DICOMClipMode mode){
 
 void RenderWidget::startGradientDescent(){
     ui->openGLWidget->setDoGradientDescent(true);
+}
+
+void RenderWidget::closeEvent(QCloseEvent *bar){
+    MainWindow* w = (MainWindow*)this->parent();
+    if(w != NULL){
+        w->removeRenderer(_renderID);
+    }
 }

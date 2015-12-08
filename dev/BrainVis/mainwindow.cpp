@@ -47,11 +47,26 @@ void MainWindow::on_actionAdd_RenderWidget_triggered()
 std::shared_ptr<RenderWidget> MainWindow::getWorkingRenderer(){
     for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
         if(w != nullptr){
+
             return w;
+        }
+    }
+    return nullptr;
+}
+
+void MainWindow::removeRenderer(int id){
+    for(int i = 0; i < m_vActiveRenderer.size();++i){
+        if(m_vActiveRenderer[i]->renderID() == id){
+            m_vActiveRenderer.erase(m_vActiveRenderer.begin()+i);
+            i =  m_vActiveRenderer.size()+1;
+            break;
         }
     }
 }
 
+void MainWindow::closeRegistrationWidget(){
+    _registrationWidget = nullptr;
+}
 
 void MainWindow::on_actionNew_triggered()
 {
