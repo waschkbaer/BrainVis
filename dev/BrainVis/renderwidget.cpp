@@ -185,3 +185,7 @@ void RenderWidget::keyReleaseEvent(QKeyEvent *event){
 void RenderWidget::setClipMode(DICOMClipMode mode){
     ui->openGLWidget->setClipMode(mode);
 }
+
+void RenderWidget::startGradientDescent(){
+    ui->openGLWidget->setDoGradientDescent(true);
+}

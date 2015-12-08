@@ -29,6 +29,8 @@ public:
 
     void setClipMode(DICOMClipMode mode);
 
+    void startGradientDescent();
+
 private slots:
     void on_ThreeD_clicked();
 

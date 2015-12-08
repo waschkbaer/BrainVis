@@ -1,7 +1,7 @@
 #include "ctregistrationwidget.h"
 #include "ui_ctregistrationwidget.h"
 
-
+#include <mainwindow.h>
 #include <QTimer>
 
 CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
@@ -36,12 +36,14 @@ CtRegistrationWidget::~CtRegistrationWidget()
 
 void CtRegistrationWidget::on_resetButton_clicked()
 {
-
+    _data->setMRRotation(Vec3f(0,0,0));
+    _data->setMROffset(Vec3f(0,0,0));
 }
 
 void CtRegistrationWidget::on_registerButton_clicked()
 {
-
+    MainWindow* parent = (MainWindow*)this->parent();
+    parent->getWorkingRenderer()->startGradientDescent();
 }
 
 void CtRegistrationWidget::on_translationStepSize_sliderMoved(int position)

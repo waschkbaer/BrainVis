@@ -8,7 +8,7 @@
 #include <BrainVisIO/DataHandle.h>
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
-
+#include "renderwidget.h"
 #include "ctregistrationwidget.h"
 
 namespace Ui {
@@ -27,15 +27,14 @@ public:
 
     void setDataHandle(std::shared_ptr<DataHandle> d) {_data = d;}
 
-
     int getNextRenderIDCounter();
 
     void createNewRenderWidger();
 
+    std::shared_ptr<RenderWidget> getWorkingRenderer();
+
 private slots:
     void on_actionAdd_RenderWidget_triggered();
-
-    void on_actionSelect_Folder_triggered();
 
     void on_actionNew_triggered();
 
@@ -69,6 +68,7 @@ private:
     Ui::MainWindow *ui;
 
     std::vector<QDockWidget*>       m_vActiveWidgets;
+    std::vector<std::shared_ptr<RenderWidget>>       m_vActiveRenderer;
     std::shared_ptr<DataHandle>     _data;
     bool                            _reloadData;
     int                             _renderIDCounter;

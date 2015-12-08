@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "renderwidget.h"
+
 #include <iostream>
 #include <QDesktopWidget>
 #include <QFileDialog>
@@ -9,11 +9,6 @@
 #include "ModiSingleton.h"
 
 #include "planingwidget.h"
-
-
-static std::string path = "C:\\Users\\andre\\Dropbox\\MasterThesis\\Data\\MER Imagedata\\MRKopf_1118\\t1_vibe__3659";
-//std::string path = "/Users/waschbaer/Dropbox/masterthesis/Data/MER\ Imagedata/MRKopf_1118/t1_vibe__3659";
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -36,23 +31,25 @@ MainWindow::~MainWindow()
 
 void MainWindow::createNewRenderWidger(){
     if(_data != nullptr){
-     m_vActiveWidgets.push_back(new RenderWidget(_data,this,this->getNextRenderIDCounter()));
-     m_vActiveWidgets[m_vActiveWidgets.size()-1]->setFloating (true);
-     }
+        m_vActiveRenderer.push_back(std::make_shared<RenderWidget>(_data,this,this->getNextRenderIDCounter()));
+    }
 }
-
+int MainWindow::getNextRenderIDCounter()
+{
+    _renderIDCounter++;
+    return _renderIDCounter;
+}
 void MainWindow::on_actionAdd_RenderWidget_triggered()
 {
     createNewRenderWidger();
 }
 
-void MainWindow::on_actionSelect_Folder_triggered()
-{
-    QFileDialog dialog;
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setOption(QFileDialog::ShowDirsOnly);
-    QString fileName = dialog.getExistingDirectory();
-    path = fileName.toLocal8Bit().constData();
+std::shared_ptr<RenderWidget> MainWindow::getWorkingRenderer(){
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        if(w != nullptr){
+            return w;
+        }
+    }
 }
 
 
@@ -82,66 +79,60 @@ void MainWindow::on_actionPicking_triggered()
 {
     ModiSingleton::getInstance().setActiveMode(Mode::VolumePicking);
 }
-int MainWindow::getNextRenderIDCounter()
-{
-    _renderIDCounter++;
-    return _renderIDCounter;
-}
-
 
 void MainWindow::on_actionCubic_Cut_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::CubicCut);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::CubicCut);
     }
 }
 
 void MainWindow::on_actionClip_Plane_automatic_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneAuto);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneAuto);
     }
 }
 
 void MainWindow::on_actionClip_Plane_Y_Axis_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneY);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneY);
     }
 }
 
 void MainWindow::on_actionClip_Plane_X_Axis_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneX);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneX);
     }
 }
 
 void MainWindow::on_actionClip_Plane_Z_Axis_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneZ);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneZ);
     }
 }
 
 void MainWindow::on_actionClip_Plane_Y_Axis_2_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneYn);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneYn);
     }
 }
 
 void MainWindow::on_actionClip_Plane_X_Axis_2_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneXn);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneXn);
     }
 }
 
 void MainWindow::on_actionClip_Plane_Z_Axis_2_triggered()
 {
-    for(QDockWidget* w : m_vActiveWidgets){
-        ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneZn);
+    for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
+        w->setClipMode(DICOMClipMode::PlaneZn);
     }
 }
 
