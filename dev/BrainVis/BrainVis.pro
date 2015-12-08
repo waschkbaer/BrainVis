@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     datahandler.cpp \
     metawidget.cpp \
     planingwidget.cpp \
-    drivewidget.cpp
+    drivewidget.cpp \
+    ctregistrationwidget.cpp
 
 HEADERS  += mainwindow.h \
     renderwidget.h \
@@ -29,11 +30,13 @@ HEADERS  += mainwindow.h \
     datahandler.h \
     metawidget.h \
     planingwidget.h \
-    drivewidget.h
+    drivewidget.h \
+    ctregistrationwidget.h
 
 FORMS    += mainwindow.ui \
     renderwidget.ui \
     informationwidget.ui \
     metawidget.ui \
     planingwidget.ui \
-    drivewidget.ui
+    drivewidget.ui \
+    ctregistrationwidget.ui

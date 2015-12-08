@@ -68,6 +68,10 @@ public:
          _renderer->setClipMode(mode);
     }
 
+    void setDoGradientDescent(bool value){
+        _renderer->setDoesGradientDescent(value);
+    }
+
 private:
     std::unique_ptr<DICOMRenderer>  _renderer;
     std::shared_ptr<DataHandle>     _data;

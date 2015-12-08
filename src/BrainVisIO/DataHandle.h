@@ -180,8 +180,18 @@ public:
 
     void checkFocusPoint();
     void incrementStatus();
-    bool getDoGradientDecent() const;
-    void setDoGradientDecent(bool doGradientDecent);
+
+    float getFTranslationStep() const;
+    void setFTranslationStep(float fTranslationStep);
+
+    float getFTranslationStepScale() const;
+    void setFTranslationStepScale(float fTranslationStepScale);
+
+    float getFRotationStep() const;
+    void setFRotationStep(float fRotationStep);
+
+    float getFRotationStepScale() const;
+    void setFRotationStepScale(float fRotationStepScale);
 
 private:
     void updateMRWorld();
@@ -238,7 +248,11 @@ private:
     bool                                            _usesNetworkMER;
     std::unique_ptr<std::thread>                    _networkUpdateThread;
 
-    bool                                            _doGradientDecent;
+    //Gradient Descent settings
+    float                                           _fTranslationStep;
+    float                                           _fTranslationStepScale;
+    float                                           _fRotationStep;
+    float                                           _fRotationStepScale;
 };
 
 #endif // DATAHANDLER_H

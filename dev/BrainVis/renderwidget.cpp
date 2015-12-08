@@ -172,7 +172,7 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
         ui->openGLWidget->switchScrollMode();
     }
     if(event->key() == Qt::Key_0){
-        _data->setDoGradientDecent(true);
+        ui->openGLWidget->setDoGradientDescent(true);
     }
 }
 

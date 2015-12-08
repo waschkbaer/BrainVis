@@ -10,6 +10,7 @@
 
 #include "planingwidget.h"
 
+
 static std::string path = "C:\\Users\\andre\\Dropbox\\MasterThesis\\Data\\MER Imagedata\\MRKopf_1118\\t1_vibe__3659";
 //std::string path = "/Users/waschbaer/Dropbox/masterthesis/Data/MER\ Imagedata/MRKopf_1118/t1_vibe__3659";
 
@@ -141,5 +142,12 @@ void MainWindow::on_actionClip_Plane_Z_Axis_2_triggered()
 {
     for(QDockWidget* w : m_vActiveWidgets){
         ((RenderWidget*)w)->setClipMode(DICOMClipMode::PlaneZn);
+    }
+}
+
+void MainWindow::on_actionRegistration_Widget_triggered()
+{
+    if(_data != nullptr && _registrationWidget == nullptr){
+        _registrationWidget = std::make_shared<CtRegistrationWidget>(this,_data);
     }
 }

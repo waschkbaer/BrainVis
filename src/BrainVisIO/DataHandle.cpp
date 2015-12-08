@@ -22,7 +22,10 @@ DataHandle::DataHandle():
     _MRRotation(0,0,0),
     _MROffset(0,0,0),
     _usesNetworkMER(false),
-    _doGradientDecent(false)
+    _fTranslationStep(4.0f),
+    _fTranslationStepScale(0.75f),
+    _fRotationStep(0.1f),
+    _fRotationStepScale(0.75f)
 {
     incrementStatus();
     createFFTColorImage();
@@ -227,15 +230,46 @@ void DataHandle::updateMRWorld(){
 
     incrementStatus();
 }
-bool DataHandle::getDoGradientDecent() const
+float DataHandle::getFRotationStepScale() const
 {
-    return _doGradientDecent;
+    return _fRotationStepScale;
 }
 
-void DataHandle::setDoGradientDecent(bool doGradientDecent)
+void DataHandle::setFRotationStepScale(float fRotationStepScale)
 {
-    _doGradientDecent = doGradientDecent;
+    _fRotationStepScale = fRotationStepScale;
 }
+
+float DataHandle::getFRotationStep() const
+{
+    return _fRotationStep;
+}
+
+void DataHandle::setFRotationStep(float fRotationStep)
+{
+    _fRotationStep = fRotationStep;
+}
+
+float DataHandle::getFTranslationStepScale() const
+{
+    return _fTranslationStepScale;
+}
+
+void DataHandle::setFTranslationStepScale(float fTranslationStepScale)
+{
+    _fTranslationStepScale = fTranslationStepScale;
+}
+
+float DataHandle::getFTranslationStep() const
+{
+    return _fTranslationStep;
+}
+
+void DataHandle::setFTranslationStep(float fTranslationStep)
+{
+    _fTranslationStep = fTranslationStep;
+}
+
 
 uint64_t DataHandle::getDataSetStatus() const
 {

@@ -60,6 +60,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionAdd_RenderWidget"/>
+    <addaction name="actionRegistration_Widget"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -198,6 +199,11 @@
   <action name="actionClip_Plane_Z_Axis_2">
    <property name="text">
     <string>Clip Plane (-Z-Axis)</string>
+   </property>
+  </action>
+  <action name="actionRegistration_Widget">
+   <property name="text">
+    <string>Registration Widget</string>
    </property>
   </action>
  </widget>

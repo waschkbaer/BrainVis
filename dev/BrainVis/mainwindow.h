@@ -8,6 +8,9 @@
 #include <BrainVisIO/DataHandle.h>
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
+
+#include "ctregistrationwidget.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -60,6 +63,8 @@ private slots:
 
     void on_actionClip_Plane_Z_Axis_2_triggered();
 
+    void on_actionRegistration_Widget_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -67,6 +72,8 @@ private:
     std::shared_ptr<DataHandle>     _data;
     bool                            _reloadData;
     int                             _renderIDCounter;
+
+    std::shared_ptr<CtRegistrationWidget> _registrationWidget;
 };
 
 #endif // MAINWINDOW_H

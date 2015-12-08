@@ -20,11 +20,9 @@ _datasetStatus(0),
 _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
 _vZoom(1,1,1),
-_needsUpdate(true)
+_needsUpdate(true),
+_doesGradientDescent(false)
 {
-translationStepSize = 4.0f;
-rotationStepSize = 0.1f;
-//scaleStepSize = 2.0f;
 }
 
 void DICOMRenderer::Initialize(){
@@ -224,31 +222,24 @@ void DICOMRenderer::checkDatasetStatus(){
     }
 }
 
-
-bool regisDown=false;
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
     _data->checkFocusPoint();
 
     checkDatasetStatus();
 
-    if(_data->getDoGradientDecent()){
+    if(_doesGradientDescent){
         float done = gradientDecentStep();
 
         if(done < 0.0f){
-            if(translationStepSize < 0.5f || rotationStepSize < 0.000001){
-                 _data->setDoGradientDecent(false);
-
-                 translationStepSize = 4.0f;
-                 rotationStepSize = 0.1f;
+            if(_data->getFTranslationStep() < 0.5f){
+                 _doesGradientDescent = false;
 
                  std::cout << "end gdc"<<std::endl;
             }else{
-
-            translationStepSize *= 0.75f;
-            rotationStepSize *= 0.73f;
-
-            //scaleStepSize *= 0.75f;
+                _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
+                _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
+                std::cout << "next stepsize "<< _data->getFTranslationStep() << std::endl;
             }
         }
         _data->setMRCTBlend( 0.5f);
@@ -1116,9 +1107,7 @@ float DICOMRenderer::gradientDecentStep(){
     Vec3f MROffset = _data->getMROffset();
     Vec3f MRRotation = _data->getMRRotation();
     Vec3f scaleCurrent = _data->getMRScale();
-    std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
-    std::cout << "[DicomRenderer] stepM "<< translationStepSize << "stepR " << rotationStepSize << std::endl;
-
+    //std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
 
     //subtract Both Volumes and store the value
     float subValueCurrent = subVolumes(subWindowSize);
@@ -1129,54 +1118,44 @@ float DICOMRenderer::gradientDecentStep(){
     //xPr,xMr,yPr,yMr,zPr,zMr
 
     //calculate the substraction-value for each axis after moving the volume
-    _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0));
+    _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
-    _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0));
+    _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
-    _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0));
+    _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
-    _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0));
+    _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
-    _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize));
+    _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep()));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
-    _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize));
+    _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep()));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMROffset(MROffset);
 
     //same for rotation
-    _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));
+    _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
-    _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));
+    _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
-    _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));
+    _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
-    _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));
+    _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
-    _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));
+    _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
-    _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));
+    _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));
     subValues.push_back(subVolumes(subWindowSize));
     _data->setMRRotation(MRRotation);
-
-    //adding scaling
-    /*_data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));
-    subValues.push_back(subVolumes(subWindowSize));
-    _data->setMRScale(scaleCurrent);
-    _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));
-    subValues.push_back(subVolumes(subWindowSize));
-    _data->setMRScale(scaleCurrent);
-    */
-
 
     //reset some values which are no longer needed
     _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
@@ -1195,21 +1174,21 @@ float DICOMRenderer::gradientDecentStep(){
     //IFF the substraction is better after any translation we have to continue
     //no minimum found!
     if(minSubstraction < std::abs(subValueCurrent)){
-        std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
+        //std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
         switch(bestIndex){
-            case 0: _data->setMROffset(MROffset+Vec3f(translationStepSize,0,0)); break;
-            case 1: _data->setMROffset(MROffset+Vec3f(-translationStepSize,0,0)); break;
-            case 2: _data->setMROffset(MROffset+Vec3f(0,translationStepSize,0)); break;
-            case 3: _data->setMROffset(MROffset+Vec3f(0,-translationStepSize,0)); break;
-            case 4: _data->setMROffset(MROffset+Vec3f(0,0,translationStepSize)); break;
-            case 5: _data->setMROffset(MROffset+Vec3f(0,0,-translationStepSize)); break;
+            case 0: _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0)); break;
+            case 1: _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0)); break;
+            case 2: _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0)); break;
+            case 3: _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0)); break;
+            case 4: _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep())); break;
+            case 5: _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep())); break;
 
-            case 6: _data->setMRRotation(MRRotation+Vec3f(rotationStepSize,0,0));break;
-            case 7: _data->setMRRotation(MRRotation+Vec3f(-rotationStepSize,0,0));break;
-            case 8: _data->setMRRotation(MRRotation+Vec3f(0,rotationStepSize,0));break;
-            case 9: _data->setMRRotation(MRRotation+Vec3f(0,-rotationStepSize,0));break;
-            case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,rotationStepSize));break;
-            case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-rotationStepSize));break;
+            case 6: _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));break;
+            case 7: _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));break;
+            case 8: _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));break;
+            case 9: _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));break;
+            case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));break;
+            case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));break;
 
             //case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));break;
             //case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));break;
@@ -1713,3 +1692,13 @@ void DICOMRenderer::calculateRotation(){
     _PCMRWorldPosition = PCmr;
     _data->setMROffset(ACmrstxTranslation);
 }
+bool DICOMRenderer::doesGradientDescent() const
+{
+    return _doesGradientDescent;
+}
+
+void DICOMRenderer::setDoesGradientDescent(bool doesGradientDescent)
+{
+    _doesGradientDescent = doesGradientDescent;
+}
+

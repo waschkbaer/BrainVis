@@ -95,6 +95,9 @@ class DICOMRenderer{
         DICOMClipMode clipMode() const;
         void setClipMode(const DICOMClipMode &clipMode);
 
+        bool doesGradientDescent() const;
+        void setDoesGradientDescent(bool doesGradientDescent);
+
 private:
         bool LoadShaderResources();
         bool LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, ShaderDescriptor& sd);
@@ -245,9 +248,7 @@ private:
         std::shared_ptr<GLFBOTex>       CTFBO;
         std::shared_ptr<GLFBOTex>       MRFBO;
         std::shared_ptr<GLFBOTex>       COMPOSITING;
-        float translationStepSize;
-        float rotationStepSize;
-        float scaleStepSize;
+        bool                            _doesGradientDescent;
 
         Vec3f                           _ACMRWorldPosition;
         Vec3f                           _PCMRWorldPosition;
