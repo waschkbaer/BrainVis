@@ -1,6 +1,6 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
-
+#include <QCursor> //will get error on linux if we do not include this WTF
 #include <QMouseEvent>
 #include <QTimer>
 

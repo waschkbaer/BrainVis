@@ -71,12 +71,15 @@ void PlaningWidget::on_Start_clicked()
 
     _dataHandle->setBFoundCTFrame(false);
 
+    std::string ct = _dataHandle->getCTPath();
+    std::string mr = _dataHandle->getMRPath();
+
     if(_dataHandle->getCTPath().size() > 1){
-        _dataHandle->loadCTData(_dataHandle->getCTPath());
+        _dataHandle->loadCTData(ct);
     }
 
     if(_dataHandle->getMRPath().size() > 1){
-        _dataHandle->loadMRData(_dataHandle->getMRPath());
+        _dataHandle->loadMRData(mr);
     }
 
 
