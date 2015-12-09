@@ -1,5 +1,5 @@
 #include <QString>
-#include <renderer/DICOMRenderer/DICOMRenderer.h>
+
 #include "openglwidget.h"
 #include <ModiSingleton.h>
 

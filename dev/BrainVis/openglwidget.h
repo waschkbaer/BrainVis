@@ -3,7 +3,7 @@
 #include <QCursor> //will get error on linux if we do not include this WTF
 #include <QMouseEvent>
 #include <QTimer>
-
+#include <renderer/DICOMRenderer/DICOMRenderer.h>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 
