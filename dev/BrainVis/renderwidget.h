@@ -2,13 +2,11 @@
 #define RENDERWIDGET_H
 
 #include <QDockWidget>
-#include <BrainVisIO/DataHandle.h>
-#include <openglwidget.h>
-#include <QWheelEvent>
-
-#include "ModiSingleton.h"
 #include <QCloseEvent>
 
+#include <BrainVisIO/DataHandle.h>
+#include "ModiSingleton.h"
+#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 namespace Ui {
 class RenderWidget;

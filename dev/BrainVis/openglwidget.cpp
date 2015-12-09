@@ -1,17 +1,14 @@
+#include <QString>
+
 #include "openglwidget.h"
 
 #include <iostream>
-#include <QString>
+
+
 #include <string>
 #include <cstdio>
 #include <cstring>
 
-#include <QRect>
-#include <QCursor>
-#include <QMouseEvent>
-#include <QSurfaceFormat>
-#include <ModiSingleton.h>
-#include <QPainter>
 #include <renderer/Context/GLMutex.h>
 
 

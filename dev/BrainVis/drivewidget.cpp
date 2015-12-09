@@ -1,8 +1,11 @@
-#include "drivewidget.h"
-#include "ui_drivewidget.h"
+#include <QImage>
+#include <QFrame>
 #include <QLabel>
 #include <QLineEdit>
 #include <QTimer>
+
+#include "drivewidget.h"
+#include "ui_drivewidget.h"
 
 DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),

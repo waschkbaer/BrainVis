@@ -2,12 +2,11 @@
 #define DRIVEWIDGET_H
 
 #include <QDockWidget>
-#include <QImage>
-#include <QFrame>
-#include <BrainVisIO/DataHandle.h>
+
 #include "DriveTool/ElectrodeBaseFrame.h"
 #include "DriveTool/DriveEnums.h"
 
+#include <BrainVisIO/DataHandle.h>
 #include <map>
 
 namespace Ui {

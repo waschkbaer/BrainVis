@@ -1,7 +1,8 @@
 #include "renderwidget.h"
 #include "ui_renderwidget.h"
+#include <openglwidget.h>
 
-#include <QMainWindow>
+
 #include "mainwindow.h"
 
 RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, int renderID) :

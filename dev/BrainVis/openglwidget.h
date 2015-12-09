@@ -1,24 +1,21 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
 
-#include <renderer/DICOMRenderer/DICOMRenderer.h>
-
-#include <QOpenGLWidget>
-
-#include <QOpenGLFunctions>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLBuffer>
-#include <QMatrix4x4>
+#include <QMouseEvent>
 #include <QTimer>
-#include <QPoint>
+
+#include <ModiSingleton.h>
+
+#include "Utils/FontImagePainter.h"
+
+#include <renderer/DICOMRenderer/DICOMRenderer.h>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
 
 #include <core/Math/Vectors.h>
 #include <BrainVisIO/DataHandle.h>
 
 #include <memory>
-#include "Utils/FontImagePainter.h"
-
-
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:

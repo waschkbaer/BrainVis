@@ -1,9 +1,7 @@
-#include "mainwindow.h"
-
 #include <QApplication>
 #include <QSurfaceFormat>
 
-#include "drivewidget.h"
+#include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {

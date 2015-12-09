@@ -7,7 +7,7 @@
 #include <memory>
 
 #include <string>
-#include <Core/Math/Vectors.h>
+#include <core/Math/Vectors.h>
 
 class FontImagePainter{
 public:

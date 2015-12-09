@@ -1,8 +1,10 @@
+#include <QTimer>
+
 #include "ctregistrationwidget.h"
 #include "ui_ctregistrationwidget.h"
 
 #include <mainwindow.h>
-#include <QTimer>
+
 
 CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),

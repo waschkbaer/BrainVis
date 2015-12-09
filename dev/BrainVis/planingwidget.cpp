@@ -1,13 +1,15 @@
+#include <QFileDialog>
+
 #include "planingwidget.h"
 #include "ui_planingwidget.h"
 
-#include <QFileDialog>
 #include <string>
 
 #include <BrainVisIO/DataHandle.h>
 #include <mainwindow.h>
 #include <renderwidget.h>
 #include <drivewidget.h>
+
 
 PlaningWidget::PlaningWidget(QWidget *parent) :
     QDockWidget(parent),

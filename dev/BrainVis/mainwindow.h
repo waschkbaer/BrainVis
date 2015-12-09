@@ -1,15 +1,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include <qtextstream.h>
+
+
 #include <QMainWindow>
+
+#include "renderwidget.h"
+#include "ctregistrationwidget.h"
 
 #include <vector>
 #include <memory>
 #include <BrainVisIO/DataHandle.h>
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
-
-#include "renderwidget.h"
-#include "ctregistrationwidget.h"
 
 namespace Ui {
 class MainWindow;

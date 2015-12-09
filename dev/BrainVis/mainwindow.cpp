@@ -1,14 +1,13 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 
-
-#include <iostream>
 #include <QDesktopWidget>
 #include <QFileDialog>
 
-#include "ModiSingleton.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
+#include "ModiSingleton.h"
 #include "planingwidget.h"
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),

@@ -1,9 +1,8 @@
 #include "ElectrodeBaseFrame.h"
 
-#include <QLabel>
-#include <QLineEdit>
 #include <BrainVisIO/MER-Data/iElectrode.h>
 #include <BrainVisIO/MER-Data/iMERData.h>
+#include <cstring>
 
 ElectrodeBaseFrame::ElectrodeBaseFrame(std::string electrodeName, QWidget* parent):
 QFrame(parent),

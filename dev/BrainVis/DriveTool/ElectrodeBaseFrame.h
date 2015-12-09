@@ -4,11 +4,15 @@
 #include <QFrame>
 #include <QLayout>
 #include <QRadioButton>
+#include <QLabel>
+#include <QLineEdit>
+
+#include "DriveEnums.h"
+
 #include <string>
 #include <memory>
 #include <BrainVisIO/DataHandle.h>
 #include <map>
-#include "DriveEnums.h"
 
 
 class ElectrodeBaseFrame: public QFrame{

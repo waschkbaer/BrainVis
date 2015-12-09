@@ -1,5 +1,4 @@
 #include "FontImagePainter.h"
-
 #include <cstring>
 
 FontImagePainter::FontImagePainter():

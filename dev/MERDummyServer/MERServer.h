@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <Core/Math/Vectors.h>
+#include <core/Math/Vectors.h>
 #include <map>
 #include <memory>
 #include <thread>
