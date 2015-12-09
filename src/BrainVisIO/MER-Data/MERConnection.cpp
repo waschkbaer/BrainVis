@@ -1,5 +1,6 @@
 #include "MERConnection.h"
 #include <algorithm>
+#include <cstring>
 
 #include <net/Error.h>
 
@@ -106,7 +107,7 @@ Core::Math::Vec3f MERConnection::getPosition(std::string electrodeIdentifier, in
         if(data.byteArray().size() > 0){
             std::vector<float> pos;
             pos.resize(3);
-            std::memcpy(&(pos[0]),data.byteArray().data(),3*sizeof(float));
+            memcpy(&(pos[0]),data.byteArray().data(),3*sizeof(float));
             positionVec = Core::Math::Vec3f(pos[0],pos[1],pos[2]);
         }
       }
@@ -134,7 +135,7 @@ std::vector<double> MERConnection::getSignal(std::string electrodeIdentifier, in
         BytePacket data = _connection->receive();
         if(data.byteArray().size() > 0){
             signal.resize(data.byteArray().size() / sizeof(double));
-            std::memcpy(&(signal[0]),data.byteArray().data(),data.byteArray().size());
+            memcpy(&(signal[0]),data.byteArray().data(),data.byteArray().size());
         }
       }
       catch (const ConnectionClosedError& err){

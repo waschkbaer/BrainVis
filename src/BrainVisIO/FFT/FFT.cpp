@@ -1,5 +1,5 @@
 #include "FFT.h"
-
+#include <cstring>
 
 FFTCalc::FFTCalc():
     exp(1){
@@ -39,7 +39,7 @@ void FFTCalc::execute(){
         _real[0] = 0;
         _imaginary[0] = 0;
     }
-    std::memcpy(&(_real[0]),&(_input[0]),_input.size()*sizeof(double));
+    memcpy(&(_real[0]),&(_input[0]),_input.size()*sizeof(double));
     this->FFT(-1,exp,&(_real[0]),&(_imaginary[0]));
 }
 
@@ -58,18 +58,18 @@ void FFTCalc::calculateSpectrum2(){
     int N = _real.size();
     _spectrum.resize(N/2+1);
 
-    _spectrum[0] = std::sqrt((_real[0]*_real[0]) + (_imaginary[0]*_imaginary[0]));
+    _spectrum[0] = sqrt((_real[0]*_real[0]) + (_imaginary[0]*_imaginary[0]));
     for (int k = 1; k < (N+1)/2; ++k)
-        _spectrum[k] =  std::sqrt((_real[k]*_real[k]) + (_imaginary[k]*_imaginary[k]));
+        _spectrum[k] =  sqrt((_real[k]*_real[k]) + (_imaginary[k]*_imaginary[k]));
     if (N % 2 == 0)
-        _spectrum[N/2] = std::sqrt((_real[N/2]*_real[N/2]) + (_imaginary[N/2]*_imaginary[N/2]));
+        _spectrum[N/2] = sqrt((_real[N/2]*_real[N/2]) + (_imaginary[N/2]*_imaginary[N/2]));
 
-    /*_spectrum[0] = std::sqrt((_real[0]*_real[0]) + (_imaginary[0]*_imaginary[0]));
+    /*_spectrum[0] = sqrt((_real[0]*_real[0]) + (_imaginary[0]*_imaginary[0]));
         for (int k = 1; k < (N+1)/2; ++k)
-            _spectrum[k] =  std::sqrt((_real[k]*_real[k]) + (_imaginary[k]*_imaginary[k]))     +
-                            std::sqrt((_real[N-k]*_real[N-k]) + (_imaginary[N-k]*_imaginary[N-k]));
+            _spectrum[k] =  sqrt((_real[k]*_real[k]) + (_imaginary[k]*_imaginary[k]))     +
+                            sqrt((_real[N-k]*_real[N-k]) + (_imaginary[N-k]*_imaginary[N-k]));
         if (N % 2 == 0)
-            _spectrum[N/2] = std::sqrt((_real[N/2]*_real[N/2]) + (_imaginary[N/2]*_imaginary[N/2]));*/
+            _spectrum[N/2] = sqrt((_real[N/2]*_real[N/2]) + (_imaginary[N/2]*_imaginary[N/2]));*/
 }
 
 

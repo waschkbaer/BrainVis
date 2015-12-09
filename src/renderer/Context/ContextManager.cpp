@@ -1,6 +1,6 @@
 #include "ContextManager.h"
 
-#include "GLFWContext.h"
+//#include "GLFWContext.h"
 #include "XContext.h"
 
 #include <renderer/OpenGL/OpenGLDefines.h>
@@ -29,10 +29,10 @@ std::shared_ptr<Tuvok::Renderer::Context::Context> ContextManager::createContext
             context = std::make_shared<Tuvok::Renderer::Context::XserverContext>(resolution,major,minor);
 #endif
         }else{
-            context = std::make_shared<Tuvok::Renderer::Context::GLFWContext>("Window",m_eServerSystem,visibility,resolution,major,minor);
+            //context = std::make_shared<Tuvok::Renderer::Context::GLFWContext>("Window",m_eServerSystem,visibility,resolution,major,minor);
         }
     }else{
-        context = std::make_shared<Tuvok::Renderer::Context::GLFWContext>("Window",m_eServerSystem,visibility,resolution,major,minor);
+        //context = std::make_shared<Tuvok::Renderer::Context::GLFWContext>("Window",m_eServerSystem,visibility,resolution,major,minor);
     }
 
 	if (context == nullptr) return 0;

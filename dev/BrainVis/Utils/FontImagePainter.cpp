@@ -1,5 +1,6 @@
 #include "FontImagePainter.h"
 
+#include <cstring>
 
 FontImagePainter::FontImagePainter():
     FontImagePainter(640,480){
@@ -69,7 +70,7 @@ void FontImagePainter::finishText(){
 
 
     for(int i = 0; i < _image->height();++i){
-        std::memcpy(&(_rawData[i*(_image->width()*3)]),curLineStart,_image->width()*3);
+        memcpy(&(_rawData[i*(_image->width()*3)]),curLineStart,_image->width()*3);
 
         curLineStart += _image->bytesPerLine()*sizeof(char);
     }
