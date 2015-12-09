@@ -2,12 +2,13 @@
 #define CTREGISTRATIONWIDGET_H
 
 #include <QDockWidget>
-
-#include <BrainVisIO/DataHandle.h>
+#include <memory>
 
 namespace Ui {
 class CtRegistrationWidget;
 }
+
+class DataHandle;
 
 class CtRegistrationWidget : public QDockWidget
 {

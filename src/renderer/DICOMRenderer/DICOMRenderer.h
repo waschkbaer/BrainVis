@@ -36,12 +36,7 @@ using namespace Core::Math;
 
 class DICOMRenderer{
     public:
-    enum RenderMode{
-        ThreeDMode = 0,
-        XAxis,
-        YAxis,
-        ZAxis
-    };
+
 
     public:
         DICOMRenderer();

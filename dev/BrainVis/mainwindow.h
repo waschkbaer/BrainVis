@@ -4,19 +4,16 @@
 
 #include <QMainWindow>
 
-#include "renderwidget.h"
-#include "ctregistrationwidget.h"
-
 #include <vector>
 #include <memory>
-#include <BrainVisIO/DataHandle.h>
-#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 namespace Ui {
 class MainWindow;
 }
 
-
+class RenderWidget;
+class CtRegistrationWidget;
+class DataHandle;
 
 class MainWindow : public QMainWindow
 {
@@ -70,11 +67,11 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    std::vector<QDockWidget*>       m_vActiveWidgets;
+    std::vector<QDockWidget*>                           m_vActiveWidgets;
     std::vector<std::shared_ptr<RenderWidget>>          m_vActiveRenderer;
-    std::shared_ptr<DataHandle>     _data;
-    bool                            _reloadData;
-    int                             _renderIDCounter;
+    std::shared_ptr<DataHandle>                         _data;
+    bool                                                _reloadData;
+    int                                                 _renderIDCounter;
 
     std::shared_ptr<CtRegistrationWidget>               _registrationWidget;
 };

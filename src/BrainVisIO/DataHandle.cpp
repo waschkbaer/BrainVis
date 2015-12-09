@@ -1,9 +1,13 @@
+#include <core/FileFinder.h>
 #include "DataHandle.h"
 #include <algorithm>
 
 #include "MER-Data/FileElectrode.h"
 #include "MER-Data/NetworkElectrode.h"
 #include "MER-Data/NetworkMERData.h"
+
+#include <BrainVisIO/MER-Data/ElectrodeManager.h>
+#include <BrainVisIO/MER-Data/MERConnection.h>
 
 DataHandle::DataHandle():
     _transferFunction(nullptr),
@@ -281,6 +285,13 @@ Core::Math::Vec2f DataHandle::getSpectralRange() const
     return _spectralRange;
 }
 
+Core::Math::Vec3ui DataHandle::getMRDimensions() const { return _MRVolume->getDimensions();}
+Core::Math::Vec3ui DataHandle::getCTDimensions() const { return _CTVolume->getDimensions();}
+
+std::vector<char>&      DataHandle::getMRData() {return _MRVolume->getData(); }
+std::vector<char>&      DataHandle::getCTData() {return _CTVolume->getData(); }
+Core::Math::Vec3f       DataHandle::getMRAspectRatio() {return _MRVolume->getAspectRatio();}
+Core::Math::Vec3f       DataHandle::getCTAspectRatio() {return _CTVolume->getAspectRatio();}
 
 float DataHandle::getMRCTBlend() const
 {

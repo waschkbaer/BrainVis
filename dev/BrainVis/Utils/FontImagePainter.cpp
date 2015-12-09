@@ -3,7 +3,6 @@
 
 FontImagePainter::FontImagePainter():
     FontImagePainter(640,480){
-
 }
 
 FontImagePainter::FontImagePainter(int width, int height){

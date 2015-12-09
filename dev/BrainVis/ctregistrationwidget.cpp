@@ -3,8 +3,9 @@
 #include "ctregistrationwidget.h"
 #include "ui_ctregistrationwidget.h"
 
-#include <mainwindow.h>
-
+#include "mainwindow.h"
+#include "renderwidget.h"
+#include <BrainVisIO/DataHandle.h>
 
 CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),

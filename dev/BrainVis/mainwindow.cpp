@@ -2,12 +2,19 @@
 #include <QDesktopWidget>
 #include <QFileDialog>
 
+#include "ctregistrationwidget.h"
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
+#include "renderwidget.h"
 
 #include "ModiSingleton.h"
 #include "planingwidget.h"
 #include <iostream>
+
+#include <BrainVisIO/DataHandle.h>
+#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),

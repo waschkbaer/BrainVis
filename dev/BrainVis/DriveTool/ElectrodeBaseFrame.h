@@ -11,9 +11,12 @@
 
 #include <string>
 #include <memory>
-#include <BrainVisIO/DataHandle.h>
 #include <map>
 
+#include <core/Math/Vectors.h>
+
+class DataHandle;
+class iMERData;
 
 class ElectrodeBaseFrame: public QFrame{
     Q_OBJECT

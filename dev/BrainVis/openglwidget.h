@@ -4,18 +4,18 @@
 #include <QMouseEvent>
 #include <QTimer>
 
-#include <ModiSingleton.h>
-
-#include "Utils/FontImagePainter.h"
-
-#include <renderer/DICOMRenderer/DICOMRenderer.h>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 
-#include <core/Math/Vectors.h>
-#include <BrainVisIO/DataHandle.h>
-
 #include <memory>
+#include <core/Math/Vectors.h>
+
+#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
+
+class FontImagePainter;
+class DICOMRenderer;
+class DataHandle;
+
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:
@@ -28,22 +28,13 @@ public:
 
     void update();
 
-    void setRenderMode(DICOMRenderer::RenderMode mode) const {
-        _renderer->SetRenderMode(mode);
-    }
+    void setRenderMode(RenderMode mode);
 
-    void setDataHandle(std::shared_ptr<DataHandle> data){
-        _renderer->SetDataHandle(data);
-        _data = data;
-    }
+    void setDataHandle(std::shared_ptr<DataHandle> data);
 
-    void changeSlide(int slidedelta){
-        _renderer->ChangeSlide(slidedelta);
-    }
+    void changeSlide(int slidedelta);
 
-    void zoom(int zoomdelta){
-        _renderer->ZoomTwoD(zoomdelta);
-    }
+    void zoom(int zoomdelta);
 
     void mousePressEvent(QMouseEvent * event );
     void mouseReleaseEvent (QMouseEvent * event );
@@ -61,13 +52,9 @@ public:
 
     void switchScrollMode();
 
-    void setClipMode(DICOMClipMode mode){
-         _renderer->setClipMode(mode);
-    }
+    void setClipMode(DICOMClipMode mode);
 
-    void setDoGradientDescent(bool value){
-        _renderer->setDoesGradientDescent(value);
-    }
+    void setDoGradientDescent(bool value);
 
 private:
     std::unique_ptr<DICOMRenderer>  _renderer;
@@ -76,7 +63,7 @@ private:
 
     std::unique_ptr<FontImagePainter> _fontImage;
 
-    Vec2ui                          _windowSize;
+    Core::Math::Vec2ui                _windowSize;
 
     bool                            _leftMouseDown;
     bool                            _rightMouseDown;

@@ -2,8 +2,11 @@
 #include "ui_renderwidget.h"
 #include <openglwidget.h>
 
-
+#include "ModiSingleton.h"
 #include "mainwindow.h"
+
+
+#include <BrainVisIO/DataHandle.h>
 
 RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, int renderID) :
     QDockWidget(parent),
@@ -34,7 +37,7 @@ RenderWidget::~RenderWidget()
 
 void RenderWidget::on_ThreeD_clicked()
 {
-    ui->openGLWidget->setRenderMode(DICOMRenderer::ThreeDMode);
+    ui->openGLWidget->setRenderMode(RenderMode::ThreeDMode);
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(true);
@@ -43,7 +46,7 @@ void RenderWidget::on_ThreeD_clicked()
 
 void RenderWidget::on_ZAxis_clicked()
 {
-    ui->openGLWidget->setRenderMode(DICOMRenderer::ZAxis);
+    ui->openGLWidget->setRenderMode(RenderMode::ZAxis);
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(false);
@@ -52,7 +55,7 @@ void RenderWidget::on_ZAxis_clicked()
 
 void RenderWidget::on_XAxis_clicked()
 {
-    ui->openGLWidget->setRenderMode(DICOMRenderer::XAxis);
+    ui->openGLWidget->setRenderMode(RenderMode::XAxis);
     ui->XAxis->setEnabled(false);
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(true);
@@ -61,7 +64,7 @@ void RenderWidget::on_XAxis_clicked()
 
 void RenderWidget::on_YAxis_clicked()
 {
-    ui->openGLWidget->setRenderMode(DICOMRenderer::YAxis);
+    ui->openGLWidget->setRenderMode(RenderMode::YAxis);
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(false);
     ui->ZAxis->setEnabled(true);

@@ -4,9 +4,11 @@
 #include <QDockWidget>
 #include <QCloseEvent>
 
-#include <BrainVisIO/DataHandle.h>
-#include "ModiSingleton.h"
+#include <memory>
+
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
+
+class DataHandle;
 
 namespace Ui {
 class RenderWidget;

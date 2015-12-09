@@ -6,8 +6,10 @@
 #include "DriveTool/ElectrodeBaseFrame.h"
 #include "DriveTool/DriveEnums.h"
 
-#include <BrainVisIO/DataHandle.h>
 #include <map>
+
+class DataHandle;
+class iElectrode;
 
 namespace Ui {
 class DriveWidget;

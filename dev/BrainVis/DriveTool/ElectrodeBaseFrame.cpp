@@ -4,6 +4,9 @@
 #include <BrainVisIO/MER-Data/iMERData.h>
 #include <cstring>
 
+#include <BrainVisIO/DataHandle.h>
+#include <BrainVisIO/MER-Data/ElectrodeManager.h>
+
 ElectrodeBaseFrame::ElectrodeBaseFrame(std::string electrodeName, QWidget* parent):
 QFrame(parent),
 _childCount(0),

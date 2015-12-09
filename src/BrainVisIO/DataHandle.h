@@ -1,20 +1,17 @@
 #ifndef DATAHANDLER_H
 #define DATAHANDLER_H
 
-
-#include <core/FileFinder.h>
-
-
 #include <BrainVisIO/DicomVolume.h>
+
+
 #include <core/Math/Vectors.h>
 #include <BrainVisIO/TransferFunction1D.h>
-#include <BrainVisIO/MER-Data/ElectrodeManager.h>
-
-#include <BrainVisIO/MER-Data/MERConnection.h>
 
 #include <memory>
 #include <thread>
 #include <vector>
+
+class iElectrode;
 
 struct Trajectory{
     Trajectory():
@@ -53,8 +50,8 @@ public:
     void loadCTData(std::string& path);
 
     Core::Math::Vec3f getSelectedSlices() const;
-    Core::Math::Vec3ui getMRDimensions() const { return _MRVolume->getDimensions();}
-    Core::Math::Vec3ui getCTDimensions() const { return _CTVolume->getDimensions();}
+    Core::Math::Vec3ui getMRDimensions() const;
+    Core::Math::Vec3ui getCTDimensions() const;
     void setSelectedSlices(Core::Math::Vec3f slides);
 
     float getMRTransferScaling() const;
@@ -63,10 +60,10 @@ public:
     std::shared_ptr<std::vector<Core::Math::Vec4f>> getTransferFunction();
     void setSmoothStep(float pos, float grad);
 
-    std::vector<char>&      getMRData() {return _MRVolume->getData(); }
-    std::vector<char>&      getCTData() {return _CTVolume->getData(); }
-    Core::Math::Vec3f       getMRAspectRatio() {return _MRVolume->getAspectRatio();}
-    Core::Math::Vec3f       getCTAspectRatio() {return _CTVolume->getAspectRatio();}
+    std::vector<char>&      getMRData();
+    std::vector<char>&      getCTData();
+    Core::Math::Vec3f       getMRAspectRatio();
+    Core::Math::Vec3f       getCTAspectRatio();
 
     //***************
     std::string getMRPath() const;

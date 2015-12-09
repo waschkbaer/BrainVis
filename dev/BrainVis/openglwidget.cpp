@@ -1,16 +1,17 @@
 #include <QString>
-
+#include <renderer/DICOMRenderer/DICOMRenderer.h>
 #include "openglwidget.h"
+#include <ModiSingleton.h>
 
 #include <iostream>
-
-
 #include <string>
 #include <cstdio>
 #include <cstring>
 
+#include "Utils/FontImagePainter.h"
+#include <BrainVisIO/DataHandle.h>
 #include <renderer/Context/GLMutex.h>
-
+#include <BrainVisIO/MER-Data/ElectrodeManager.h>
 
 using namespace Tuvok::Renderer;
 
@@ -215,3 +216,27 @@ void OpenGLWidget::renderFont(){
     }
 }
 
+void OpenGLWidget::setDoGradientDescent(bool value){
+    _renderer->setDoesGradientDescent(value);
+}
+
+void OpenGLWidget::setClipMode(DICOMClipMode mode){
+     _renderer->setClipMode(mode);
+}
+
+void OpenGLWidget::setRenderMode(RenderMode mode) {
+    _renderer->SetRenderMode(mode);
+}
+
+void OpenGLWidget::setDataHandle(std::shared_ptr<DataHandle> data){
+    _renderer->SetDataHandle(data);
+    _data = data;
+}
+
+void OpenGLWidget::changeSlide(int slidedelta){
+    _renderer->ChangeSlide(slidedelta);
+}
+
+void OpenGLWidget::zoom(int zoomdelta){
+    _renderer->ZoomTwoD(zoomdelta);
+}

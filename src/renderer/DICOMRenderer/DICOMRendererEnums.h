@@ -12,4 +12,11 @@
         PlaneZn,
         PlaneManual
     };
+
+    enum RenderMode{
+        ThreeDMode = 0,
+        XAxis,
+        YAxis,
+        ZAxis
+    };
 #endif

@@ -7,6 +7,9 @@
 #include "drivewidget.h"
 #include "ui_drivewidget.h"
 
+#include <BrainVisIO/DataHandle.h>
+#include <BrainVisIO/MER-Data/ElectrodeManager.h>
+
 DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
     _data(data),
