@@ -147,7 +147,7 @@ private:
         void checkForErrorCodes(std::string note);
 
         float gradientDecentStep();
-        float subVolumes(Vec2ui windowSize);
+        float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
 
         void calculateRotation();
 

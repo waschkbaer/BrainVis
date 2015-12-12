@@ -248,7 +248,8 @@ void DICOMRenderer::Paint(){
             }else{
                 _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
                 _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
-                std::cout << "next stepsize "<< _data->getFTranslationStep() << std::endl;
+                //std::cout << "next stepsize "<< _data->getFTranslationStep() << std::endl;
+                //std::cout << "skiped slices"<<(_data->getFTranslationStep()*4.0f) <<std::endl;
             }
         }
         _data->setMRCTBlend( 0.5f);
@@ -256,7 +257,7 @@ void DICOMRenderer::Paint(){
 
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
-        std::cout << "[DICOM Renderer] starting complete new frame :" << _data->getDataSetStatus() <<std::endl;
+        //std::cout << "[DICOM Renderer] starting complete new frame :" << _data->getDataSetStatus() <<std::endl;
         //check if the camera has to be placed automaticly
         if(ElectrodeManager::getInstance().isTrackingMode()){
             std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
@@ -1209,21 +1210,21 @@ float DICOMRenderer::gradientDecentStep(){
 }
 
 
-float DICOMRenderer::subVolumes(Vec2ui windowSize){
+float DICOMRenderer::subVolumes(Vec2ui windowSize, float sliceSkip){
     //checking for glerrors
     checkForErrorCodes("@sub volumes1");
 
-
-
     //will store the substraction value
     float volumeValue = 0.0f;
+    float skipedSlices = (_data->getFTranslationStep()*4.0f);
+    skipedSlices = std::max(skipedSlices,3.0f);
 
     //initial cleaning of the targetframebuffer
     _targetBinder->Bind(COMPOSITING);
     ClearBackground(Vec4f(0,0,0,0));
 
     //loop from slice 0 to last slice (skip 5 slides [speedup])
-    for(float i = 0.0f; i <= 1.0f; i+=5.0f/(float)_data->getCTScale().x){
+    for(float i = 0.0f; i <= 1.0f; i+=  skipedSlices/(float)_data->getCTScale().x){
         _data->setSelectedSlices(Vec3f(i,0.5f,0.5f));
 
         drawSliceV3(true,false, true);
