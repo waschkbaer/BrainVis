@@ -244,6 +244,7 @@ private:
         std::shared_ptr<GLFBOTex>       MRFBO;
         std::shared_ptr<GLFBOTex>       COMPOSITING;
         bool                            _doesGradientDescent;
+        std::vector<Vec4f>              _gradientDataBuffer;
 
         Vec3f                           _ACMRWorldPosition;
         Vec3f                           _PCMRWorldPosition;

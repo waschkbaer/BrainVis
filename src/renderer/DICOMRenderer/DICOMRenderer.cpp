@@ -232,11 +232,17 @@ void DICOMRenderer::Paint(){
 
     //while(_doesGradientDescent){
     if(_doesGradientDescent){
+        if(_gradientDataBuffer.size() != _windowSize.x*_windowSize.y){
+            _gradientDataBuffer.resize(_windowSize.x*_windowSize.y);
+        }
+
         float done = gradientDecentStep();
 
         if(done < 0.0f){
             if(_data->getFTranslationStep() < 0.5f){
                  _doesGradientDescent = false;
+                 _gradientDataBuffer.clear();
+                 _gradientDataBuffer.resize(1);
 
                  std::cout << "end gdc"<<std::endl;
             }else{
@@ -1207,9 +1213,7 @@ float DICOMRenderer::subVolumes(Vec2ui windowSize){
     //checking for glerrors
     checkForErrorCodes("@sub volumes1");
 
-    //vector to store the framebuffer of each slice
-    std::vector<Vec4f> frameBuffer;
-    frameBuffer.resize(windowSize.x*windowSize.y);
+
 
     //will store the substraction value
     float volumeValue = 0.0f;
@@ -1218,8 +1222,8 @@ float DICOMRenderer::subVolumes(Vec2ui windowSize){
     _targetBinder->Bind(COMPOSITING);
     ClearBackground(Vec4f(0,0,0,0));
 
-    //loop from slice 0 to last slice (skip each 2. slide)
-    for(float i = 0.0f; i <= 1.0f; i+=2.0f/(float)_data->getCTScale().x){
+    //loop from slice 0 to last slice (skip 5 slides [speedup])
+    for(float i = 0.0f; i <= 1.0f; i+=5.0f/(float)_data->getCTScale().x){
         _data->setSelectedSlices(Vec3f(i,0.5f,0.5f));
 
         drawSliceV3(true,false, true);
@@ -1227,7 +1231,7 @@ float DICOMRenderer::subVolumes(Vec2ui windowSize){
 
         //seperate shader to substract both volumes
         _targetBinder->Bind(COMPOSITING);
-        //ClearBackground(Vec4f(0,0,0,0));
+
         glCullFace(GL_BACK);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
@@ -1247,10 +1251,10 @@ float DICOMRenderer::subVolumes(Vec2ui windowSize){
     //read pixeldata!
     _targetBinder->Bind(COMPOSITING);
     glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-    glReadPixels(0, 0, windowSize.x, windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(frameBuffer[0]));
+    glReadPixels(0, 0, windowSize.x, windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(_gradientDataBuffer[0]));
 
-    for(int x = 0; x < frameBuffer.size();++x){
-        volumeValue += frameBuffer[x].x;
+    for(int x = 0; x < _gradientDataBuffer.size();++x){
+        volumeValue += _gradientDataBuffer[x].x;
     }
 
     return volumeValue;
