@@ -1,4 +1,4 @@
-/*! \mainpage My Personal Index Page
+/*! \mainpage BrainVis
  *
  * \section intro_sec Introduction
  *
@@ -6,7 +6,7 @@
  *
  * \section install_sec Installation
  *
- * \subsection step1 Step 1: Opening the box
+ * \subsection step1 Step 1: check it out!
  *
  * etc...
  */

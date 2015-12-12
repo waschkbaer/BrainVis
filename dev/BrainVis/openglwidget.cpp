@@ -75,9 +75,6 @@ void OpenGLWidget::paintGL(){
     //GLMutex::getInstance().unlockContext();
 }
 
-void OpenGLWidget::update(){
-}
-
 Vec2i oldPos(-1,-1);
 void OpenGLWidget::mousePressEvent(QMouseEvent * event ){
     if(event->button() == Qt::LeftButton){

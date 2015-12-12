@@ -16,18 +16,45 @@ class FontImagePainter;
 class DICOMRenderer;
 class DataHandle;
 
+/*!
+ * \brief This is the actual OpenGL context widget used for the DICOMRenderer
+ *
+ * while the rendererwidget is a container for multiple widgets, like buttons or
+ * the OpenGLWidget, the OpenGLWidget is the real rendering part of the renderer.
+ * This class will create and initialize a new OpenGLContext and load the DICOMRenderer
+ * used to visualize the Datasets
+ */
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:
     OpenGLWidget(QWidget *parent = 0);
         ~OpenGLWidget();
 
+    /*!
+     * \brief cleanup
+     */
     void cleanup();
+
+    /*!
+     * \brief initializeGL @overload
+     *
+     * This function loads the GLFunctions and glew. It is nessecary to load
+     * the functions to get full access to an OpenGL 3.3+ Context
+     */
     void initializeGL();
+
+    /*!
+     * \brief paintGL @overload
+     *
+     * This function is used to render our images. It will also take care of resizing
+     * all our buffers inside the DICOMRenderer.
+     */
     void paintGL();
 
-    void update();
-
+    /*!
+     * \brief sets the displaymode of the DICOMRenderer
+     * \param mode can be one of the RenderMode
+     */
     void setRenderMode(RenderMode mode);
 
     void setDataHandle(std::shared_ptr<DataHandle> data);
