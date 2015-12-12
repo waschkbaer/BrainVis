@@ -55,16 +55,20 @@ CtRegistrationWidget::~CtRegistrationWidget()
 
 void CtRegistrationWidget::on_resetButton_clicked()
 {
+    _data->setFTranslationStep(_translationStep);
+    _data->setFTranslationStepScale(_translationScaling);
+    _data->setFRotationStep(_rotationStep);
+    _data->setFRotationStepScale(_rotationScaling);
     _data->setMRRotation(Vec3f(0,0,0));
     _data->setMROffset(Vec3f(0,0,0));
 }
 
 void CtRegistrationWidget::on_registerButton_clicked()
 {
-    //_data->setFTranslationStep(_translationStep);
-    //_data->setFTranslationStepScale(_translationScaling);
-    //_data->setFRotationStep(_rotationStep);
-    //_data->setFRotationStepScale(_rotationScaling);
+    _data->setFTranslationStep(_translationStep);
+    _data->setFTranslationStepScale(_translationScaling);
+    _data->setFRotationStep(_rotationStep);
+    _data->setFRotationStepScale(_rotationScaling);
     MainWindow* parent = (MainWindow*)this->parent();
     parent->getWorkingRenderer()->startGradientDescent();
 }

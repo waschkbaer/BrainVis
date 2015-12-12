@@ -14,6 +14,7 @@ class MainWindow;
 class RenderWidget;
 class CtRegistrationWidget;
 class DataHandle;
+class DriveWidget;
 /*!
  * \brief The MainWindow acts as a central hub for all widgets
  *
@@ -113,6 +114,12 @@ private slots:
 
     void on_actionRegistration_Widget_triggered();
 
+    void on_actionNewRenderer_triggered();
+
+    void on_actionRegistration_triggered();
+
+    void on_actionDrive_Tool_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -123,6 +130,7 @@ private:
     int                                                 _renderIDCounter;
 
     std::shared_ptr<CtRegistrationWidget>               _registrationWidget;
+    std::shared_ptr<DriveWidget>                        _driveWidget;
 };
 
 #endif // MAINWINDOW_H

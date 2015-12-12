@@ -20,17 +20,16 @@ DriveWidget::DriveWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
 {
     ui->setupUi(this);
     this->setFloating(true);
+    this->show();
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer->start(500);
 
     std::vector<std::string> elektrodes = ElectrodeManager::getInstance().getRegisteredElectrodes();
-
     for(int j = 0; j < elektrodes.size();++j){
         ui->electrodeSelection->addItem(elektrodes[j].c_str());
     }
-
 
     //spectrum image
     QImage* image = new QImage(_data->getFFTColorImage().size(),1,QImage::Format_RGB888);

@@ -212,16 +212,18 @@ private:
     Core::Math::Vec3f                               _CTScale;
     Core::Math::Mat4f                               _CTWorld;
     float                                           _fCTScalingFactor;
-    bool                                            _bFoundCTFrame;
-    std::vector<Core::Math::Vec3f>                  _leftMarker;
-    std::vector<Core::Math::Vec3f>                  _rightMarker;
     Core::Math::Mat4f                               _CTUnitMatrix;
     Core::Math::Vec3f                               _CTCenter;
     Core::Math::Vec3f                               _CTeX;
     Core::Math::Vec3f                               _CTeY;
     Core::Math::Vec3f                               _CTeZ;
 
-    //Planing
+    //CT Frame
+    bool                                            _bFoundCTFrame;
+    std::vector<Core::Math::Vec3f>                  _leftMarker;
+    std::vector<Core::Math::Vec3f>                  _rightMarker;
+
+    //Planing Vars
     Core::Math::Vec3f                               _vAC;
     Core::Math::Vec3f                               _vPC;
     Core::Math::Vec3f                               _vMR;
@@ -236,12 +238,16 @@ private:
     //Transferfunction
     std::unique_ptr<DataIO::TransferFunction1D>     _transferFunction;
     bool                                            _tfChanged;
+
+    //picking/tracking (store each space, less calculation)
     Core::Math::Vec3f                               _vSelectedVolumeSpacePosition;
     Core::Math::Vec3f                               _vSelectedCTSpacePosition;
     Core::Math::Vec3f                               _vSelectedWorldSpacePositon;
 
+    //status, used for sheduling repaints!
     uint64_t                                        _dataSetStatus;
 
+    //networklayer -> soon better
     bool                                            _usesNetworkMER;
     std::unique_ptr<std::thread>                    _networkUpdateThread;
 

@@ -3,6 +3,7 @@
 #include <QFileDialog>
 
 #include "ctregistrationwidget.h"
+#include "drivewidget.h"
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -29,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    if(_data->getUsesNetworkMER()){
+    if(_data != nullptr && _data->getUsesNetworkMER()){
         _data->waitForNetworkThread();
     }
     delete ui;
@@ -161,5 +162,24 @@ void MainWindow::on_actionRegistration_Widget_triggered()
 {
     if(_data != nullptr && _registrationWidget == nullptr){
         _registrationWidget = std::make_shared<CtRegistrationWidget>(this,_data);
+    }
+}
+
+void MainWindow::on_actionNewRenderer_triggered()
+{
+    createNewRenderWidger();
+}
+
+void MainWindow::on_actionRegistration_triggered()
+{
+    if(_data != nullptr && _registrationWidget == nullptr){
+        _registrationWidget = std::make_shared<CtRegistrationWidget>(this,_data);
+    }
+}
+
+void MainWindow::on_actionDrive_Tool_triggered()
+{
+    if(_data != nullptr && _driveWidget == nullptr){
+        _driveWidget = std::make_shared<DriveWidget>(this,_data);
     }
 }

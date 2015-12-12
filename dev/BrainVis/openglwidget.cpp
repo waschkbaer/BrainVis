@@ -57,6 +57,7 @@ void OpenGLWidget::initializeGL()
 
 int i=0;
 void OpenGLWidget::paintGL(){
+
     //GLMutex::getInstance().lockContext();
     if(_renderer != nullptr){
         if(_windowSize.x != width() ||_windowSize.y != height() ){

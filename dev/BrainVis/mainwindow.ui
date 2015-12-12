@@ -32,7 +32,23 @@
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks|QMainWindow::ForceTabbedDocks|QMainWindow::VerticalTabs</set>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout"/>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -47,7 +63,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionSelect_Folder"/>
     <addaction name="actionNew"/>
    </widget>
    <widget class="QMenu" name="menuWorkspace">
@@ -103,6 +118,9 @@
    <addaction name="actionWindowing"/>
    <addaction name="actionPicking"/>
    <addaction name="separator"/>
+   <addaction name="actionRegistration"/>
+   <addaction name="actionNewRenderer"/>
+   <addaction name="actionDrive_Tool"/>
   </widget>
   <action name="actionAdd_RenderWidget">
    <property name="text">
@@ -204,6 +222,39 @@
   <action name="actionRegistration_Widget">
    <property name="text">
     <string>Registration Widget</string>
+   </property>
+  </action>
+  <action name="actionNewRenderer">
+   <property name="text">
+    <string>New Renderer</string>
+   </property>
+   <property name="toolTip">
+    <string>creates a new render-widget</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+W</string>
+   </property>
+  </action>
+  <action name="actionRegistration">
+   <property name="text">
+    <string>Registration</string>
+   </property>
+   <property name="toolTip">
+    <string>merge CT and MRI Data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+R</string>
+   </property>
+  </action>
+  <action name="actionDrive_Tool">
+   <property name="text">
+    <string>Drive Tool</string>
+   </property>
+   <property name="toolTip">
+    <string>displays the Drive Tool wich is used to interact with the MER</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+D</string>
    </property>
   </action>
  </widget>

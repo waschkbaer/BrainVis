@@ -94,17 +94,14 @@ class DICOMRenderer{
         void setDoesGradientDescent(bool doesGradientDescent);
 
 private:
+        //Loading stuff
         bool LoadShaderResources();
         bool LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, ShaderDescriptor& sd);
         bool LoadGeometry();
         bool LoadFrameBuffer();
         bool LoadFFTColorTex();
 
-        void ClearBackground(Vec4f color);
-
-        void updateTransferFunction();
-
-        //raycaster------------------------------
+        //raycaster-------------------------------------------------------------------
         void RayCast();
         void drawCubeEntry(std::shared_ptr<GLFBOTex> target, Mat4f world);
         void drawVolumeRayCast(std::shared_ptr<GLFBOTex> colorTarget,
@@ -129,27 +126,27 @@ private:
 
         void checkDatasetStatus();
 
-        //slicer--------------------------------
+        //slicer---------(slice renderer based on raycaster!)-----------------------
         void SliceRendering();
         void drawSliceCompositing();
         void drawSliceV3(bool isCT = true,bool full = true, bool noCTBones = false);
 
-        //G-Frame-------------------------------
+        //G-Frame-------------------------------------------------------------------
         bool _foundFrame;
         Vec3f                    _center;
         std::vector<Vec3f> findFrame(float startX = 0.0f, float stepX = 1.0f, Vec2f range = Vec2f(0.45f,0.6f));
         void frameSlicing(Vec2f range);
         void createFrameGeometry(std::vector<Vec3f> corners, int id= 0);
-
         void searchGFrame(Vec2f range = Vec2f(0.45f,0.6f));
 
-        void calculateElectrodeMatices();
-        void checkForErrorCodes(std::string note);
-
+        //utils
+        void ClearBackground(Vec4f color);
+        void updateTransferFunction();
+        void calculateRotation();
         float gradientDecentStep();
         float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
-
-        void calculateRotation();
+        void calculateElectrodeMatices();
+        void checkForErrorCodes(std::string note);
 
     private:
         RenderMode                      _activeRenderMode;
@@ -189,9 +186,9 @@ private:
 
         std::unique_ptr<GLBoundingBox>   _boundingBox;
         std::unique_ptr<GLSphere>        _sphere;
-        std::unique_ptr<GLBoundingQuad> _XAxisSlice;
-        std::unique_ptr<GLBoundingQuad> _YAxisSlice;
-        std::unique_ptr<GLBoundingQuad> _ZAxisSlice;
+        std::unique_ptr<GLBoundingQuad>  _XAxisSlice;
+        std::unique_ptr<GLBoundingQuad>  _YAxisSlice;
+        std::unique_ptr<GLBoundingQuad>  _ZAxisSlice;
         std::unique_ptr<GLModel>         _NShape1;
         std::unique_ptr<GLModel>         _NShape2;
 

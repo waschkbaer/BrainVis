@@ -8,7 +8,6 @@
 #include <BrainVisIO/DataHandle.h>
 #include <mainwindow.h>
 #include <renderwidget.h>
-#include <drivewidget.h>
 
 
 PlaningWidget::PlaningWidget(QWidget *parent) :
@@ -118,9 +117,6 @@ void PlaningWidget::on_Start_clicked()
 
     w->createNewRenderWidger();
 
-
-    DriveWidget* drive = new DriveWidget(w,_dataHandle);
-    drive->show();
 
     this->close();
 }
