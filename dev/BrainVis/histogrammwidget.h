@@ -2,6 +2,8 @@
 #define HISTOGRAMMWIDGET_H
 
 #include <QDockWidget>
+#include <QPainter>
+#include <QColor>
 
 #include <vector>
 #include <BrainVisIO/DataHandle.h>
@@ -32,6 +34,10 @@ private:
     std::shared_ptr<DataHandle> _data;
     QImage* _ctImage;
     QImage* _mrImage;
+
+    QPainter*                   _painter;
+    QColor                      _penColor;
+
     float lastPos;
     float lastGrad;
 };

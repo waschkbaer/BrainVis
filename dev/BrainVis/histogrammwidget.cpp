@@ -8,6 +8,7 @@ HistogrammWidget::HistogrammWidget(QWidget *parent, std::shared_ptr<DataHandle> 
     ui(new Ui::HistogrammWidget),
     _ctImage(NULL),
     _mrImage(NULL),
+    _painter(NULL),
     _data(data)
 {
     ui->setupUi(this);
@@ -21,7 +22,7 @@ HistogrammWidget::HistogrammWidget(QWidget *parent, std::shared_ptr<DataHandle> 
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(500);
+    timer->start(100);
 }
 
 HistogrammWidget::~HistogrammWidget()
@@ -31,20 +32,19 @@ HistogrammWidget::~HistogrammWidget()
 
 
 void HistogrammWidget::createHistogramms(std::vector<uint16_t> ctHistogramm, std::vector<uint16_t> mrHistogramm){
-    if(_ctImage != NULL){
-        delete _ctImage;
-    }
-
-    if(_mrImage != NULL){
-        delete _mrImage;
-    }
+    if(_painter != NULL) delete _painter;
+    if(_ctImage != NULL) delete _ctImage;
 
     _ctImage = createHistogramm(ctHistogramm);
+
+    if(_painter != NULL) delete _painter;
+    if(_mrImage != NULL) delete _mrImage;
+
     _mrImage = createHistogramm(mrHistogramm);
 
 
-    ui->ctImgLabel->setPixmap(QPixmap::fromImage(_ctImage->scaled(491,77,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
-    ui->mriImgLabel->setPixmap(QPixmap::fromImage(_mrImage->scaled(491,77,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
+    ui->ctImgLabel->setPixmap(QPixmap::fromImage(_ctImage->scaled(716,153,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
+    ui->mriImgLabel->setPixmap(QPixmap::fromImage(_mrImage->scaled(716,153,Qt::IgnoreAspectRatio,Qt::FastTransformation)));
 
 }
 
@@ -54,18 +54,36 @@ QImage* HistogrammWidget::createHistogramm(std::vector<uint16_t> histogramm){
         if(maxValue < (float)histogramm[i]) maxValue =  (float)histogramm[i];
     }
 
-    QImage* image = new QImage(histogramm.size(),300,QImage::Format_RGB888);
+    QImage* image = new QImage(716,153,QImage::Format_RGB888);
+    image->fill(QColor(255,255,255).rgb());
+
 
     int currentHeight = 0.0f;
-    for(int x = 0; x < histogramm.size();++x){
-        currentHeight = (int) ( ( (float)histogramm[x] / maxValue ) * 299 );
+    int currentIndex = 0;
+    for(int x = 0; x < 716;++x){
+        currentIndex = x* histogramm.size()/716;
+
+        currentHeight = (int) ( ( (float)histogramm[currentIndex] / maxValue ) * 152 );
 
         for(int y = 0; y < currentHeight;++y){
-            image->setPixel(x,(299-y),QColor(128,128,128).rgb());
+            image->setPixel(x,(152-y),QColor(75,75,75).rgb());
         }
     }
 
-    drawTF(image,histogramm.size(),300,_data->getPosition(),_data->getGradient());
+    drawTF(image,716,153,_data->getPosition(),_data->getGradient());
+
+
+
+    _painter = new QPainter(image);
+
+    QPen myPen(Qt::red, 2, Qt::SolidLine);
+    _painter->setPen(myPen);
+
+    _painter->drawText(0,10,QString("0"));
+
+    std::string maxString = std::to_string(histogramm.size());
+    _painter->drawText(716-50,10,QString(maxString.c_str()));
+
 
     return image;
 }

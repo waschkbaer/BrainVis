@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>499</width>
-    <height>152</height>
+    <width>722</width>
+    <height>226</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>499</width>
-    <height>152</height>
+    <width>722</width>
+    <height>226</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>499</width>
-    <height>152</height>
+    <width>722</width>
+    <height>226</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -173,14 +173,14 @@
             <widget class="QLabel" name="mriImgLabel">
              <property name="minimumSize">
               <size>
-               <width>491</width>
-               <height>77</height>
+               <width>716</width>
+               <height>153</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>491</width>
-               <height>77</height>
+               <width>716</width>
+               <height>153</height>
               </size>
              </property>
              <property name="text">
