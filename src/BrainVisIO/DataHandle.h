@@ -193,6 +193,10 @@ public:
     std::vector<uint16_t> getCTHistogramm();
     std::vector<uint16_t> getMRHistogramm();
 
+    float getPosition() const;
+
+    float getGradient() const;
+
 private:
     void updateMRWorld();
 
@@ -240,6 +244,8 @@ private:
 
     //Transferfunction
     std::unique_ptr<DataIO::TransferFunction1D>     _transferFunction;
+    float                                           _position;
+    float                                           _gradient;
     bool                                            _tfChanged;
 
     //picking/tracking (store each space, less calculation)

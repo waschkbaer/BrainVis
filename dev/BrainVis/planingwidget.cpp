@@ -119,7 +119,7 @@ void PlaningWidget::on_Start_clicked()
 
     w->createNewRenderWidger();
 
-    HistogrammWidget* hw = new HistogrammWidget(w);
+    HistogrammWidget* hw = new HistogrammWidget(w,_dataHandle);
     hw->createHistogramms(_dataHandle->getCTHistogramm(),_dataHandle->getMRHistogramm());
 
     this->close();

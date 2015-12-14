@@ -11,6 +11,8 @@
 
 DataHandle::DataHandle():
     _transferFunction(nullptr),
+    _position(0.5f),
+    _gradient(0.5f),
     _leftSTN(),
     _rightSTN(),
     _MRLoaded(false),
@@ -234,6 +236,16 @@ void DataHandle::updateMRWorld(){
 
     incrementStatus();
 }
+float DataHandle::getGradient() const
+{
+    return _gradient;
+}
+
+float DataHandle::getPosition() const
+{
+    return _position;
+}
+
 float DataHandle::getFRotationStepScale() const
 {
     return _fRotationStepScale;
@@ -363,6 +375,8 @@ float DataHandle::getCTTransferScaling() const
 
 void DataHandle::setSmoothStep(float pos, float grad){
     _transferFunction->SetStdFunction(pos,grad);
+    _position = pos;
+    _gradient = grad;
     incrementStatus();
 }
 std::string DataHandle::getMRPath() const
