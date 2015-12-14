@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = BrainVis
 TEMPLATE = app
 
+RC_FILE = brainvis.rc
 
 SOURCES += main.cpp\
         mainwindow.cpp \

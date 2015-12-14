@@ -82,7 +82,7 @@ QImage* HistogrammWidget::createHistogramm(std::vector<uint16_t> histogramm){
     _painter->drawText(0,10,QString("0"));
 
     std::string maxString = std::to_string(histogramm.size());
-    _painter->drawText(716-50,10,QString(maxString.c_str()));
+    _painter->drawText(716-25,10,QString(maxString.c_str()));
 
 
     return image;

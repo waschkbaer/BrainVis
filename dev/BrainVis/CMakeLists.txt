@@ -33,7 +33,7 @@ QT5_WRAP_UI(UIS_HDRS drivewidget.ui)
 QT5_WRAP_UI(UIS_HDRS ctregistrationwidget.ui)
 QT5_WRAP_UI(UIS_HDRS histogrammwidget.ui)
 
-add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca>)
+add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc)
 
 set_target_properties( BrainVis PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BRAINVIS_ROOT_DIR}/build/bin )
 
