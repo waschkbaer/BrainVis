@@ -1052,6 +1052,7 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
 
     _projection = oldProjectionMatrix;
     _view = oldViewMatrix;
+    _clipMode = oldClipMode;
     //_data->setCTScale(CTScaleOld);
     //_data->setMRScale(MRScaleOld);
 }
