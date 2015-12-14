@@ -21,7 +21,7 @@ public:
   void exportRawFile(std::string& path);
   void exportJPGFiles(std::string& path);
 
-  std::vector<char>&      getData() {return m_vData; }
+  std::vector<uint16_t>&      getData() {return m_vData; }
   std::vector<uint16_t>&  getHistogram() {return m_vHistogram;}
 
   Core::Math::Vec3ui   getDimensions() const {return m_vDimensions;}
@@ -37,7 +37,7 @@ protected:
 
 
 private:
-  std::vector<char>     m_vData;
+  std::vector<uint16_t> m_vData;
   std::vector<uint16_t> m_vHistogram;
   Core::Math::Vec3ui    m_vDimensions;
   Core::Math::Vec3f     m_vAspectRatio;

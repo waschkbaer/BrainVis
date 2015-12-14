@@ -7,7 +7,7 @@ include_directories(
 					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/
 					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/ghoul/)
 
-add_subdirectory(CudaIO)
+#add_subdirectory(CudaIO)
 add_subdirectory(renderer)
 add_subdirectory(BrainVisIO)
 add_subdirectory(core)

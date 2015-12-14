@@ -15,9 +15,9 @@ target_include_directories (BRAINVISIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries (BRAINVISIO LINK_PUBLIC Core)
 target_link_libraries (BRAINVISIO LINK_PUBLIC jpeglib)
 
-if (CUDA_FOUND)
-	target_link_libraries (BRAINVISIO LINK_PUBLIC CUDAIO)
-endif(CUDA_FOUND)
+#if (CUDA_FOUND)
+#	target_link_libraries (BRAINVISIO LINK_PUBLIC CUDAIO)
+#endif(CUDA_FOUND)
 
 if(WIN32)
     target_link_libraries (BRAINVISIO LINK_PUBLIC Shlwapi)

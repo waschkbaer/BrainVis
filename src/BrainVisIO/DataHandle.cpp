@@ -288,8 +288,8 @@ Core::Math::Vec2f DataHandle::getSpectralRange() const
 Core::Math::Vec3ui DataHandle::getMRDimensions() const { return _MRVolume->getDimensions();}
 Core::Math::Vec3ui DataHandle::getCTDimensions() const { return _CTVolume->getDimensions();}
 
-std::vector<char>&      DataHandle::getMRData() {return _MRVolume->getData(); }
-std::vector<char>&      DataHandle::getCTData() {return _CTVolume->getData(); }
+std::vector<uint16_t>&      DataHandle::getMRData() {return _MRVolume->getData(); }
+std::vector<uint16_t>&      DataHandle::getCTData() {return _CTVolume->getData(); }
 Core::Math::Vec3f       DataHandle::getMRAspectRatio() {return _MRVolume->getAspectRatio();}
 Core::Math::Vec3f       DataHandle::getCTAspectRatio() {return _CTVolume->getAspectRatio();}
 
@@ -750,4 +750,20 @@ void DataHandle::checkFocusPoint(){
             incrementStatus();
         }
     }
+}
+
+std::vector<uint16_t> DataHandle::getCTHistogramm(){
+    std::vector<uint16_t> h;
+    if(_CTVolume != nullptr)
+        return _CTVolume->getHistogram();
+    else
+        return h;
+}
+
+std::vector<uint16_t> DataHandle::getMRHistogramm(){
+    std::vector<uint16_t> h;
+    if(_MRVolume != nullptr)
+        return _MRVolume->getHistogram();
+    else
+        return h;
 }

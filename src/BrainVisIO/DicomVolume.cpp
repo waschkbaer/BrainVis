@@ -12,7 +12,7 @@ void DicomVolume::exportRawFile(std::string& path){
   std::string filename = path+m_DicomParser.m_FileStacks[0]->m_strDesc+".raw";
   std::ofstream rawFile;
   rawFile.open (filename.c_str(), std::ios::out | std::ios::binary);
-  rawFile.write (&m_vData[0], m_vData.size());
+  rawFile.write ((char*)&m_vData[0], m_vData.size());
 }
 
 union char2short{
@@ -67,41 +67,42 @@ bool DicomVolume::initData(std::string& DICOMpath){
     std::cout <<"[DICOMVolume] byte per element: "<< bytePerElement << std::endl;
 
     //resize the vector to fit the complete volume
-    m_vData.resize(voxelCount*bytePerElement);
+    //m_vData.resize(voxelCount*bytePerElement);
+    m_vData.resize(voxelCount);
 
     //read each dicome slide and store them in the volume
     uint32_t dataOffset = 0;
+    uint16_t* offsetPointer;
     for(int i = 0; i < m_DicomParser.m_FileStacks[0]->m_Elements.size();++i){
         dataOffset = i * (m_DicomParser.m_FileStacks[0]->m_ivSize.x *
-                        m_DicomParser.m_FileStacks[0]->m_ivSize.y *
-                        bytePerElement);
-        m_DicomParser.m_FileStacks[0]->m_Elements[i]->GetData(&(m_vData[dataOffset]),m_DicomParser.m_FileStacks[0]->m_Elements[i]->GetDataSize(), 0);
+                        m_DicomParser.m_FileStacks[0]->m_ivSize.y
+                        );
+        offsetPointer = &(m_vData[dataOffset]);
+        m_DicomParser.m_FileStacks[0]->m_Elements[i]->GetData((char*)offsetPointer,m_DicomParser.m_FileStacks[0]->m_Elements[i]->GetDataSize(), 0);
     }
     //calculate the histogram;
-    uint32_t currentValue = 0;
-    uint32_t largestValue = 0;
-    m_vHistogram.resize(4096);
-    for(int i = 0; i < m_vData.size();i += bytePerElement){
-        switch(bytePerElement){
-            case 1: currentValue = (uint32_t)m_vData[i];break;
-            case 2:
-                    char2short c;
-                    c.ch[0] = m_vData[i];
-                    c.ch[1] = m_vData[i+1];
-                    currentValue = c.n;
-                    break;
-            case 4: break;
-            default: break;
-        }
+    uint16_t currentValue = 0;
+    uint16_t largestValue = 0;
+
+    //find max value
+    for(int i = 0; i < m_vData.size();++i){
+        currentValue = m_vData[i];
         if(largestValue < currentValue) largestValue = currentValue;
-        m_vHistogram[currentValue]++;
     }
-    m_vHistogram.resize(largestValue);
 
     std::cout <<"[DICOMVolume] largest found value: "<< largestValue << std::endl;
 
+    m_vHistogram.resize(largestValue+1);
+    for(int i = 0; i < m_vData.size();++i){
+        currentValue = m_vData[i];
+        m_vHistogram[currentValue]++;
+    }
+
+    m_vHistogram.resize(largestValue);
+
     return true;
-};
+}
+
 void DicomVolume::initData(std::string& rawFile, std::string& metaFile){};
 
 void DicomVolume::exportJPGFiles(std::string& path){

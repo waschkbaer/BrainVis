@@ -60,8 +60,8 @@ public:
     std::shared_ptr<std::vector<Core::Math::Vec4f>> getTransferFunction();
     void setSmoothStep(float pos, float grad);
 
-    std::vector<char>&      getMRData();
-    std::vector<char>&      getCTData();
+    std::vector<uint16_t>&      getMRData();
+    std::vector<uint16_t>&      getCTData();
     Core::Math::Vec3f       getMRAspectRatio();
     Core::Math::Vec3f       getCTAspectRatio();
 
@@ -189,6 +189,9 @@ public:
 
     float getFRotationStepScale() const;
     void setFRotationStepScale(float fRotationStepScale);
+
+    std::vector<uint16_t> getCTHistogramm();
+    std::vector<uint16_t> getMRHistogramm();
 
 private:
     void updateMRWorld();

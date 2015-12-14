@@ -9,6 +9,8 @@
 #include <mainwindow.h>
 #include <renderwidget.h>
 
+#include <histogrammwidget.h>
+
 
 PlaningWidget::PlaningWidget(QWidget *parent) :
     QDockWidget(parent),
@@ -117,6 +119,8 @@ void PlaningWidget::on_Start_clicked()
 
     w->createNewRenderWidger();
 
+    HistogrammWidget* hw = new HistogrammWidget(w);
+    hw->createHistogramms(_dataHandle->getCTHistogramm(),_dataHandle->getMRHistogramm());
 
     this->close();
 }
