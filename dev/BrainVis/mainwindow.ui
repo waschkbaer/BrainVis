@@ -117,6 +117,7 @@
    <addaction name="actionRotate"/>
    <addaction name="actionWindowing"/>
    <addaction name="actionPicking"/>
+   <addaction name="actionZoom"/>
    <addaction name="separator"/>
    <addaction name="actionRegistration"/>
    <addaction name="actionNewRenderer"/>
@@ -140,7 +141,7 @@
   <action name="actionMove">
    <property name="icon">
     <iconset>
-     <normaloff>Buttons/move.jpg</normaloff>Buttons/move.jpg</iconset>
+     <normaloff>Buttons/move.png</normaloff>Buttons/move.png</iconset>
    </property>
    <property name="text">
     <string>Move</string>
@@ -148,11 +149,14 @@
    <property name="toolTip">
     <string>Moves the Camera</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Μ</string>
+   </property>
   </action>
   <action name="actionRotate">
    <property name="icon">
     <iconset>
-     <normaloff>Buttons/rotate.jpg</normaloff>Buttons/rotate.jpg</iconset>
+     <normaloff>Buttons/rotation.png</normaloff>Buttons/rotation.png</iconset>
    </property>
    <property name="text">
     <string>Rotate</string>
@@ -160,23 +164,32 @@
    <property name="toolTip">
     <string>rotates the Camera</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+R</string>
+   </property>
   </action>
   <action name="actionWindowing">
    <property name="icon">
     <iconset>
-     <normaloff>Buttons/tf.jpg</normaloff>Buttons/tf.jpg</iconset>
+     <normaloff>Buttons/transfer.png</normaloff>Buttons/transfer.png</iconset>
    </property>
    <property name="text">
     <string>Windowing</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+T</string>
    </property>
   </action>
   <action name="actionPicking">
    <property name="icon">
     <iconset>
-     <normaloff>Buttons/target.jpg</normaloff>Buttons/target.jpg</iconset>
+     <normaloff>Buttons/target.png</normaloff>Buttons/target.png</iconset>
    </property>
    <property name="text">
     <string>Picking</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+P</string>
    </property>
   </action>
   <action name="actionCubic_Cut">
@@ -225,6 +238,10 @@
    </property>
   </action>
   <action name="actionNewRenderer">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/newrenderer.png</normaloff>Buttons/newrenderer.png</iconset>
+   </property>
    <property name="text">
     <string>New Renderer</string>
    </property>
@@ -236,6 +253,10 @@
    </property>
   </action>
   <action name="actionRegistration">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/register.png</normaloff>Buttons/register.png</iconset>
+   </property>
    <property name="text">
     <string>Registration</string>
    </property>
@@ -243,10 +264,14 @@
     <string>merge CT and MRI Data</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Alt+R</string>
+    <string>Ctrl+Alt+X</string>
    </property>
   </action>
   <action name="actionDrive_Tool">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/drive.png</normaloff>Buttons/drive.png</iconset>
+   </property>
    <property name="text">
     <string>Drive Tool</string>
    </property>
@@ -255,6 +280,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+D</string>
+   </property>
+  </action>
+  <action name="actionZoom">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/zoom.png</normaloff>Buttons/zoom.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom</string>
+   </property>
+   <property name="toolTip">
+    <string>allows to zoom in the view using the mousewheel</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Z</string>
    </property>
   </action>
  </widget>
