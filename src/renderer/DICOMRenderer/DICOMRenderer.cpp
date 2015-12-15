@@ -78,7 +78,6 @@ void DICOMRenderer::Initialize(){
     //creating a targetBinder to simplify switching between framebuffers
     _targetBinder = std::unique_ptr<GLTargetBinder>(new GLTargetBinder());
 
-
     //starting with some fix projection / view / viwport
     _projection.Perspective(45, 512.0f/512.0f,0.01f, 1000.0f);
     _view = _camera->buildLookAt();

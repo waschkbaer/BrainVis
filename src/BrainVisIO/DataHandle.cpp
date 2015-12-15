@@ -35,8 +35,8 @@ DataHandle::DataHandle():
     _fRotationStepScale(0.75f),
     _leftFBBCenter(0.2f,0.5f,0.5f),
     _rightFBBCenter(0.8f,0.5f,0.5f),
-    _leftFBBScale(0.05f,0.5f,0.5f),
-    _rightFBBScale(0.05f,0.5f,0.5f)
+    _leftFBBScale(0.05f,0.25f,0.5f),
+    _rightFBBScale(0.05f,0.25f,0.5f)
 {
     incrementStatus();
     createFFTColorImage();
