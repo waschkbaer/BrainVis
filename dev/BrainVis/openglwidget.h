@@ -82,6 +82,7 @@ public:
     void setClipMode(DICOMClipMode mode);
 
     void setDoGradientDescent(bool value);
+    void startFrameFind();
 
 private:
     std::unique_ptr<DICOMRenderer>  _renderer;

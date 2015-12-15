@@ -5,10 +5,50 @@
 #include <BrainVisIO/MER-Data/ElectrodeManager.h>
 #include <cstdlib>
 
-
-
 using namespace std;
 using namespace Tuvok::Renderer;
+
+
+static int screenshot(int i)
+{
+    unsigned char *pixels;
+    FILE *image;
+
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    pixels = new unsigned char[viewport[2] * viewport[3] * 3];
+
+    glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB,
+        GL_UNSIGNED_BYTE, pixels);
+
+    char tempstring[50];
+    sprintf(tempstring, "screenshot_%i.tga", i);
+    if ((image = fopen(tempstring, "wb")) == NULL) return 1;
+
+    unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    unsigned char header[6] = { static_cast<unsigned char>(((int)(viewport[2] % 256))),
+        static_cast<unsigned char>(((int)(viewport[2] / 256))),
+        static_cast<unsigned char>(((int)(viewport[3] % 256))),
+        static_cast<unsigned char>(((int)(viewport[3] / 256))), 24, 0 };
+
+    // TGA header schreiben
+    fwrite(TGAheader, sizeof(unsigned char), 12, image);
+    // Header schreiben
+    fwrite(header, sizeof(unsigned char), 6, image);
+
+    fwrite(pixels, sizeof(unsigned char),
+        viewport[2] * viewport[3] * 3, image);
+
+    fclose(image);
+    delete[] pixels;
+
+    return 0;
+}
+
+
+
 
 DICOMRenderer::DICOMRenderer():
 _activeRenderMode(ThreeDMode),
@@ -23,7 +63,8 @@ _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
 _vZoom(1,1,1),
 _needsUpdate(true),
-_doesGradientDescent(false)
+_doesGradientDescent(false),
+_doFrameDetection(false)
 {
 }
 
@@ -114,6 +155,7 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
        _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
     }
 
+
     // this has to be done if the frame was found
     if(_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
         createFrameGeometry(_data->getLeftMarker(),0);
@@ -136,12 +178,13 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
 }
 
 void DICOMRenderer::searchGFrame(Vec2f range){
-    _data->setBFoundCTFrame(false);
+    //findFrameV2(0.0f,1.0f/_data->getCTScale().x,range,Vec3f(0.1,0,0),Vec3f(0.4,0,0));
+    /*_data->setBFoundCTFrame(false);
     _data->setLeftMarker(findFrame(0.0f,1.0f,range));
     _data->setRightMarker(findFrame(1.0f,-1.0f,range));
     if(_data->calculateCTUnitVectors()){
         _data->setBFoundCTFrame(true);
-    }
+    }*/
 }
 
 void DICOMRenderer::ChangeSlide(int slidedelta){
@@ -230,6 +273,10 @@ void DICOMRenderer::Paint(){
 
     checkDatasetStatus();
 
+    if(_doFrameDetection){
+        findGFrame();
+    }
+
     //while(_doesGradientDescent){
     if(_doesGradientDescent){
         if(_gradientDataBuffer.size() != _windowSize.x*_windowSize.y){
@@ -272,6 +319,9 @@ void DICOMRenderer::Paint(){
                 setCameraLookAt(lookAt);
             }
         }
+
+        generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-Vec3f(0.5f,0.5f,0.5f),_data->getLeftFBBScale());
+        generateRightFrameBoundingBox(_data->getRightFBBCenter()-Vec3f(0.5f,0.5f,0.5f),_data->getRightFBBScale());
 
         updateTransferFunction();
 
@@ -380,6 +430,14 @@ bool DICOMRenderer::LoadShaderResources(){
 
     vs.clear();
     fs.clear();
+    vs.push_back("Shader/RayCasterVertex.glsl");
+    fs.push_back("Shader/FrameFragment.glsl");
+    sd = ShaderDescriptor(vs,fs);
+    if(!LoadAndCheckShaders(_frameSearchShaderV2,sd)) return false;
+    checkForErrorCodes("@ Load GFrameShader");
+
+    vs.clear();
+    fs.clear();
     vs.push_back("Shader/CubeVertex.glsl");
     fs.push_back("Shader/ElectrodeGeometryFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
@@ -459,6 +517,11 @@ void DICOMRenderer::checkForErrorCodes(std::string note){
         }
     }
 }
+void DICOMRenderer::setDoFrameDetection(bool doFrameDetection)
+{
+    _doFrameDetection = doFrameDetection;
+}
+
 
 
 bool DICOMRenderer::LoadFFTColorTex(){
@@ -826,6 +889,31 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
        _NShape2->paint(GL_LINES);
 
     }
+
+    if(_cubeLeftN != nullptr){
+        _lineShader->Enable();
+
+        _lineShader->Set("projectionMatrix",_projection);
+        _lineShader->Set("viewMatrix",_view);
+        _lineShader->Set("worldMatrix",_data->getCTWorld());
+        _lineShader->Set("color",Vec3f(1.0f,0,1.0f));
+
+        _cubeLeftN->paint(GL_LINES);
+    }
+
+    if(_cubeRightN != nullptr){
+        _lineShader->Enable();
+
+        _lineShader->Set("projectionMatrix",_projection);
+        _lineShader->Set("viewMatrix",_view);
+        _lineShader->Set("worldMatrix",_data->getCTWorld());
+        _lineShader->Set("color",Vec3f(1.0f,0,1.0f));
+
+        _cubeRightN->paint(GL_LINES);
+    }
+
+
+
     _lineShader->Disable();
 
     _targetBinder->Unbind();
@@ -954,11 +1042,11 @@ void DICOMRenderer::drawCompositing(){
 void DICOMRenderer::SliceRendering(){
 
     if(_GL_CTVolume != nullptr){
-        drawSliceV3(true,true,false);
+        drawSliceV3(_sliceShader,true,true,false);
 
     }
     if(_GL_MRVolume != nullptr){   
-        drawSliceV3(false,false);
+        drawSliceV3(_sliceShader,false,false);
     }
 
 
@@ -967,7 +1055,7 @@ void DICOMRenderer::SliceRendering(){
     drawSliceCompositing();
 }
 
-void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
+void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,bool full, bool noCTBones){
     Mat4f oldProjectionMatrix = _projection;
     Mat4f oldViewMatrix = _view;
     DICOMClipMode oldClipMode = _clipMode;
@@ -1018,7 +1106,7 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
 
         drawVolumeRayCast(  _rayCastColorCT,
                             _rayCastPositionCT,
-                            _sliceShader,
+                            shader,
                             _data->getCTWorld(),
                             _rayEntryCT->GetTextureHandle(),
                             _GL_CTVolume->GetGLID(),
@@ -1033,7 +1121,7 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
 
         drawVolumeRayCast(  _rayCastColorMR,
                             _rayCastPositionMR,
-                            _sliceShader,
+                            shader,
                             _data->getMRWorld(),
                             _rayEntryMR->GetTextureHandle(),
                             _GL_MRVolume->GetGLID(),
@@ -1060,43 +1148,6 @@ void DICOMRenderer::drawSliceV3(bool isCT,bool full, bool noCTBones){
 
 
 
-static int screenshot(int i)
-{
-    unsigned char *pixels;
-    FILE *image;
-
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    pixels = new unsigned char[viewport[2] * viewport[3] * 3];
-
-    glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB,
-        GL_UNSIGNED_BYTE, pixels);
-
-    char tempstring[50];
-    sprintf(tempstring, "screenshot_%i.tga", i);
-    if ((image = fopen(tempstring, "wb")) == NULL) return 1;
-
-    unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-    unsigned char header[6] = { static_cast<unsigned char>(((int)(viewport[2] % 256))),
-        static_cast<unsigned char>(((int)(viewport[2] / 256))),
-        static_cast<unsigned char>(((int)(viewport[3] % 256))),
-        static_cast<unsigned char>(((int)(viewport[3] / 256))), 24, 0 };
-
-    // TGA header schreiben
-    fwrite(TGAheader, sizeof(unsigned char), 12, image);
-    // Header schreiben
-    fwrite(header, sizeof(unsigned char), 6, image);
-
-    fwrite(pixels, sizeof(unsigned char),
-        viewport[2] * viewport[3] * 3, image);
-
-    fclose(image);
-    delete[] pixels;
-
-    return 0;
-}
 static int counter= 0;
 
 float DICOMRenderer::gradientDecentStep(){
@@ -1228,8 +1279,8 @@ float DICOMRenderer::subVolumes(Vec2ui windowSize, float sliceSkip){
     for(float i = 0.0f; i <= 1.0f; i+=  skipedSlices/(float)_data->getCTScale().x){
         _data->setSelectedSlices(Vec3f(i,0.5f,0.5f));
 
-        drawSliceV3(true,false, true);
-        drawSliceV3(false,false);
+        drawSliceV3(_sliceShader, true,false, true);
+        drawSliceV3(_sliceShader, false,false);
 
         //seperate shader to substract both volumes
         _targetBinder->Bind(COMPOSITING);
@@ -1519,6 +1570,150 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
 }
 
 
+std::vector<Vec3f> DICOMRenderer::findFrameV2(float startX, float stepX, Vec2f range, Vec3f minBox, Vec3f maxBox){
+    //variable declaration
+    bool foundStart = false;
+    bool foundEnd = false;
+    bool foundData = false;
+    std::vector<Vec3f> frameData;
+    std::vector<Vec4f> framebuffer;
+    Vec3f currentSlide = Vec3f(startX,0.5,0.5);
+
+    framebuffer.resize(_windowSize.x*_windowSize.y);
+
+
+    _frameSearchShaderV2->Enable();
+    _frameSearchShaderV2->Set("minBox",minBox);
+    _frameSearchShaderV2->Set("maxBox",maxBox);
+    _frameSearchShaderV2->Disable();
+
+    std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
+    while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
+        std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
+        //render slide
+        foundData = false;
+        _data->setSelectedSlices(currentSlide);
+
+        renderFramePosition();
+        //render!!! somehow!!
+
+        //read framebuffer
+        _targetBinder->Bind(_rayCastColorCT);
+
+        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(framebuffer[0]));
+
+
+        for(int i = 0; i < framebuffer.size();++i){
+            if(framebuffer[i].x == 0.0f && framebuffer[i].y == 0.0f && framebuffer[i].z == 0.0f){
+
+            }else{
+                frameData.push_back(Vec3f(framebuffer[i].x,framebuffer[i].y,framebuffer[i].z));
+                foundData = true;
+                foundStart = true;
+            }
+        }
+
+        //if(foundData)
+        //    screenshot(counter++);
+
+        if(foundData || !foundStart){
+            std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
+            currentSlide.x += stepX*0.5f;
+        }else{
+            foundEnd = true;
+        }
+
+        _targetBinder->Unbind();
+    }
+    std::cout << "[DICOMRenderer] will end search "<<currentSlide <<std::endl;
+
+    return frameData;
+}
+
+std::vector<Vec3f> DICOMRenderer::findFrameCorners(std::vector<Vec3f> data){
+    //finding the corners of the N shape
+    Vec3f topLeft(0,0,0);
+    Vec3f bottomLeft(0,1,1);
+    Vec3f topRight(0,0,0);
+    Vec3f bottomRight(0,1,1);
+
+    for(int i = 0; i < data.size();++i ){
+        if(data[i].y < 0.5f && data[i].z > 0.5f ){
+            if(data[i].z > topLeft.z)
+                topLeft = data[i];
+            //top left
+        }else if(data[i].y > 0.5f && data[i].z > 0.5f ){
+            if(data[i].z > topRight.z)
+                topRight = data[i];
+            //top right
+        }else if(data[i].y < 0.5f && data[i].z < 0.5f ){
+            if(data[i].z < bottomLeft.z)
+                bottomLeft = data[i];
+
+            //bottom left
+        }else if(data[i].y > 0.5f && data[i].z < 0.5f ){
+            if(data[i].z < bottomRight.z)
+                bottomRight = data[i];
+            //bottom right
+        }
+    }
+
+    //transform from "volumespace" to "geometry cube space/worldspace"
+    topLeft         -= 0.5f;
+    topRight        -= 0.5f;
+    bottomLeft      -= 0.5f;
+    bottomRight     -= 0.5f;
+
+    //push final frame position into vector vor later useage, allway clockwise
+    // TopLeft->TopRight->BottomRight->BottomLeft
+    std::vector<Vec3f> corners;
+    corners.push_back(topLeft);
+    corners.push_back(topRight);
+    corners.push_back(bottomRight);
+    corners.push_back(bottomLeft);
+
+    return corners;
+}
+
+void DICOMRenderer::renderFramePosition(){
+    Mat4f oldProjectionMatrix = _projection;
+    Mat4f oldViewMatrix = _view;
+    DICOMClipMode oldClipMode = _clipMode;
+    RenderMode current = _activeRenderMode;
+
+    _activeRenderMode = RenderMode::XAxis;
+
+    _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
+    _view.BuildLookAt(Vec3f(300,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
+
+    float stepsize = 0;
+    stepsize = _data->getCTScale().x*2;
+
+    _clipMode = DICOMClipMode::PlaneX;
+
+    drawCubeEntry(_rayEntryCT,_data->getCTWorld());
+
+    drawVolumeRayCast(  _rayCastColorCT,
+                        _rayCastPositionCT,
+                        _frameSearchShaderV2,
+                        _data->getCTWorld(),
+                        _rayEntryCT->GetTextureHandle(),
+                        _GL_CTVolume->GetGLID(),
+                        _transferFunctionTex->GetGLID(),
+                        _data->getCTTransferScaling(),
+                        true,
+                        stepsize);
+
+
+
+    _projection = oldProjectionMatrix;
+    _view = oldViewMatrix;
+    _clipMode = oldClipMode;
+    _activeRenderMode = current;
+}
+
+
 void DICOMRenderer::createFrameGeometry(std::vector<Vec3f> corners, int id){
     //create geometry
     float verts[3*2*3];
@@ -1711,3 +1906,43 @@ void DICOMRenderer::setDoesGradientDescent(bool doesGradientDescent)
     _doesGradientDescent = doesGradientDescent;
 }
 
+void DICOMRenderer::generateLeftFrameBoundingBox(Vec3f center, Vec3f scale){
+    Vec3f min(center.x-scale.x,center.y-scale.y,center.z-scale.z);
+    Vec3f max(center.x+scale.x,center.y+scale.y,center.z+scale.z);
+    _cubeLeftN = std::unique_ptr<GLBoundingBox>(new GLBoundingBox(min,max));
+}
+void DICOMRenderer::generateRightFrameBoundingBox(Vec3f center, Vec3f scale){
+    Vec3f min(center.x-scale.x,center.y-scale.y,center.z-scale.z);
+    Vec3f max(center.x+scale.x,center.y+scale.y,center.z+scale.z);
+    _cubeRightN = std::unique_ptr<GLBoundingBox>(new GLBoundingBox(min,max));
+}
+
+void DICOMRenderer::findGFrame(){
+    Vec3f lMin = _data->getLeftFBBCenter()-_data->getLeftFBBScale();
+    Vec3f lMax = _data->getLeftFBBCenter()+_data->getLeftFBBScale();
+
+    Vec3f rMin = _data->getRightFBBCenter()-_data->getRightFBBScale();
+    Vec3f rMax = _data->getRightFBBCenter()+_data->getRightFBBScale();
+
+    std::vector<Vec3f> left = findFrameV2(lMin.x, 1.0f/_data->getCTScale().x, Vec2f(0.45f,0.6f), lMin, lMax);
+    std::vector<Vec3f> right = findFrameV2(rMax.x, -1.0f/_data->getCTScale().x, Vec2f(0.45f,0.6f), rMin, rMax);
+
+    std::vector<Vec3f> leftCorners = findFrameCorners(left);
+    std::vector<Vec3f> rightCorners = findFrameCorners(right);
+
+
+    _data->setLeftMarker(leftCorners);
+    _data->setRightMarker(rightCorners);
+    if(_data->calculateCTUnitVectors()){
+        _data->setBFoundCTFrame(true);
+    }
+
+    // this has to be done if the frame was found
+    if(_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
+        createFrameGeometry(_data->getLeftMarker(),0);
+        createFrameGeometry(_data->getRightMarker(),1);
+    }
+
+    calculateElectrodeMatices();
+    _doFrameDetection = false;
+}

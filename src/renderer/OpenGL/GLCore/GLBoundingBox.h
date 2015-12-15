@@ -19,6 +19,7 @@ namespace Tuvok{
         class GLBoundingBox: public GLModel{
         public:
           GLBoundingBox();
+          GLBoundingBox(Core::Math::Vec3f min, Core::Math::Vec3f max);
           virtual ~GLBoundingBox();
           
         private:

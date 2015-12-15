@@ -10,6 +10,7 @@
 #include <renderwidget.h>
 
 #include <histogrammwidget.h>
+#include <framewidget.h>
 
 
 PlaningWidget::PlaningWidget(QWidget *parent) :
@@ -121,6 +122,8 @@ void PlaningWidget::on_Start_clicked()
 
     HistogrammWidget* hw = new HistogrammWidget(w,_dataHandle);
     hw->createHistogramms(_dataHandle->getCTHistogramm(),_dataHandle->getMRHistogramm());
+
+    FrameWidget* fw = new FrameWidget(w,_dataHandle);
 
     this->close();
 }

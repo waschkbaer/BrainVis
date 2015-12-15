@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     planingwidget.cpp \
     drivewidget.cpp \
     ctregistrationwidget.cpp \
-    histogrammwidget.cpp
+    histogrammwidget.cpp \
+    framewidget.cpp
 
 HEADERS  += mainwindow.h \
     renderwidget.h \
@@ -34,7 +35,8 @@ HEADERS  += mainwindow.h \
     planingwidget.h \
     drivewidget.h \
     ctregistrationwidget.h \
-    histogrammwidget.h
+    histogrammwidget.h \
+    framewidget.h
 
 FORMS    += mainwindow.ui \
     renderwidget.ui \
@@ -43,4 +45,5 @@ FORMS    += mainwindow.ui \
     planingwidget.ui \
     drivewidget.ui \
     ctregistrationwidget.ui \
-    histogrammwidget.ui
+    histogrammwidget.ui \
+    framewidget.ui

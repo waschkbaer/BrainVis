@@ -21,6 +21,7 @@ DataHandle::DataHandle():
     _CTeX(1,0,0),
     _CTeY(0,-1,0),
     _CTeZ(0,0,-1),
+    _CTCenter(0,0,0),
     _dataSetStatus(0),
     _spectralRange(1000000.0f,-1000000.0f),
     //_MRRotation(-0.1,0.03,0.07),
@@ -31,7 +32,11 @@ DataHandle::DataHandle():
     _fTranslationStep(4.0f),
     _fTranslationStepScale(0.75f),
     _fRotationStep(0.1f),
-    _fRotationStepScale(0.75f)
+    _fRotationStepScale(0.75f),
+    _leftFBBCenter(0.2f,0.5f,0.5f),
+    _rightFBBCenter(0.8f,0.5f,0.5f),
+    _leftFBBScale(0.05f,0.5f,0.5f),
+    _rightFBBScale(0.05f,0.5f,0.5f)
 {
     incrementStatus();
     createFFTColorImage();
@@ -236,6 +241,50 @@ void DataHandle::updateMRWorld(){
 
     incrementStatus();
 }
+Core::Math::Vec3f DataHandle::getRightFBBScale() const
+{
+    return _rightFBBScale;
+}
+
+void DataHandle::setRightFBBScale(const Core::Math::Vec3f &rightFBBScale)
+{
+    _rightFBBScale = rightFBBScale;
+    incrementStatus();
+}
+
+Core::Math::Vec3f DataHandle::getLeftFBBScale() const
+{
+    return _leftFBBScale;
+}
+
+void DataHandle::setLeftFBBScale(const Core::Math::Vec3f &leftFBBScale)
+{
+    _leftFBBScale = leftFBBScale;
+    incrementStatus();
+}
+
+Core::Math::Vec3f DataHandle::getRightFBBCenter() const
+{
+    return _rightFBBCenter;
+}
+
+void DataHandle::setRightFBBCenter(const Core::Math::Vec3f &rightFBBCenter)
+{
+    _rightFBBCenter = rightFBBCenter;
+    incrementStatus();
+}
+
+Core::Math::Vec3f DataHandle::getLeftFBBCenter() const
+{
+    return _leftFBBCenter;
+}
+
+void DataHandle::setLeftFBBCenter(const Core::Math::Vec3f &leftFBBCenter)
+{
+    _leftFBBCenter = leftFBBCenter;
+    incrementStatus();
+}
+
 float DataHandle::getGradient() const
 {
     return _gradient;
@@ -644,16 +693,40 @@ bool DataHandle::calculateCTUnitVectors(){
         return false;
     }
 
+
+    //derp!!
+    Vec3f d = _leftMarker[3]-_leftMarker[0]+_leftMarker[2]-_leftMarker[1]+_rightMarker[3]-_rightMarker[0]+_rightMarker[2]-_rightMarker[1];
+    d /= 4.0f;
+    std::cout <<"[DataHandle] testD L : "<< d.length() << " in worldspace avg "<< (_CTScale*d).length()<<std::endl;
+
+
+    //test length
+    std::cout << "[DataHandle] Length X l0r0 : "<< (_CTScale*_rightMarker[0]-_CTScale*_leftMarker[0]).length() <<std::endl;
+    std::cout << "[DataHandle] Length X l1r1 : "<< (_CTScale*_rightMarker[1]-_CTScale*_leftMarker[1]).length() <<std::endl;
+    std::cout << "[DataHandle] Length X l2r2 : "<< (_CTScale*_rightMarker[2]-_CTScale*_leftMarker[2]).length() <<std::endl;
+    std::cout << "[DataHandle] Length X l3r3 : "<< (_CTScale*_rightMarker[3]-_CTScale*_leftMarker[3]).length() <<std::endl;
+
+    std::cout << "[DataHandle] Length Z l0l3 : "<< (_CTScale*_leftMarker[3]-_CTScale*_leftMarker[0]).length() <<std::endl;
+    std::cout << "[DataHandle] Length Z l1l2 : "<< (_CTScale*_leftMarker[2]-_CTScale*_leftMarker[1]).length() <<std::endl;
+    std::cout << "[DataHandle] Length Z r0r3 : "<< (_CTScale*_rightMarker[3]-_CTScale*_rightMarker[0]).length() <<std::endl;
+    std::cout << "[DataHandle] Length Z r1r3 : "<< (_CTScale*_rightMarker[2]-_CTScale*_rightMarker[1]).length() <<std::endl;
+
+    std::cout << "[DataHandle] Length Y l1l0 : "<< (_CTScale*_leftMarker[0]-_CTScale*_leftMarker[1]).length() <<std::endl;
+    std::cout << "[DataHandle] Length Y l2l3 : "<< (_CTScale*_leftMarker[3]-_CTScale*_leftMarker[2]).length() <<std::endl;
+    std::cout << "[DataHandle] Length Y r1r0 : "<< (_CTScale*_rightMarker[0]-_CTScale*_rightMarker[1]).length() <<std::endl;
+    std::cout << "[DataHandle] Length Y r2r3 : "<< (_CTScale*_rightMarker[3]-_CTScale*_rightMarker[2]).length() <<std::endl;
+
+
     Mat4f worldScaling;
     worldScaling.Scaling(_CTScale);
 
-    _CTeX = (_rightMarker[0]-_leftMarker[0]+_rightMarker[1]-_leftMarker[1]+_rightMarker[2]-_leftMarker[2]+_rightMarker[3]-_leftMarker[3]);
+    _CTeX = (_CTScale*_rightMarker[0]-_CTScale*_leftMarker[0]+_CTScale*_rightMarker[1]-_CTScale*_leftMarker[1]+_CTScale*_rightMarker[2]-_CTScale*_leftMarker[2]+_CTScale*_rightMarker[3]-_CTScale*_leftMarker[3]);
     _CTeX.normalize();
 
-    _CTeZ = _leftMarker[3]-_leftMarker[0]+_leftMarker[2]-_leftMarker[1]+_rightMarker[3]-_rightMarker[0]+_rightMarker[2]-_rightMarker[1];
+    _CTeZ = _CTScale*_leftMarker[3]-_CTScale*_leftMarker[0]+_CTScale*_leftMarker[2]-_CTScale*_leftMarker[1]+_CTScale*_rightMarker[3]-_CTScale*_rightMarker[0]+_CTScale*_rightMarker[2]-_CTScale*_rightMarker[1];
     _CTeZ.normalize();
 
-    _CTeY = _leftMarker[0]-_leftMarker[1]+_leftMarker[3]-_leftMarker[2]+_rightMarker[0]-_rightMarker[1]+_rightMarker[3]-_rightMarker[2];
+    _CTeY = _CTScale*_leftMarker[0]-_CTScale*_leftMarker[1]+_CTScale*_leftMarker[3]-_CTScale*_leftMarker[2]+_CTScale*_rightMarker[0]-_CTScale*_rightMarker[1]+_CTScale*_rightMarker[3]-_CTScale*_rightMarker[2];
     _CTeY.normalize();
 
     //center is equal to (100,100,100)

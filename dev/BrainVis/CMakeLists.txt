@@ -32,6 +32,7 @@ QT5_WRAP_UI(UIS_HDRS planingwidget.ui)
 QT5_WRAP_UI(UIS_HDRS drivewidget.ui)
 QT5_WRAP_UI(UIS_HDRS ctregistrationwidget.ui)
 QT5_WRAP_UI(UIS_HDRS histogrammwidget.ui)
+QT5_WRAP_UI(UIS_HDRS framewidget.ui)
 
 add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc)
 

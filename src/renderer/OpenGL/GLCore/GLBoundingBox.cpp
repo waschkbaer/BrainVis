@@ -116,6 +116,42 @@ static int xAxisIndicies[8]{
 GLBoundingBox::GLBoundingBox(){
   Initialize(CubeData, CubeIndicies, 24, 24);
 }
+
+GLBoundingBox::GLBoundingBox(Core::Math::Vec3f min, Core::Math::Vec3f max){
+
+    std::vector<Core::Math::Vec3f> Cube;
+
+    Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
+
+    Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
+
+    Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
+    Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
+
+    Initialize(&(Cube[0].x), CubeIndicies, 24, 24);
+}
+
+
 GLBoundingBox::~GLBoundingBox(){}
 
 GLBoundingQuad::GLBoundingQuad(float* data){

@@ -197,6 +197,18 @@ public:
 
     float getGradient() const;
 
+    Core::Math::Vec3f getLeftFBBCenter() const;
+    void setLeftFBBCenter(const Core::Math::Vec3f &leftFBBCenter);
+
+    Core::Math::Vec3f getRightFBBCenter() const;
+    void setRightFBBCenter(const Core::Math::Vec3f &rightFBBCenter);
+
+    Core::Math::Vec3f getLeftFBBScale() const;
+    void setLeftFBBScale(const Core::Math::Vec3f &leftFBBScale);
+
+    Core::Math::Vec3f getRightFBBScale() const;
+    void setRightFBBScale(const Core::Math::Vec3f &rightFBBScale);
+
 private:
     void updateMRWorld();
 
@@ -229,6 +241,11 @@ private:
     bool                                            _bFoundCTFrame;
     std::vector<Core::Math::Vec3f>                  _leftMarker;
     std::vector<Core::Math::Vec3f>                  _rightMarker;
+    Core::Math::Vec3f                               _leftFBBCenter;
+    Core::Math::Vec3f                               _rightFBBCenter;
+    Core::Math::Vec3f                               _leftFBBScale;
+    Core::Math::Vec3f                               _rightFBBScale;
+
 
     //Planing Vars
     Core::Math::Vec3f                               _vAC;

@@ -201,3 +201,7 @@ void RenderWidget::closeEvent(QCloseEvent *bar){
         w->removeRenderer(_renderID);
     }
 }
+
+void RenderWidget::startFrameFind(){
+    ui->openGLWidget->startFrameFind();
+}

@@ -238,3 +238,7 @@ void OpenGLWidget::changeSlide(int slidedelta){
 void OpenGLWidget::zoom(int zoomdelta){
     _renderer->ZoomTwoD(zoomdelta);
 }
+
+void OpenGLWidget::startFrameFind(){
+    _renderer->setDoFrameDetection(true);
+}
