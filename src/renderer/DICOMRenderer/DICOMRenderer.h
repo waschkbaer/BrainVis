@@ -136,19 +136,13 @@ private:
         void drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT = true,bool full = true, bool noCTBones = false);
 
         //G-Frame-------------------------------------------------------------------
-        bool _foundFrame;
-        Vec3f                    _center;
-        std::vector<Vec3f> findFrame(float startX = 0.0f, float stepX = 1.0f, Vec2f range = Vec2f(0.45f,0.6f));
-        void frameSlicing(Vec2f range);
-        void createFrameGeometry(std::vector<Vec3f> corners, int id= 0);
-        void searchGFrame(Vec2f range = Vec2f(0.45f,0.6f));
-
-        //G-Framev2
-        std::vector<Vec3f> findFrameV2(float startX = 0.0f, float stepX = 1.0f, Vec2f range = Vec2f(0.45f,0.6f), Vec3f minBox = Vec3f(0,0,0), Vec3f maxBox = Vec3f(1,1,1));
+        std::vector<Vec3f> findFrame(float startX = 0.0f, float stepX = 1.0f, Vec2f range = Vec2f(0.45f,0.6f), Vec3f minBox = Vec3f(0,0,0), Vec3f maxBox = Vec3f(1,1,1));
         std::vector<Vec3f> findFrameCorners(std::vector<Vec3f> data);
         void renderFramePosition();
         void generateLeftFrameBoundingBox(Vec3f center, Vec3f scale);
         void generateRightFrameBoundingBox(Vec3f center, Vec3f scale);
+        void createFrameGeometry(std::vector<Vec3f> corners, int id= 0);
+
 
         //utils
         void ClearBackground(Vec4f color);
@@ -184,7 +178,6 @@ private:
         std::shared_ptr<GLProgram>      _lineShader;
         std::shared_ptr<GLProgram>      _sphereFFTShader;
         std::shared_ptr<GLProgram>      _frameSearchShader;
-        std::shared_ptr<GLProgram>      _frameSearchShaderV2;
         std::shared_ptr<GLProgram>      _electrodeGeometryShader;
 
         //geometry-----------------------------------------------
@@ -231,9 +224,7 @@ private:
         //projection/view matrices
         Vec2ui                          _windowSize;
         Mat4f                           _projection;
-        Mat4f                           _orthographicXAxis;
         Mat4f                           _view;
-        Mat4f                           _viewX;
 
         std::unique_ptr<Camera>         _camera;
 

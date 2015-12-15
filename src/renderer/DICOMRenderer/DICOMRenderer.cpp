@@ -56,8 +56,6 @@ _windowSize(512,512),
 _GL_CTVolume(nullptr),
 _GL_MRVolume(nullptr),
 _camera(new Camera(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1))),
-_foundFrame(false),
-_viewX(),
 _datasetStatus(0),
 _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
@@ -149,7 +147,7 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
     // if this is the first renderer we have to search the G-Frame to
     // calculate the center of the scan
     if(!_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
-       searchGFrame();
+       //searchGFrame();
 
        // start slice is the center -> maybe change to center of frame!
        _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
@@ -175,16 +173,6 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
 
 
     //calculateRotation();
-}
-
-void DICOMRenderer::searchGFrame(Vec2f range){
-    //findFrameV2(0.0f,1.0f/_data->getCTScale().x,range,Vec3f(0.1,0,0),Vec3f(0.4,0,0));
-    /*_data->setBFoundCTFrame(false);
-    _data->setLeftMarker(findFrame(0.0f,1.0f,range));
-    _data->setRightMarker(findFrame(1.0f,-1.0f,range));
-    if(_data->calculateCTUnitVectors()){
-        _data->setBFoundCTFrame(true);
-    }*/
 }
 
 void DICOMRenderer::ChangeSlide(int slidedelta){
@@ -422,18 +410,10 @@ bool DICOMRenderer::LoadShaderResources(){
 
     vs.clear();
     fs.clear();
-    vs.push_back("Shader/FrameFindVertex.glsl");
-    fs.push_back("Shader/FrameFindFragment.glsl");
-    sd = ShaderDescriptor(vs,fs);
-    if(!LoadAndCheckShaders(_frameSearchShader,sd)) return false;
-    checkForErrorCodes("@ Load GFrameShader");
-
-    vs.clear();
-    fs.clear();
     vs.push_back("Shader/RayCasterVertex.glsl");
     fs.push_back("Shader/FrameFragment.glsl");
     sd = ShaderDescriptor(vs,fs);
-    if(!LoadAndCheckShaders(_frameSearchShaderV2,sd)) return false;
+    if(!LoadAndCheckShaders(_frameSearchShader,sd)) return false;
     checkForErrorCodes("@ Load GFrameShader");
 
     vs.clear();
@@ -1344,43 +1324,6 @@ void DICOMRenderer::drawSliceCompositing(){
 }
 
 
-void DICOMRenderer::frameSlicing(Vec2f range){
-    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-
-    ClearBackground(Vec4f(0,0,0,0));
-
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    if(_GL_CTVolume != nullptr){
-        Mat4f scale;
-        Mat4f translation;
-        Mat4f world;
-
-        float longest = std::max(_data->getCTScale().x,std::max(_data->getCTScale().y,_data->getCTScale().z));
-
-        translation.Translation(_data->getCTOffset().y,_data->getCTOffset().z,0);
-        scale.Scaling(Vec3f(_data->getCTScale().y/longest,_data->getCTScale().z/longest,1));
-        world = scale*translation;
-
-        _frameSearchShader->Enable();
-
-        _frameSearchShader->SetTexture3D("volume",_GL_CTVolume->GetGLID(),0);
-        _frameSearchShader->Set("tfScaling",_data->getCTTransferScaling());
-        _frameSearchShader->Set("world",world);
-        _frameSearchShader->Set("projection",_orthographicXAxis);
-        _frameSearchShader->Set("slide",_data->getSelectedSlices().x);
-        _frameSearchShader->Set("frameRange",range);
-
-        _renderPlane->paint();
-
-        _frameSearchShader->Disable();
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
-}
-
 
 void DICOMRenderer::updateTransferFunction(){
     std::vector<Core::Math::Vec4f> tf = *(_data->getTransferFunction().get());
@@ -1434,143 +1377,7 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
 Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
-
-std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range){
-    bool firstFindEnd = false;
-    bool firstFindStart = false;
-    bool foundOnSlice = false;
-    std::vector<Vec4ui8> framebuffer;
-    std::vector<Vec3f> framePosition;
-    Vec3f curValue;
-    Vec3f currentSlices(startX,0,0);
-
-    _data->setSelectedSlices(currentSlices);
-    //_activeRenderMode = RenderMode::XAxis;
-    while(!firstFindEnd){
-        //render x slice
-        //SliceRendering(1);
-        frameSlicing(range);
-
-        //read framebuffer
-        framebuffer.clear();
-        framebuffer.resize(_windowSize.x*_windowSize.y);
-        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&(framebuffer[0]));
-
-
-
-        foundOnSlice = false;
-        for(int i = 0; i < framebuffer.size();++i){
-            curValue = Vec3f((float)framebuffer[i].x/255.0f,(float)framebuffer[i].y/255.0f,(float)framebuffer[i].z/255.0f);
-            if(curValue.x == 0.0f && curValue.y == 1.0f && curValue.z == 1.0f){
-                //not frame
-            }else if(curValue.x == 0.0f && curValue.y == 0.0f && curValue.z == 0.0f){
-                //not part of volume
-            }else {
-                foundOnSlice = true;
-                framePosition.push_back(curValue);
-            }
-        }
-        /*if(foundOnSlice){
-          screenshot(counter++);
-        }*/
-
-
-
-        //go to next slice
-        currentSlices = _data->getSelectedSlices();
-        currentSlices.x += stepX * (1.0f/(float)_data->getCTDimensions().x);
-        _data->setSelectedSlices(currentSlices);
-
-        if(foundOnSlice && !firstFindStart){
-            firstFindStart = true;
-        }
-        if(!foundOnSlice && firstFindStart){
-            firstFindEnd = true;
-        }
-    }
-
-
-    //creating clusters
-    float minDistance = 0.05f;
-    bool foundN = false;
-    std::vector<Vec3f> cluster;
-
-    cluster.push_back(framePosition[framePosition.size()/2]);
-    framePosition.erase(framePosition.begin());
-
-    int frameCount = framePosition.size();
-    do{
-        foundN = false;
-        for(int c = 0; c < cluster.size();++c){
-            Vec3f cPos = cluster[c];
-                frameCount = framePosition.size();
-                for(int i = 0; i < frameCount;i++){
-                    Vec3f fPos = framePosition[i];
-                    float length = (fPos-cPos).length();
-                    if(length < minDistance){
-                        cluster.push_back(fPos);
-                        foundN = true;
-                        framePosition.erase(framePosition.begin()+i);
-                        frameCount--;
-                        i--;
-                    }
-                }
-        }
-    }while(foundN);
-    std::cout << framePosition.size() << "LEFT ELEMENTS IN FRAMEPOSITION WITH ONLY ONE CLUSTER!!!"<<std::endl;
-    std::cout << cluster.size() << "ELEMENTS IN CLUSTER"<<std::endl;
-
-    framePosition = cluster;
-
-
-    //finding the corners of the N shape
-    Vec3f topLeft(0,0,0);
-    Vec3f bottomLeft(0,1,1);
-    Vec3f topRight(0,0,0);
-    Vec3f bottomRight(0,1,1);
-
-    for(int i = 0; i < framePosition.size();++i ){
-        if(framePosition[i].y < 0.5f && framePosition[i].z > 0.5f ){
-            if(framePosition[i].z > topLeft.z)
-                topLeft = framePosition[i];
-            //top left
-        }else if(framePosition[i].y > 0.5f && framePosition[i].z > 0.5f ){
-            if(framePosition[i].z > topRight.z)
-                topRight = framePosition[i];
-            //top right
-        }else if(framePosition[i].y < 0.5f && framePosition[i].z < 0.5f ){
-            if(framePosition[i].z < bottomLeft.z)
-                bottomLeft = framePosition[i];
-
-            //bottom left
-        }else if(framePosition[i].y > 0.5f && framePosition[i].z < 0.5f ){
-            if(framePosition[i].z < bottomRight.z)
-                bottomRight = framePosition[i];
-            //bottom right
-        }
-    }
-
-    //transform from "volumespace" to "geometry cube space/worldspace"
-    topLeft         -= 0.5f;
-    topRight        -= 0.5f;
-    bottomLeft      -= 0.5f;
-    bottomRight     -= 0.5f;
-
-    //push final frame position into vector vor later useage, allway clockwise
-    // TopLeft->TopRight->BottomRight->BottomLeft
-    std::vector<Vec3f> corners;
-    corners.push_back(topLeft);
-    corners.push_back(topRight);
-    corners.push_back(bottomRight);
-    corners.push_back(bottomLeft);
-
-    return corners;
-}
-
-
-std::vector<Vec3f> DICOMRenderer::findFrameV2(float startX, float stepX, Vec2f range, Vec3f minBox, Vec3f maxBox){
+std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range, Vec3f minBox, Vec3f maxBox){
     //variable declaration
     bool foundStart = false;
     bool foundEnd = false;
@@ -1582,10 +1389,10 @@ std::vector<Vec3f> DICOMRenderer::findFrameV2(float startX, float stepX, Vec2f r
     framebuffer.resize(_windowSize.x*_windowSize.y);
 
 
-    _frameSearchShaderV2->Enable();
-    _frameSearchShaderV2->Set("minBox",minBox);
-    _frameSearchShaderV2->Set("maxBox",maxBox);
-    _frameSearchShaderV2->Disable();
+    _frameSearchShader->Enable();
+    _frameSearchShader->Set("minBox",minBox);
+    _frameSearchShader->Set("maxBox",maxBox);
+    _frameSearchShader->Disable();
 
     std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
     while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
@@ -1696,7 +1503,7 @@ void DICOMRenderer::renderFramePosition(){
 
     drawVolumeRayCast(  _rayCastColorCT,
                         _rayCastPositionCT,
-                        _frameSearchShaderV2,
+                        _frameSearchShader,
                         _data->getCTWorld(),
                         _rayEntryCT->GetTextureHandle(),
                         _GL_CTVolume->GetGLID(),
@@ -1924,8 +1731,8 @@ void DICOMRenderer::findGFrame(){
     Vec3f rMin = _data->getRightFBBCenter()-_data->getRightFBBScale();
     Vec3f rMax = _data->getRightFBBCenter()+_data->getRightFBBScale();
 
-    std::vector<Vec3f> left = findFrameV2(lMin.x, 1.0f/_data->getCTScale().x, Vec2f(0.45f,0.6f), lMin, lMax);
-    std::vector<Vec3f> right = findFrameV2(rMax.x, -1.0f/_data->getCTScale().x, Vec2f(0.45f,0.6f), rMin, rMax);
+    std::vector<Vec3f> left = findFrame(lMin.x, 1.0f/_data->getCTScale().x, Vec2f(0.45f,0.6f), lMin, lMax);
+    std::vector<Vec3f> right = findFrame(rMax.x, -1.0f/_data->getCTScale().x, Vec2f(0.45f,0.6f), rMin, rMax);
 
     std::vector<Vec3f> leftCorners = findFrameCorners(left);
     std::vector<Vec3f> rightCorners = findFrameCorners(right);
