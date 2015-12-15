@@ -78,11 +78,11 @@ void FrameWidget::on_sUD_sliderMoved(int position)
 {
     if(ui->leftActive->isChecked()){
         Vec3f curScale = _data->getLeftFBBScale();
-        curScale.z = (position/1000.0f);
+        curScale.z = (position/500.0f);
         _data->setLeftFBBScale(curScale);
     }else{
         Vec3f curScale = _data->getRightFBBScale();
-        curScale.z = (position/1000.0f);
+        curScale.z = (position/500.0f);
         _data->setRightFBBScale(curScale);
     }
 }
@@ -91,11 +91,11 @@ void FrameWidget::on_sLR_sliderMoved(int position)
 {
     if(ui->leftActive->isChecked()){
         Vec3f curScale = _data->getLeftFBBScale();
-        curScale.x = (position/1000.0f);
+        curScale.x = (position/500.0f);
         _data->setLeftFBBScale(curScale);
     }else{
         Vec3f curScale = _data->getRightFBBScale();
-        curScale.x = (position/1000.0f);
+        curScale.x = (position/500.0f);
         _data->setRightFBBScale(curScale);
     }
 }
@@ -104,11 +104,11 @@ void FrameWidget::on_sFB_sliderMoved(int position)
 {
     if(ui->leftActive->isChecked()){
         Vec3f curScale = _data->getLeftFBBScale();
-        curScale.y = (position/1000.0f);
+        curScale.y = (position/500.0f);
         _data->setLeftFBBScale(curScale);
     }else{
         Vec3f curScale = _data->getRightFBBScale();
-        curScale.y = (position/1000.0f);
+        curScale.y = (position/500.0f);
         _data->setRightFBBScale(curScale);
     }
 }
@@ -120,18 +120,18 @@ void FrameWidget::setSliders(){
         ui->mLR->setValue(_data->getLeftFBBCenter().x*1000);
         ui->mUD->setValue(_data->getLeftFBBCenter().y*1000);
 
-        ui->sFB->setValue(_data->getLeftFBBCenter().y*1000);
-        ui->sLR->setValue(_data->getLeftFBBCenter().x*1000);
-        ui->sUD->setValue(_data->getLeftFBBCenter().y*1000);
+        ui->sFB->setValue(_data->getLeftFBBCenter().y*500);
+        ui->sLR->setValue(_data->getLeftFBBCenter().x*500);
+        ui->sUD->setValue(_data->getLeftFBBCenter().y*500);
 
     }else{
         ui->mFB->setValue(_data->getRightFBBCenter().y*1000);
         ui->mLR->setValue(_data->getRightFBBCenter().x*1000);
         ui->mUD->setValue(_data->getRightFBBCenter().y*1000);
 
-        ui->sFB->setValue(_data->getRightFBBCenter().y*1000);
-        ui->sLR->setValue(_data->getRightFBBCenter().x*1000);
-        ui->sUD->setValue(_data->getRightFBBCenter().y*1000);
+        ui->sFB->setValue(_data->getRightFBBCenter().y*500);
+        ui->sLR->setValue(_data->getRightFBBCenter().x*500);
+        ui->sUD->setValue(_data->getRightFBBCenter().y*500);
 
     }
 }
