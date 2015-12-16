@@ -36,7 +36,8 @@ DataHandle::DataHandle():
     _leftFBBCenter(0.2f,0.5f,0.5f),
     _rightFBBCenter(0.8f,0.5f,0.5f),
     _leftFBBScale(0.05f,0.25f,0.5f),
-    _rightFBBScale(0.05f,0.25f,0.5f)
+    _rightFBBScale(0.05f,0.25f,0.5f),
+    _mriValue(0)
 {
     incrementStatus();
     createFFTColorImage();
@@ -241,6 +242,11 @@ void DataHandle::updateMRWorld(){
 
     incrementStatus();
 }
+uint16_t DataHandle::getMriValue() const
+{
+    return _mriValue;
+}
+
 Core::Math::Vec3f DataHandle::getRightFBBScale() const
 {
     return _rightFBBScale;
@@ -409,6 +415,11 @@ void DataHandle::setSelectedSlices(Core::Math::Vec3f slides)
                                         distance.y * getCTeY() +
                                         distance.z * getCTeZ())+ Vec3f(100,100,100);
     _vSelectedWorldSpacePositon = worldSpacePosition.xyz();
+
+    //calc mr volumespace
+    Mat4f invWorld = this->getMRWorld().inverse();
+    Vec4f mrSpace = worldSpacePosition*invWorld;
+    _mriValue = _MRVolume->getValue(Vec3f(mrSpace.x+0.5f,mrSpace.y+0.5f,mrSpace.z+0.5f));
 
     incrementStatus();
 }

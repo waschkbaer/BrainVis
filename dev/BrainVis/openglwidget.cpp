@@ -200,13 +200,14 @@ void OpenGLWidget::renderFont(){
         _fontImage->drawText(2,28,rightElec);
 
         _fontImage->setFontColor(255,255,0);
-        std::string pickPosition = "Picking ("+
+        std::string pickPosition = "targeted ("+
                                     std::to_string(_data->getSelectedCTSpacePosition().x)+
                                     ","+
                                     std::to_string(_data->getSelectedCTSpacePosition().y)+
                                     ","+
                                     std::to_string(_data->getSelectedCTSpacePosition().z)+
-                                    ")";
+                                    ") MR Value: "+
+                                    std::to_string(_data->getMriValue());
 
         _fontImage->drawText(2,height()-2,pickPosition);
         _fontImage->finishText();

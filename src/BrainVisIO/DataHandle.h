@@ -209,6 +209,8 @@ public:
     Core::Math::Vec3f getRightFBBScale() const;
     void setRightFBBScale(const Core::Math::Vec3f &rightFBBScale);
 
+    uint16_t getMriValue() const;
+
 private:
     void updateMRWorld();
 
@@ -272,6 +274,7 @@ private:
 
     //status, used for sheduling repaints!
     uint64_t                                        _dataSetStatus;
+    uint16_t                                        _mriValue;
 
     //networklayer -> soon better
     bool                                            _usesNetworkMER;

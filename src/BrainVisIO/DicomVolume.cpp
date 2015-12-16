@@ -129,3 +129,28 @@ void DicomVolume::exportJPGFiles(std::string& path){
     }
 }
 
+uint16_t DicomVolume::getValue(Core::Math::Vec3f volumePosition){
+    if(volumePosition.x > 1.0f || volumePosition.x <0.0f ||
+            volumePosition.y > 1.0f || volumePosition.y < 0.0f ||
+            volumePosition.z > 1.0f || volumePosition.z < 0.0f ){
+        return 0;
+    }
+
+
+  Core::Math::Vec3f arrayPos = volumePosition*Vec3f(m_vDimensions.x-1,m_vDimensions.y-1,m_vDimensions.z-1);
+  Core::Math::Vec3ui arrayIndex = Vec3ui(arrayPos.x+0.5f,arrayPos.y+0.5f,arrayPos.z+0.5f);
+
+  int index = m_vDimensions.x*m_vDimensions.y*arrayIndex.z +
+                m_vDimensions.x * arrayIndex.y +
+                arrayIndex.x;
+
+
+  uint16_t value = m_vData[index];
+
+  /*std::cout <<"[DICOMVolume] array index"<< index<<std::endl;
+  std::cout <<"[DICOMVolume] array float"<< arrayPos<<std::endl;
+  std::cout <<"[DICOMVolume] array int"<< arrayIndex<<std::endl;
+  std::cout <<"[DICOMVolume] elements"<< m_vDimensions<<std::endl;
+  std::cout << "[DicomVolume] VALUE: "<< value << std::endl;*/
+  return value;
+}

@@ -27,6 +27,8 @@ public:
   Core::Math::Vec3ui   getDimensions() const {return m_vDimensions;}
   Core::Math::Vec3f    getAspectRatio() const {return m_vAspectRatio;}
 
+  uint16_t             getValue(Core::Math::Vec3f volumePosition);
+
 protected:
   // initializes volume data from a path
   bool initData(std::string& DICOMpath);
