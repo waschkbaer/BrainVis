@@ -169,9 +169,6 @@ void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
 
     calculateElectrodeMatices();
     sheduleRepaint();
-
-
-    //calculateRotation();
 }
 
 void DICOMRenderer::ChangeSlide(int slidedelta){
@@ -786,12 +783,10 @@ void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
     transT = scaleT*transT;
 
     _frontFaceShader->Set("worldMatrix",transT);
-    //_volumeBox->paint();
+    _volumeBox->paint();
 
-
-    Vec3f AC(98.5,112.9,102.4);
-    Vec3f PC(98.1,85.2,106.3);
-
+    Vec3f AC = _data->getAC();
+    Vec3f PC = _data->getPC();
 
     AC = AC-Vec3f(100,100,100);
     PC = PC-Vec3f(100,100,100);
@@ -818,7 +813,7 @@ void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
     _frontFaceShader->Set("worldMatrix",transT);
     _sphere->paint();
 
-    transT.Translation(_ACMRWorldPosition);
+    /*transT.Translation(_ACMRWorldPosition);
     transT = scaleT*transT;
 
     _frontFaceShader->Set("worldMatrix",transT);
@@ -828,7 +823,7 @@ void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
     transT = scaleT*transT;
 
     _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
+    _volumeBox->paint();*/
 
 
 
@@ -1657,51 +1652,6 @@ void DICOMRenderer::calculateElectrodeMatices(){
     _electrodeRightMatix = S*U;
 }
 
-
-void DICOMRenderer::calculateRotation(){
-    Vec3f ACstx(98.5f,112.9f,102.4f);
-    Vec3f PCstx(98.1f,85.2f,106.3f);
-
-    ACstx -= Vec3f(100,100,100);
-    PCstx -= Vec3f(100,100,100);
-
-    ACstx = ACstx.x*_data->getCTeX()+
-            ACstx.y*_data->getCTeY()+
-            ACstx.z*_data->getCTeZ()+
-            _data->getCTCenter()*_data->getCTScale();
-
-    PCstx = PCstx.x*_data->getCTeX()+
-            PCstx.y*_data->getCTeY()+
-            PCstx.z*_data->getCTeZ()+
-            _data->getCTCenter()*_data->getCTScale();
-
-    Vec3f ACmr(0.490196,0.470588,0.682275);
-    Vec3f PCmr(0.494118,0.588235,0.647059);
-
-    ACmr -= Vec3f(0.5f,0.5f,0.5f);
-    PCmr -= Vec3f(0.5f,0.5f,0.5f);
-
-    ACmr*= _data->getMRScale();
-    PCmr*= _data->getMRScale();
-
-    float length = (ACmr-PCmr).length();
-
-    std::cout << "AC MR"<< ACmr << std::endl;
-    std::cout << "PC MR"<< PCmr << std::endl;
-    std::cout << "MR LENGTH"<< length << std::endl;
-
-    std::cout << "AC STX"<< ACstx << std::endl;
-    std::cout << "PC STX"<< PCstx << std::endl;
-    std::cout << "STX LENGTH"<< (ACstx-PCstx).length() << std::endl;
-
-    Vec3f ACmrstxTranslation = ACstx-ACmr;
-
-     std::cout << "AC translation"<< ACmrstxTranslation << std::endl;
-
-    _ACMRWorldPosition = ACmr;
-    _PCMRWorldPosition = PCmr;
-    _data->setMROffset(ACmrstxTranslation);
-}
 bool DICOMRenderer::doesGradientDescent() const
 {
     return _doesGradientDescent;

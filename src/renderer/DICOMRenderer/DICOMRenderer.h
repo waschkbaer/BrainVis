@@ -147,7 +147,6 @@ private:
         //utils
         void ClearBackground(Vec4f color);
         void updateTransferFunction();
-        void calculateRotation();
         float gradientDecentStep();
         float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
         void calculateElectrodeMatices();

@@ -9,6 +9,8 @@
 #include "ui_mainwindow.h"
 
 #include "renderwidget.h"
+#include "framewidget.h"
+#include "histogrammwidget.h"
 
 #include "ModiSingleton.h"
 #include "planingwidget.h"
@@ -21,7 +23,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _reloadData(true),
-    _renderIDCounter(0)
+    _renderIDCounter(0),
+    _histogramm(nullptr),
+    _frame(nullptr),
+    _driveWidget(nullptr),
+    _registrationWidget(nullptr)
 {
     ui->setupUi(this);
     showMaximized();
@@ -181,5 +187,20 @@ void MainWindow::on_actionDrive_Tool_triggered()
 {
     if(_data != nullptr && _driveWidget == nullptr){
         _driveWidget = std::make_shared<DriveWidget>(this,_data);
+    }
+}
+
+void MainWindow::on_actionHistogramm_triggered()
+{
+    if(_data != nullptr && _histogramm == nullptr){
+        _histogramm = std::make_shared<HistogrammWidget>(this,_data);
+        _histogramm->createHistogramms(_data->getCTHistogramm(),_data->getMRHistogramm());
+    }
+}
+
+void MainWindow::on_actionFrame_Detection_triggered()
+{
+    if(_data != nullptr && _frame == nullptr){
+        _frame = std::make_shared<FrameWidget>(this,_data);
     }
 }

@@ -15,6 +15,8 @@ class RenderWidget;
 class CtRegistrationWidget;
 class DataHandle;
 class DriveWidget;
+class HistogrammWidget;
+class FrameWidget;
 /*!
  * \brief The MainWindow acts as a central hub for all widgets
  *
@@ -120,6 +122,10 @@ private slots:
 
     void on_actionDrive_Tool_triggered();
 
+    void on_actionHistogramm_triggered();
+
+    void on_actionFrame_Detection_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -131,6 +137,9 @@ private:
 
     std::shared_ptr<CtRegistrationWidget>               _registrationWidget;
     std::shared_ptr<DriveWidget>                        _driveWidget;
+
+    std::shared_ptr<HistogrammWidget>                   _histogramm;
+    std::shared_ptr<FrameWidget>                        _frame;
 };
 
 #endif // MAINWINDOW_H

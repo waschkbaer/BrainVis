@@ -120,10 +120,10 @@ void PlaningWidget::on_Start_clicked()
 
     w->createNewRenderWidger();
 
-    HistogrammWidget* hw = new HistogrammWidget(w,_dataHandle);
+    /*HistogrammWidget* hw = new HistogrammWidget(w,_dataHandle);
     hw->createHistogramms(_dataHandle->getCTHistogramm(),_dataHandle->getMRHistogramm());
 
-    FrameWidget* fw = new FrameWidget(w,_dataHandle);
+    FrameWidget* fw = new FrameWidget(w,_dataHandle);*/
 
     this->close();
 }

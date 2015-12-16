@@ -122,6 +122,8 @@
    <addaction name="actionRegistration"/>
    <addaction name="actionNewRenderer"/>
    <addaction name="actionDrive_Tool"/>
+   <addaction name="actionHistogramm"/>
+   <addaction name="actionFrame_Detection"/>
   </widget>
   <action name="actionAdd_RenderWidget">
    <property name="text">
@@ -295,6 +297,36 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+Z</string>
+   </property>
+  </action>
+  <action name="actionHistogramm">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/histogramm.png</normaloff>Buttons/histogramm.png</iconset>
+   </property>
+   <property name="text">
+    <string>Histogramm</string>
+   </property>
+   <property name="toolTip">
+    <string>Displays the Histogramm of CT and MRI</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+H</string>
+   </property>
+  </action>
+  <action name="actionFrame_Detection">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/frame.png</normaloff>Buttons/frame.png</iconset>
+   </property>
+   <property name="text">
+    <string>Frame Detection</string>
+   </property>
+   <property name="toolTip">
+    <string>Widget for the detection of the GFrame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+F</string>
    </property>
   </action>
  </widget>
