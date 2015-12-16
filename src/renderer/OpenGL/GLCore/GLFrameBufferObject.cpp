@@ -163,6 +163,7 @@ GLFBOTex::~GLFBOTex(void) {
   m_hDepthBuffer=0;
   --m_iCount;
   if (m_iCount==0) {
+      std::cout << "delete FBO"<<std::endl;
     glDeleteFramebuffersEXT(1,&m_hFBO);
     m_hFBO=0;
   }

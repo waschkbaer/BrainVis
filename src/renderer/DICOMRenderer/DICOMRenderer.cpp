@@ -62,7 +62,13 @@ _electrodeGeometry(nullptr),
 _vZoom(1,1,1),
 _needsUpdate(true),
 _doesGradientDescent(false),
-_doFrameDetection(false)
+_doFrameDetection(false),
+_displayFrameBoundingBox(true),
+_displayBoundingBox(true),
+_displayFrame(true),
+_displayCenterACPC(true),
+_displayThreeDCursor(true),
+_displayTwoDCursor(true)
 {
 }
 
@@ -88,7 +94,26 @@ void DICOMRenderer::Initialize(){
 }
 
 void DICOMRenderer::Cleanup(){
+    _GL_MRVolume->Delete();
+    _GL_CTVolume->Delete();
+    _transferFunctionTex->Delete();
+    _FFTColor->Delete();
+    _FontTexture->Delete();
 
+    _volumeBox = nullptr;
+    _renderPlane = nullptr;
+    _electrodeGeometry = nullptr;
+    _boundingBox = nullptr;
+    _sphere = nullptr;
+    _XAxisSlice = nullptr;
+    _YAxisSlice = nullptr;
+    _ZAxisSlice = nullptr;
+    _NShape1 = nullptr;
+    _NShape2 = nullptr;
+    _cubeLeftN = nullptr;
+    _cubeRightN = nullptr;
+
+    _targetBinder = nullptr;
 }
 
 
@@ -445,9 +470,6 @@ bool DICOMRenderer::LoadGeometry(){
     checkForErrorCodes("@start LoadGeometry - clean error");
     _volumeBox = std::unique_ptr<GLVolumeBox>(new GLVolumeBox());
     _renderPlane = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(_windowSize));
-    _renderPlaneX = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(_windowSize,0));
-    _renderPlaneY = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(_windowSize,1));
-    _renderPlaneZ = std::unique_ptr<GLRenderPlane>(new GLRenderPlane(_windowSize,2));
     _boundingBox = std::unique_ptr<GLBoundingBox>(new GLBoundingBox());
     _XAxisSlice = std::unique_ptr<GLBoundingQuadX>(new GLBoundingQuadX());
     _YAxisSlice = std::unique_ptr<GLBoundingQuadY>(new GLBoundingQuadY());
@@ -705,6 +727,7 @@ void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
 
 
 void DICOMRenderer::drawLineBoxes(std::shared_ptr<GLFBOTex> target){
+
     //------- Bounding Box for CT Volume
     _targetBinder->Bind(target);
     glDisable(GL_DEPTH_TEST);
@@ -713,38 +736,44 @@ void DICOMRenderer::drawLineBoxes(std::shared_ptr<GLFBOTex> target){
     ClearBackground(Vec4f(0,0,0,-800.0f));
     _lineShader->Enable();
 
-    _lineShader->Set("projectionMatrix",_projection);
-    _lineShader->Set("viewMatrix",_view);
-    _lineShader->Set("worldMatrix",_data->getCTWorld());
-    _lineShader->Set("color",Vec3f(1,1,1));
+    if(_displayBoundingBox){
 
-    _boundingBox->paint(GL_LINES);
+        _lineShader->Set("projectionMatrix",_projection);
+        _lineShader->Set("viewMatrix",_view);
+        _lineShader->Set("worldMatrix",_data->getCTWorld());
+        _lineShader->Set("color",Vec3f(1,1,1));
 
-    //this part draws the planes which indicate the current CT slide
-    Mat4f translation;
-    Mat4f sliceWorld;
-    Vec3f currentSlices = _data->getSelectedSlices();
+        _boundingBox->paint(GL_LINES);
 
-    translation.Translation(currentSlices.x-0.5f,0,0);
-    sliceWorld = translation*_data->getCTWorld();
-    _lineShader->Set("worldMatrix",sliceWorld);
-    _lineShader->Set("color",Vec3f(1,0,0));
-    _XAxisSlice->paint(GL_LINES);
+    }
 
-    translation.Translation(0,currentSlices.y-0.5f,0);
-    sliceWorld = translation*_data->getCTWorld();
-    _lineShader->Set("worldMatrix",sliceWorld);
-    _lineShader->Set("color",Vec3f(0,1,0));
-    _YAxisSlice->paint(GL_LINES);
+    if(_displayThreeDCursor){
+        //this part draws the planes which indicate the current CT slide
+        Mat4f translation;
+        Mat4f sliceWorld;
+        Vec3f currentSlices = _data->getSelectedSlices();
 
-    translation.Translation(0,0,currentSlices.z-0.5f);
-    sliceWorld = translation*_data->getCTWorld();
-    _lineShader->Set("worldMatrix",sliceWorld);
-    _lineShader->Set("color",Vec3f(0,0,1));
-    _ZAxisSlice->paint(GL_LINES);
+        translation.Translation(currentSlices.x-0.5f,0,0);
+        sliceWorld = translation*_data->getCTWorld();
+        _lineShader->Set("worldMatrix",sliceWorld);
+        _lineShader->Set("color",Vec3f(1,0,0));
+        _XAxisSlice->paint(GL_LINES);
 
+        translation.Translation(0,currentSlices.y-0.5f,0);
+        sliceWorld = translation*_data->getCTWorld();
+        _lineShader->Set("worldMatrix",sliceWorld);
+        _lineShader->Set("color",Vec3f(0,1,0));
+        _YAxisSlice->paint(GL_LINES);
+
+        translation.Translation(0,0,currentSlices.z-0.5f);
+        sliceWorld = translation*_data->getCTWorld();
+        _lineShader->Set("worldMatrix",sliceWorld);
+        _lineShader->Set("color",Vec3f(0,0,1));
+        _ZAxisSlice->paint(GL_LINES);
+    }
     _lineShader->Disable();
     _targetBinder->Unbind();
+
 }
 
 
@@ -759,66 +788,66 @@ void DICOMRenderer::drawPlaning(){
     drawElectrodeCylinder(_boundingBoxVolumeBuffer);
 
     drawElectrodeSpheres(_boundingBoxVolumeBuffer);
-
-
 }
 
 
 void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
-    _targetBinder->Bind(target);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glDisable(GL_BLEND);
-    glCullFace(GL_BACK);
-    glDisable(GL_CULL_FACE);
+    if(_displayCenterACPC){
+        _targetBinder->Bind(target);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDisable(GL_BLEND);
+        glCullFace(GL_BACK);
+        glDisable(GL_CULL_FACE);
 
-    //draws a cube in the center (coord 100,100,100 in gframe)
-    Mat4f scaleT;
-    scaleT.Scaling(1.0,1.0,1.0);
-    Mat4f transT;
-    transT.Translation(_data->getLeftSTN()._endWorldSpace);
-    transT = scaleT*transT;
+        //draws a cube in the center (coord 100,100,100 in gframe)
+        Mat4f scaleT;
+        scaleT.Scaling(1.0,1.0,1.0);
+        Mat4f transT;
+        transT.Translation(_data->getLeftSTN()._endWorldSpace);
+        transT = scaleT*transT;
 
-    _frontFaceShader->Enable();
-    _frontFaceShader->Set("projectionMatrix",_projection);
-    _frontFaceShader->Set("viewMatrix",_view);
-    transT.Translation(_data->getCTCenter()*_data->getCTScale());
-    transT = scaleT*transT;
+        _frontFaceShader->Enable();
+        _frontFaceShader->Set("projectionMatrix",_projection);
+        _frontFaceShader->Set("viewMatrix",_view);
+        transT.Translation(_data->getCTCenter()*_data->getCTScale());
+        transT = scaleT*transT;
 
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
+        _frontFaceShader->Set("worldMatrix",transT);
+        _volumeBox->paint();
 
-    Vec3f AC = _data->getAC();
-    Vec3f PC = _data->getPC();
+        Vec3f AC = _data->getAC();
+        Vec3f PC = _data->getPC();
 
-    AC = AC-frameCenter;
-    PC = PC-frameCenter;
+        AC = AC-frameCenter;
+        PC = PC-frameCenter;
 
-    AC = AC.x*_data->getCTeX()+
-            AC.y*_data->getCTeY()+
-            AC.z*_data->getCTeZ()+
-            _data->getCTCenter()*_data->getCTScale();
-    PC = PC.x*_data->getCTeX()+
-            PC.y*_data->getCTeY()+
-            PC.z*_data->getCTeZ()+
-            _data->getCTCenter()*_data->getCTScale();
+        AC = AC.x*_data->getCTeX()+
+                AC.y*_data->getCTeY()+
+                AC.z*_data->getCTeZ()+
+                _data->getCTCenter()*_data->getCTScale();
+        PC = PC.x*_data->getCTeX()+
+                PC.y*_data->getCTeY()+
+                PC.z*_data->getCTeZ()+
+                _data->getCTCenter()*_data->getCTScale();
 
 
-    transT.Translation(AC);
-    transT = scaleT*transT;
+        transT.Translation(AC);
+        transT = scaleT*transT;
 
-    _frontFaceShader->Set("worldMatrix",transT);
-    _sphere->paint();
+        _frontFaceShader->Set("worldMatrix",transT);
+        _sphere->paint();
 
-    transT.Translation(PC);
-    transT = scaleT*transT;
+        transT.Translation(PC);
+        transT = scaleT*transT;
 
-    _frontFaceShader->Set("worldMatrix",transT);
-    _sphere->paint();
+        _frontFaceShader->Set("worldMatrix",transT);
+        _sphere->paint();
 
-    _frontFaceShader->Disable();
+        _frontFaceShader->Disable();
 
-    _targetBinder->Unbind();
+        _targetBinder->Unbind();
+    }
 }
 
 
@@ -826,56 +855,57 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
     _targetBinder->Bind(target);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
+    _lineShader->Enable();
+
+    if(_displayFrame){
 
     //check if we found the G Frame and draws it if found-------------
-    _lineShader->Enable();
-    if(_NShape1 != nullptr){
-        _lineShader->Enable();
 
-        _lineShader->Set("projectionMatrix",_projection);
-        _lineShader->Set("viewMatrix",_view);
-        _lineShader->Set("worldMatrix",_data->getCTWorld());
-        _lineShader->Set("color",Vec3f(0.5f,1,0.5f));
+        if(_NShape1 != nullptr){
 
-        _NShape1->paint(GL_LINES);
+            _lineShader->Set("projectionMatrix",_projection);
+            _lineShader->Set("viewMatrix",_view);
+            _lineShader->Set("worldMatrix",_data->getCTWorld());
+            _lineShader->Set("color",Vec3f(0.5f,1,0.5f));
 
+            _NShape1->paint(GL_LINES);
+
+        }
+
+        if(_NShape2 != nullptr){
+
+            _lineShader->Set("projectionMatrix",_projection);
+            _lineShader->Set("viewMatrix",_view);
+            _lineShader->Set("worldMatrix",_data->getCTWorld());
+            _lineShader->Set("color",Vec3f(0.5f,1,0.5f));
+
+           _NShape2->paint(GL_LINES);
+
+        }
     }
 
-    if(_NShape2 != nullptr){
-        _lineShader->Enable();
+    if(_displayFrameBoundingBox){
+        if(_cubeLeftN != nullptr){
 
-        _lineShader->Set("projectionMatrix",_projection);
-        _lineShader->Set("viewMatrix",_view);
-        _lineShader->Set("worldMatrix",_data->getCTWorld());
-        _lineShader->Set("color",Vec3f(0.5f,1,0.5f));
+            _lineShader->Set("projectionMatrix",_projection);
+            _lineShader->Set("viewMatrix",_view);
+            _lineShader->Set("worldMatrix",_data->getCTWorld());
+            _lineShader->Set("color",Vec3f(1.0f,0,1.0f));
 
-       _NShape2->paint(GL_LINES);
+            _cubeLeftN->paint(GL_LINES);
+        }
+
+        if(_cubeRightN != nullptr){
+
+            _lineShader->Set("projectionMatrix",_projection);
+            _lineShader->Set("viewMatrix",_view);
+            _lineShader->Set("worldMatrix",_data->getCTWorld());
+            _lineShader->Set("color",Vec3f(1.0f,0,1.0f));
+
+            _cubeRightN->paint(GL_LINES);
+        }
 
     }
-
-    if(_cubeLeftN != nullptr){
-        _lineShader->Enable();
-
-        _lineShader->Set("projectionMatrix",_projection);
-        _lineShader->Set("viewMatrix",_view);
-        _lineShader->Set("worldMatrix",_data->getCTWorld());
-        _lineShader->Set("color",Vec3f(1.0f,0,1.0f));
-
-        _cubeLeftN->paint(GL_LINES);
-    }
-
-    if(_cubeRightN != nullptr){
-        _lineShader->Enable();
-
-        _lineShader->Set("projectionMatrix",_projection);
-        _lineShader->Set("viewMatrix",_view);
-        _lineShader->Set("worldMatrix",_data->getCTWorld());
-        _lineShader->Set("color",Vec3f(1.0f,0,1.0f));
-
-        _cubeRightN->paint(GL_LINES);
-    }
-
-
 
     _lineShader->Disable();
 
@@ -885,6 +915,13 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
 
 void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
     _targetBinder->Bind(target);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDisable(GL_BLEND);
+    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
+
     //draw the electrode basics
 
     _electrodeGeometryShader->Enable();
@@ -937,6 +974,12 @@ void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
 
 void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
     _targetBinder->Bind(target);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDisable(GL_BLEND);
+    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
+
     //draw the electrodes----------------------------
     Vec3f position;
     Mat4f scaleT;
@@ -1104,12 +1147,7 @@ void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,boo
     _projection = oldProjectionMatrix;
     _view = oldViewMatrix;
     _clipMode = oldClipMode;
-    //_data->setCTScale(CTScaleOld);
-    //_data->setMRScale(MRScaleOld);
 }
-
-
-
 
 static int counter= 0;
 

@@ -32,13 +32,19 @@ OpenGLWidget::~OpenGLWidget()
 {
 }
 
-void OpenGLWidget::cleanup(){
-
+void OpenGLWidget::Cleanup(){
+    GLMutex::getInstance().lockContext();
+    makeCurrent();
+    _renderer->Cleanup();
+    doneCurrent();
+    GLMutex::getInstance().unlockContext();
 }
 
 
 void OpenGLWidget::initializeGL()
 {
+    GLMutex::getInstance().lockContext();
+    makeCurrent();
     initializeOpenGLFunctions();
 
 
@@ -53,12 +59,15 @@ void OpenGLWidget::initializeGL()
     {
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
+    GLMutex::getInstance().unlockContext();
 }
 
 int i=0;
 void OpenGLWidget::paintGL(){
 
-    //GLMutex::getInstance().lockContext();
+    GLMutex::getInstance().lockContext();
+    makeCurrent();
+
     if(_renderer != nullptr){
         if(_windowSize.x != width() ||_windowSize.y != height() ){
             _windowSize.x = width();
@@ -73,7 +82,8 @@ void OpenGLWidget::paintGL(){
         _renderer = std::unique_ptr<DICOMRenderer>(new DICOMRenderer());
         _renderer->Initialize();
     }
-    //GLMutex::getInstance().unlockContext();
+    //doneCurrent();
+    GLMutex::getInstance().unlockContext();
 }
 
 Vec2i oldPos(-1,-1);

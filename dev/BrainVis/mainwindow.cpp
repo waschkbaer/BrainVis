@@ -19,15 +19,16 @@
 #include <BrainVisIO/DataHandle.h>
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _reloadData(true),
-    _renderIDCounter(0),
     _histogramm(nullptr),
     _frame(nullptr),
     _driveWidget(nullptr),
-    _registrationWidget(nullptr)
+    _registrationWidget(nullptr),
+    _renderIDCounter(0)
 {
     ui->setupUi(this);
     showMaximized();
@@ -59,8 +60,7 @@ void MainWindow::on_actionAdd_RenderWidget_triggered()
 
 std::shared_ptr<RenderWidget> MainWindow::getWorkingRenderer(){
     for(std::shared_ptr<RenderWidget> w : m_vActiveRenderer){
-        if(w != nullptr){
-
+        if(w != nullptr && w->isValid()){
             return w;
         }
     }
@@ -69,7 +69,9 @@ std::shared_ptr<RenderWidget> MainWindow::getWorkingRenderer(){
 
 void MainWindow::removeRenderer(int id){
     for(int i = 0; i < m_vActiveRenderer.size();++i){
-        if(m_vActiveRenderer[i]->renderID() == id){
+        if(m_vActiveRenderer[i] != nullptr && m_vActiveRenderer[i]->renderID() == id){
+            m_vActiveRenderer[i]->Cleanup();
+            m_vActiveRenderer[i] = nullptr;
             m_vActiveRenderer.erase(m_vActiveRenderer.begin()+i);
             i =  m_vActiveRenderer.size()+1;
             break;

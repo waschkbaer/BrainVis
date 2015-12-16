@@ -12,7 +12,8 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, in
     QDockWidget(parent),
     ui(new Ui::RenderWidget),
     _data(data),
-    _renderID(renderID)
+    _renderID(renderID),
+    _isValid(true)
 {
     setFloating(true);
     ui->setupUi(this);
@@ -33,6 +34,11 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, in
 RenderWidget::~RenderWidget()
 {
     delete ui;
+}
+
+void RenderWidget::Cleanup(){
+    ui->openGLWidget->Cleanup();
+    _isValid = false;
 }
 
 void RenderWidget::on_ThreeD_clicked()
@@ -70,6 +76,11 @@ void RenderWidget::on_YAxis_clicked()
     ui->ZAxis->setEnabled(true);
     ui->ThreeD->setEnabled(true);
 }
+bool RenderWidget::isValid() const
+{
+    return _isValid;
+}
+
 int RenderWidget::renderID() const
 {
     return _renderID;

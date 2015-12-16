@@ -34,6 +34,10 @@ public:
 
     void closeEvent(QCloseEvent *bar);
 
+    void Cleanup();
+
+    bool isValid() const;
+
 private slots:
     void on_ThreeD_clicked();
 
@@ -47,6 +51,7 @@ private:
     Ui::RenderWidget *ui;
     std::shared_ptr<DataHandle> _data;
     int _renderID;
+    bool _isValid;
 };
 
 #endif // RENDERWIDGET_H

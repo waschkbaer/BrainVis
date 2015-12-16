@@ -39,7 +39,12 @@ static const Vec3f frameCenter = Vec3f(100.0f,100.0f,100.0f);
 
 class DICOMRenderer{
     public:
-
+        bool _displayFrameBoundingBox;
+        bool _displayBoundingBox;
+        bool _displayFrame;
+        bool _displayCenterACPC;
+        bool _displayThreeDCursor;
+        bool _displayTwoDCursor;
 
     public:
         DICOMRenderer();
@@ -187,10 +192,6 @@ private:
         std::unique_ptr<GLRenderPlane>  _renderPlane;
         std::unique_ptr<GLModel>        _electrodeGeometry;
 
-        std::unique_ptr<GLRenderPlane>  _renderPlaneX;
-        std::unique_ptr<GLRenderPlane>  _renderPlaneY;
-        std::unique_ptr<GLRenderPlane>  _renderPlaneZ;
-
         std::unique_ptr<GLBoundingBox>   _boundingBox;
         std::unique_ptr<GLSphere>        _sphere;
         std::unique_ptr<GLBoundingQuad>  _XAxisSlice;
@@ -244,8 +245,6 @@ private:
 
 
         //gradient decent testing
-        std::shared_ptr<GLFBOTex>       CTFBO;
-        std::shared_ptr<GLFBOTex>       MRFBO;
         std::shared_ptr<GLFBOTex>       COMPOSITING;
         bool                            _doesGradientDescent;
         std::vector<Vec4f>              _gradientDataBuffer;

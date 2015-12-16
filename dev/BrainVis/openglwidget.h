@@ -31,9 +31,9 @@ public:
         ~OpenGLWidget();
 
     /*!
-     * \brief cleanup
+     * \brief Cleanup
      */
-    void cleanup();
+    void Cleanup();
 
     /*!
      * \brief initializeGL @overload
