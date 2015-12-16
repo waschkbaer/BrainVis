@@ -34,6 +34,9 @@ using namespace Tuvok::Renderer::OpenGL;
 using namespace Tuvok::Renderer::OpenGL::GLCore;
 using namespace Core::Math;
 
+static const Vec3f volumeOffset = Vec3f(0.5f,0.5f,0.5f);
+static const Vec3f frameCenter = Vec3f(100.0f,100.0f,100.0f);
+
 class DICOMRenderer{
     public:
 
@@ -251,6 +254,10 @@ private:
         Vec3f                           _PCMRWorldPosition;
 
         bool                            _doFrameDetection;
+
+
+        //runparameters
+        Vec3f                           _fokuslookat;
 };
 
 

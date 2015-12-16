@@ -286,6 +286,7 @@ void DICOMRenderer::Paint(){
         _data->setMRCTBlend( 0.5f);
     }
 
+
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
         //std::cout << "[DICOM Renderer] starting complete new frame :" << _data->getDataSetStatus() <<std::endl;
@@ -293,19 +294,19 @@ void DICOMRenderer::Paint(){
         if(ElectrodeManager::getInstance().isTrackingMode()){
             std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
             if(elec != nullptr){
-                Vec3f lookAt = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
+                _fokuslookat = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
 
-                lookAt = lookAt-Vec3f(100,100,100);
-                lookAt =  _data->getCTeX()*lookAt.x +
-                          _data->getCTeY()*lookAt.y +
-                          _data->getCTeZ()*lookAt.z +
+                _fokuslookat = _fokuslookat-frameCenter;
+                _fokuslookat =  _data->getCTeX()*_fokuslookat.x +
+                          _data->getCTeY()*_fokuslookat.y +
+                          _data->getCTeZ()*_fokuslookat.z +
                           _data->getCTCenter()*_data->getCTScale();
-                setCameraLookAt(lookAt);
+                setCameraLookAt(_fokuslookat);
             }
         }
 
-        generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-Vec3f(0.5f,0.5f,0.5f),_data->getLeftFBBScale());
-        generateRightFrameBoundingBox(_data->getRightFBBCenter()-Vec3f(0.5f,0.5f,0.5f),_data->getRightFBBScale());
+        generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
+        generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
 
         updateTransferFunction();
 
@@ -316,15 +317,19 @@ void DICOMRenderer::Paint(){
         }
         _needsUpdate = false;
 
+
     //we have to to the compositing on each frame, qt5.5
     //has problems with not switching the framebuffer =/
     }else{
+
          if(_activeRenderMode == ThreeDMode){
              drawCompositing();
          }else{
              drawSliceCompositing();
          }
     }
+
+
     Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
@@ -497,8 +502,6 @@ void DICOMRenderer::setDoFrameDetection(bool doFrameDetection)
 {
     _doFrameDetection = doFrameDetection;
 }
-
-
 
 bool DICOMRenderer::LoadFFTColorTex(){
     std::vector<Core::Math::Vec3f> color = _data->getFFTColorImage();
@@ -788,8 +791,8 @@ void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
     Vec3f AC = _data->getAC();
     Vec3f PC = _data->getPC();
 
-    AC = AC-Vec3f(100,100,100);
-    PC = PC-Vec3f(100,100,100);
+    AC = AC-frameCenter;
+    PC = PC-frameCenter;
 
     AC = AC.x*_data->getCTeX()+
             AC.y*_data->getCTeY()+
@@ -812,20 +815,6 @@ void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
 
     _frontFaceShader->Set("worldMatrix",transT);
     _sphere->paint();
-
-    /*transT.Translation(_ACMRWorldPosition);
-    transT = scaleT*transT;
-
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();
-
-    transT.Translation(_PCMRWorldPosition);
-    transT = scaleT*transT;
-
-    _frontFaceShader->Set("worldMatrix",transT);
-    _volumeBox->paint();*/
-
-
 
     _frontFaceShader->Disable();
 
@@ -1303,15 +1292,6 @@ void DICOMRenderer::drawSliceCompositing(){
   _compositingTwoDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),4);
   _compositingTwoDShader->Set("mrctblend", _data->getMRCTBlend());
 
-  /*Vec3f slice = _data->getSelectedSlices();
-  slice-= Vec3f(0.5f,0.5,0.5f);
-  float zoom = 0;
-
-  _compositingTwoDShader->Set("focusPoint",slice);
-  _compositingTwoDShader->Set("zoomFactor",zoom);
-    */
-
-
   _renderPlane->paint();
 
   _compositingTwoDShader->Disable();
@@ -1321,7 +1301,8 @@ void DICOMRenderer::drawSliceCompositing(){
 
 void DICOMRenderer::updateTransferFunction(){
     std::vector<Core::Math::Vec4f> tf = *(_data->getTransferFunction().get());
-    if(tf.size() > 0){
+
+    if(_data->getTransferFunction()->size() > 0){
         if(_transferFunctionTex == nullptr){
             _transferFunctionTex = std::make_shared<GLTexture1D>(tf.size(),GL_RGBA32F,GL_RGBA,GL_FLOAT,&(tf[0]));
         }else{
@@ -1665,12 +1646,20 @@ void DICOMRenderer::setDoesGradientDescent(bool doesGradientDescent)
 void DICOMRenderer::generateLeftFrameBoundingBox(Vec3f center, Vec3f scale){
     Vec3f min(center.x-scale.x,center.y-scale.y,center.z-scale.z);
     Vec3f max(center.x+scale.x,center.y+scale.y,center.z+scale.z);
-    _cubeLeftN = std::unique_ptr<GLBoundingBox>(new GLBoundingBox(min,max));
+    if(_cubeLeftN == nullptr){
+        _cubeLeftN = std::unique_ptr<GLBoundingBox>(new GLBoundingBox(min,max));
+    }else{
+        _cubeLeftN->update(min,max);
+    }
 }
 void DICOMRenderer::generateRightFrameBoundingBox(Vec3f center, Vec3f scale){
     Vec3f min(center.x-scale.x,center.y-scale.y,center.z-scale.z);
     Vec3f max(center.x+scale.x,center.y+scale.y,center.z+scale.z);
-    _cubeRightN = std::unique_ptr<GLBoundingBox>(new GLBoundingBox(min,max));
+    if(_cubeRightN == nullptr){
+        _cubeRightN = std::unique_ptr<GLBoundingBox>(new GLBoundingBox(min,max));
+    }else{
+        _cubeRightN->update(min,max);
+    }
 }
 
 void DICOMRenderer::findGFrame(){

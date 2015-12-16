@@ -71,6 +71,7 @@ void GLModel::paint(GLenum mode){
   }
 }
 
+
 uint64_t GLModel::GetGPUSize() const{
 	return m_gpuSize;
 }

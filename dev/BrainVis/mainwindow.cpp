@@ -81,6 +81,13 @@ void MainWindow::closeRegistrationWidget(){
     _registrationWidget = nullptr;
 }
 
+void MainWindow::closeFrameWidget(){
+    _frame = nullptr;
+}
+void MainWindow::closeHistogrammWidget(){
+    _histogramm = nullptr;
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     PlaningWidget* p = new PlaningWidget(this);

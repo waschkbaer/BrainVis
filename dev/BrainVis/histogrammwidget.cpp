@@ -1,6 +1,8 @@
 #include "histogrammwidget.h"
 #include "ui_histogrammwidget.h"
 
+#include "mainwindow.h"
+
 #include <QTimer>
 
 HistogrammWidget::HistogrammWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
@@ -27,6 +29,9 @@ HistogrammWidget::HistogrammWidget(QWidget *parent, std::shared_ptr<DataHandle> 
 
 HistogrammWidget::~HistogrammWidget()
 {
+    if(_painter != NULL) delete _painter;
+    if(_ctImage != NULL) delete _ctImage;
+    if(_mrImage != NULL) delete _mrImage;
     delete ui;
 }
 
@@ -118,4 +123,9 @@ void HistogrammWidget::update(){
     if(lastGrad != _data->getGradient() || lastPos != _data->getPosition()){
         createHistogramms(_data->getCTHistogramm(),_data->getMRHistogramm());
     }
+}
+
+void HistogrammWidget::closeEvent(QCloseEvent *bar){
+    MainWindow* parent = (MainWindow*)this->parent();
+    parent->closeHistogrammWidget();
 }

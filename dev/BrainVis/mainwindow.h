@@ -84,6 +84,8 @@ public:
      * \brief frees the memory of the registration widget
      */
     void closeRegistrationWidget();
+    void closeFrameWidget();
+    void closeHistogrammWidget();
 
 private slots:
     void on_actionAdd_RenderWidget_triggered();

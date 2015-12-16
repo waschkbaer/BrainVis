@@ -141,3 +141,8 @@ void FrameWidget::on_pushButton_clicked()
     MainWindow* parent = (MainWindow*)this->parent();
     parent->getWorkingRenderer()->startFrameFind();
 }
+
+void FrameWidget::closeEvent(QCloseEvent *bar){
+    MainWindow* parent = (MainWindow*)this->parent();
+    parent->closeFrameWidget();
+}

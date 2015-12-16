@@ -23,6 +23,8 @@ public:
 
     void createHistogramms(std::vector<uint16_t> ctHistogramm, std::vector<uint16_t> mrHistogramm);
 
+    void closeEvent(QCloseEvent *bar);
+
 private slots:
     void update();
 

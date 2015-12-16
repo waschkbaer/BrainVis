@@ -119,36 +119,66 @@ GLBoundingBox::GLBoundingBox(){
 
 GLBoundingBox::GLBoundingBox(Core::Math::Vec3f min, Core::Math::Vec3f max){
 
-    std::vector<Core::Math::Vec3f> Cube;
+    _Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
 
-    Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
 
-    Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
+    _Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
 
-    Cube.push_back(Core::Math::Vec3f(max.x, max.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, max.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, max.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, max.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, min.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(max.x, min.y, min.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, min.y, max.z));
-    Cube.push_back(Core::Math::Vec3f(min.x, min.y, min.z));
+    Initialize(&(_Cube[0].x), CubeIndicies, 24, 24);
+}
 
-    Initialize(&(Cube[0].x), CubeIndicies, 24, 24);
+void GLBoundingBox::update(Core::Math::Vec3f min, Core::Math::Vec3f max){
+
+    _Cube[0] = Core::Math::Vec3f(max.x, max.y, max.z);
+    _Cube[1] = Core::Math::Vec3f(max.x, min.y, max.z);
+    _Cube[2] = Core::Math::Vec3f(min.x, max.y, max.z);
+    _Cube[3] = Core::Math::Vec3f(min.x, min.y, max.z);
+    _Cube[4] = Core::Math::Vec3f(max.x, max.y, max.z);
+    _Cube[5] = Core::Math::Vec3f(min.x, max.y, max.z);
+    _Cube[6] = Core::Math::Vec3f(max.x, min.y, max.z);
+    _Cube[7] = Core::Math::Vec3f(min.x, min.y, max.z);
+
+    _Cube[8] = Core::Math::Vec3f(max.x, max.y, min.z);
+    _Cube[9] = Core::Math::Vec3f(max.x, min.y, min.z);
+    _Cube[10] = Core::Math::Vec3f(min.x, max.y, min.z);
+    _Cube[11] = Core::Math::Vec3f(min.x, min.y, min.z);
+    _Cube[12] = Core::Math::Vec3f(max.x, max.y, min.z);
+    _Cube[13] = Core::Math::Vec3f(min.x, max.y, min.z);
+    _Cube[14] = Core::Math::Vec3f(max.x, min.y, min.z);
+    _Cube[15] = Core::Math::Vec3f(min.x, min.y, min.z);
+
+    _Cube[16] = Core::Math::Vec3f(max.x, max.y, max.z);
+    _Cube[17] = Core::Math::Vec3f(max.x, max.y, min.z);
+    _Cube[18] = Core::Math::Vec3f(min.x, max.y, max.z);
+    _Cube[19] = Core::Math::Vec3f(min.x, max.y, min.z);
+    _Cube[20] = Core::Math::Vec3f(max.x, min.y, max.z);
+    _Cube[21] = Core::Math::Vec3f(max.x, min.y, min.z);
+    _Cube[22] = Core::Math::Vec3f(min.x, min.y, max.z);
+    _Cube[23] = Core::Math::Vec3f(min.x, min.y, min.z);
+
+    updateVertexData(&(_Cube[0].x),24);
 }
 
 

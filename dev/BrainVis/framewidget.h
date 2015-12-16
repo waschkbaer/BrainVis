@@ -18,6 +18,8 @@ public:
     explicit FrameWidget(QWidget *parent = 0, std::shared_ptr<DataHandle> data = nullptr);
     ~FrameWidget();
 
+    void closeEvent(QCloseEvent *bar);
+
 private slots:
     void on_leftActive_clicked();
 

@@ -21,8 +21,11 @@ namespace Tuvok{
           GLBoundingBox();
           GLBoundingBox(Core::Math::Vec3f min, Core::Math::Vec3f max);
           virtual ~GLBoundingBox();
+
+          void update(Core::Math::Vec3f min, Core::Math::Vec3f max);
           
         private:
+          std::vector<Core::Math::Vec3f> _Cube;
         };
         typedef std::shared_ptr<GLBoundingBox> GLBoundingBoxPtr;
 
