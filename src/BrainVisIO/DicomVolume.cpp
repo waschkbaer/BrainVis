@@ -1,14 +1,14 @@
 #include "DicomVolume.h"
 
 
-DicomVolume::DicomVolume(std::string& path)
+DicomVolume::DicomVolume(const std::string& path)
 {
   initData(path);
 };
-DicomVolume::DicomVolume(std::string& rawFile, std::string& metaFile){ };
+DicomVolume::DicomVolume(const std::string& rawFile,const std::string& metaFile){ };
 DicomVolume::~DicomVolume(){ };
 
-void DicomVolume::exportRawFile(std::string& path){
+void DicomVolume::exportRawFile(const std::string& path){
   std::string filename = path+m_DicomParser.m_FileStacks[0]->m_strDesc+".raw";
   std::ofstream rawFile;
   rawFile.open (filename.c_str(), std::ios::out | std::ios::binary);
@@ -21,7 +21,7 @@ union char2short{
     };
 
 
-bool DicomVolume::initData(std::string& DICOMpath){
+bool DicomVolume::initData(const std::string& DICOMpath){
   m_DicomParser.GetDirInfo(DICOMpath);
 
   //multiple files in folder, don't know which to take
@@ -103,9 +103,9 @@ bool DicomVolume::initData(std::string& DICOMpath){
     return true;
 }
 
-void DicomVolume::initData(std::string& rawFile, std::string& metaFile){};
+void DicomVolume::initData(const std::string& rawFile,const std::string& metaFile){};
 
-void DicomVolume::exportJPGFiles(std::string& path){
+void DicomVolume::exportJPGFiles(const std::string& path){
   std::vector<short>    shortData;
   std::string           filename;
 

@@ -80,7 +80,7 @@ void ElectrodeBaseFrame::resetFrame(){
 
 
 
-void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data, ImageSetting setting){
+void ElectrodeBaseFrame::createFrameEntrys(const std::shared_ptr<DataHandle> data,const ImageSetting& setting){
     std::shared_ptr<iElectrode> electrode = data->getElectrode(_electrodeName);
     electrode->setIsSelected(true);
     if(electrode == nullptr){
@@ -94,7 +94,7 @@ void ElectrodeBaseFrame::createFrameEntrys(std::shared_ptr<DataHandle> data, Ima
     }
 }
 
-QFrame* ElectrodeBaseFrame::createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange, ImageSetting setting){
+QFrame* ElectrodeBaseFrame::createSingleEntry(const std::shared_ptr<DataHandle> data,const std::string& classy,const int depth,const Core::Math::Vec2d powerRange,const ImageSetting& setting){
     std::shared_ptr<iElectrode> electrode = data->getElectrode(_electrodeName);
     if(electrode == nullptr){
         return NULL;
@@ -168,7 +168,7 @@ std::string ElectrodeBaseFrame::electrodeName() const
 
 
 
-QImage* ElectrodeBaseFrame::createFFTImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData, Core::Math::Vec2d powerRange){
+QImage* ElectrodeBaseFrame::createFFTImage(const std::shared_ptr<DataHandle> data,const  std::shared_ptr<iMERData> eletrodeData,const Core::Math::Vec2d powerRange){
     QImage* image = new QImage(eletrodeData->getSpectralPower().size(),1,QImage::Format_RGB888);
 
     int colorIndex = 0;
@@ -181,7 +181,7 @@ QImage* ElectrodeBaseFrame::createFFTImage(std::shared_ptr<DataHandle> data, std
     }
     return image;
 }
-QImage* ElectrodeBaseFrame::createSignalImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData){
+QImage* ElectrodeBaseFrame::createSignalImage(const std::shared_ptr<DataHandle> data,const  std::shared_ptr<iMERData> eletrodeData){
 
     if(eletrodeData->getInput().size() <= 0)  return NULL;
 
@@ -217,6 +217,6 @@ QImage* ElectrodeBaseFrame::createSignalImage(std::shared_ptr<DataHandle> data, 
     }
     return image;
 }
-QImage* ElectrodeBaseFrame::createProbabilityImaga(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData){
+QImage* ElectrodeBaseFrame::createProbabilityImaga(const std::shared_ptr<DataHandle> data,const  std::shared_ptr<iMERData> eletrodeData){
     return NULL;
 }

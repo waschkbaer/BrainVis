@@ -117,7 +117,7 @@ void DICOMRenderer::Cleanup(){
 }
 
 
-void DICOMRenderer::SetRenderMode(RenderMode mode){
+void DICOMRenderer::SetRenderMode(const RenderMode& mode){
     _activeRenderMode = mode;
     sheduleRepaint();
 }
@@ -138,7 +138,7 @@ void DICOMRenderer::SetWindowSize(uint32_t width, uint32_t height){
     sheduleRepaint();
 }
 
-void DICOMRenderer::SetDataHandle(std::shared_ptr<DataHandle> dataHandle){
+void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
 
     //set the shared ptr
     _data = dataHandle;

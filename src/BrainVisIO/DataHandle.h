@@ -46,13 +46,13 @@ public:
     DataHandle();
     virtual ~DataHandle(){};
 
-    void loadMRData(std::string& path);
-    void loadCTData(std::string& path);
+    void loadMRData(const std::string& path);
+    void loadCTData(const std::string& path);
 
     Core::Math::Vec3f getSelectedSlices() const;
     Core::Math::Vec3ui getMRDimensions() const;
     Core::Math::Vec3ui getCTDimensions() const;
-    void setSelectedSlices(Core::Math::Vec3f slides);
+    void setSelectedSlices(const Core::Math::Vec3f slides);
 
     float getMRTransferScaling() const;
     float getCTTransferScaling() const;
@@ -60,8 +60,8 @@ public:
     std::shared_ptr<std::vector<Core::Math::Vec4f>> getTransferFunction();
     void setSmoothStep(float pos, float grad);
 
-    std::vector<uint16_t>&      getMRData();
-    std::vector<uint16_t>&      getCTData();
+    const std::vector<uint16_t>&      getMRData();
+    const std::vector<uint16_t>&      getCTData();
     Core::Math::Vec3f       getMRAspectRatio();
     Core::Math::Vec3f       getCTAspectRatio();
 
@@ -161,11 +161,11 @@ public:
     std::vector<Core::Math::Vec3f> getFFTColorImage() const;
     void createFFTColorImage();
 
-    void loadMERFiles(std::string& path,std::vector<std::string> types);
+    void loadMERFiles(const std::string& path,const std::vector<std::string>& types);
     void loadMERNetwork(std::vector<std::string> types);
 
-    std::shared_ptr<iElectrode> getElectrode(std::string name);
-    std::shared_ptr<iElectrode> getElectrode(int i);
+    std::shared_ptr<iElectrode> getElectrode(const std::string& name);
+    std::shared_ptr<iElectrode> getElectrode(const int i);
 
     bool getUsesNetworkMER() const;
     void NetworkUpdateThread();
@@ -190,8 +190,8 @@ public:
     float getFRotationStepScale() const;
     void setFRotationStepScale(float fRotationStepScale);
 
-    std::vector<uint16_t> getCTHistogramm();
-    std::vector<uint16_t> getMRHistogramm();
+    const std::vector<uint16_t>& getCTHistogramm();
+    const std::vector<uint16_t>& getMRHistogramm();
 
     float getPosition() const;
 

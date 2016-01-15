@@ -14,15 +14,15 @@
 class DicomVolume{
 public:
   public:
-  DicomVolume(std::string& path);
-  DicomVolume(std::string& rawFile, std::string& metaFile);
+  DicomVolume(const std::string& path);
+  DicomVolume(const std::string& rawFile,const std::string& metaFile);
   ~DicomVolume();
 
-  void exportRawFile(std::string& path);
-  void exportJPGFiles(std::string& path);
+  void exportRawFile(const std::string& path);
+  void exportJPGFiles(const std::string& path);
 
-  std::vector<uint16_t>&      getData() {return m_vData; }
-  std::vector<uint16_t>&  getHistogram() {return m_vHistogram;}
+  const std::vector<uint16_t>&      getData() {return m_vData; }
+  const std::vector<uint16_t>&  getHistogram() {return m_vHistogram;}
 
   Core::Math::Vec3ui   getDimensions() const {return m_vDimensions;}
   Core::Math::Vec3f    getAspectRatio() const {return m_vAspectRatio;}
@@ -31,10 +31,10 @@ public:
 
 protected:
   // initializes volume data from a path
-  bool initData(std::string& DICOMpath);
+  bool initData(const std::string& DICOMpath);
 
   // loads a raw file which has been created from a dicom folder
-  void initData(std::string& rawFile, std::string& metaFile);
+  void initData(const std::string& rawFile,const std::string& metaFile);
 
 
 

@@ -60,7 +60,7 @@ class DICOMRenderer{
         void Paint();
 
         //switches rendermode (3D, Axis slices etc)
-        void SetRenderMode(RenderMode mode);
+        void SetRenderMode(const RenderMode& mode);
 
         //resizes the framebuffer and all members which have to be recreated
         //after resize
@@ -69,7 +69,7 @@ class DICOMRenderer{
         //sets the shared_ptr to a data handle
         //data handles contain all shared options for a dataset used by
         //multiple renderer
-        void SetDataHandle(std::shared_ptr<DataHandle> dataHandle);
+        void SetDataHandle(const std::shared_ptr<DataHandle> dataHandle);
 
         //changes the currently viewed slide of the dicom volumes
         void ChangeSlide(int slidedelta);

@@ -29,13 +29,13 @@ public:
 
     void resetFrame();
 
-    void createFrameEntrys(std::shared_ptr<DataHandle> data, ImageSetting setting);
+    void createFrameEntrys(const std::shared_ptr<DataHandle> data,const ImageSetting& setting);
     void checkToDisableRadioButton();
     bool isCheckedForTracking();
 
-    QImage* createFFTImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData, Core::Math::Vec2d powerRange);
-    QImage* createSignalImage(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData);
-    QImage* createProbabilityImaga(std::shared_ptr<DataHandle> data, std::shared_ptr<iMERData> eletrodeData);
+    QImage* createFFTImage(const std::shared_ptr<DataHandle> data,const  std::shared_ptr<iMERData> eletrodeData,const Core::Math::Vec2d powerRange);
+    QImage* createSignalImage(const std::shared_ptr<DataHandle> data,const  std::shared_ptr<iMERData> eletrodeData);
+    QImage* createProbabilityImaga(const std::shared_ptr<DataHandle> data,const  std::shared_ptr<iMERData> eletrodeData);
     std::string electrodeName() const;
 
 public slots:
@@ -43,7 +43,7 @@ public slots:
 
 
 protected:
-    QFrame* createSingleEntry(std::shared_ptr<DataHandle> data,std::string classy, int depth, Core::Math::Vec2d powerRange, ImageSetting setting);
+    QFrame* createSingleEntry(const std::shared_ptr<DataHandle> data,const std::string& classy,const int depth,const Core::Math::Vec2d powerRange,const ImageSetting& setting);
 
 
 private:

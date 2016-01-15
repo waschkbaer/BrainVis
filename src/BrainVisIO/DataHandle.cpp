@@ -49,7 +49,7 @@ DataHandle::DataHandle():
 }
 
 
-void DataHandle::loadMRData(std::string& path)
+void DataHandle::loadMRData(const std::string& path)
 {
     _MRVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
     _fMRScalingFactor = 65535.0f/_MRVolume->getHistogram().size();
@@ -69,7 +69,7 @@ void DataHandle::loadMRData(std::string& path)
     incrementStatus();
 }
 
-void DataHandle::loadCTData(std::string& path)
+void DataHandle::loadCTData(const std::string& path)
 {
     _CTVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
     _fCTScalingFactor = 65535.0f/_CTVolume->getHistogram().size();
@@ -90,7 +90,7 @@ void DataHandle::loadCTData(std::string& path)
     incrementStatus();
 }
 
-void DataHandle::loadMERFiles(std::string& path,std::vector<std::string> types){
+void DataHandle::loadMERFiles(const std::string& path,const std::vector<std::string>& types){
     std::vector<std::string> csvs;
     Core::FileFinder::getInstance().readFilesWithEnding(path,csvs,".csv");
 
@@ -355,8 +355,8 @@ Core::Math::Vec2f DataHandle::getSpectralRange() const
 Core::Math::Vec3ui DataHandle::getMRDimensions() const { return _MRVolume->getDimensions();}
 Core::Math::Vec3ui DataHandle::getCTDimensions() const { return _CTVolume->getDimensions();}
 
-std::vector<uint16_t>&      DataHandle::getMRData() {return _MRVolume->getData(); }
-std::vector<uint16_t>&      DataHandle::getCTData() {return _CTVolume->getData(); }
+const std::vector<uint16_t>&      DataHandle::getMRData() {return _MRVolume->getData(); }
+const std::vector<uint16_t>&      DataHandle::getCTData() {return _CTVolume->getData(); }
 Core::Math::Vec3f       DataHandle::getMRAspectRatio() {return _MRVolume->getAspectRatio();}
 Core::Math::Vec3f       DataHandle::getCTAspectRatio() {return _CTVolume->getAspectRatio();}
 
@@ -389,7 +389,7 @@ Core::Math::Vec3f DataHandle::getSelectedSlices() const
 {
     return _vSelectedVolumeSpacePosition;
 }
-void DataHandle::setSelectedSlices(Core::Math::Vec3f slides)
+void DataHandle::setSelectedSlices(const Core::Math::Vec3f slides)
 {
     _vSelectedVolumeSpacePosition =slides;
     _vSelectedVolumeSpacePosition.x = std::max(0.0f, std::min(1.0f, _vSelectedVolumeSpacePosition.x));
@@ -818,11 +818,11 @@ bool DataHandle::getUsesNetworkMER() const
 }
 
 
-std::shared_ptr<iElectrode> DataHandle::getElectrode(std::string name){
+std::shared_ptr<iElectrode> DataHandle::getElectrode(const std::string& name){
     return ElectrodeManager::getInstance().getElectrode(name);
 }
 
-std::shared_ptr<iElectrode> DataHandle::getElectrode(int i){
+std::shared_ptr<iElectrode> DataHandle::getElectrode(const int i){
     if(i >= 0 && i < ElectrodeManager::getInstance().getElectrodeCount()){
         return ElectrodeManager::getInstance().getElectrode(i);
     }else{
@@ -850,7 +850,7 @@ void DataHandle::checkFocusPoint(){
     }
 }
 
-std::vector<uint16_t> DataHandle::getCTHistogramm(){
+const std::vector<uint16_t>& DataHandle::getCTHistogramm(){
     std::vector<uint16_t> h;
     if(_CTVolume != nullptr)
         return _CTVolume->getHistogram();
@@ -858,7 +858,7 @@ std::vector<uint16_t> DataHandle::getCTHistogramm(){
         return h;
 }
 
-std::vector<uint16_t> DataHandle::getMRHistogramm(){
+const std::vector<uint16_t>& DataHandle::getMRHistogramm(){
     std::vector<uint16_t> h;
     if(_MRVolume != nullptr)
         return _MRVolume->getHistogram();
