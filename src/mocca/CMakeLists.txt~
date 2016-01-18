@@ -1,0 +1,18 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
+#PROJECT(mocca)
+
+INCLUDE(PlatformSpecific)
+INCLUDE(Macros)
+
+FILE(GLOB_RECURSE MOCCA_HEADER ${PROJECT_SOURCE_DIR}/mocca/include/mocca/*.h)
+FILE(GLOB_RECURSE MOCCA_SOURCE ${PROJECT_SOURCE_DIR}/mocca/src/*.cpp)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/mocca/include)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/mocca/src/thirdparty)
+
+CreateSourceGroups("${MOCCA_SOURCE}" ${PROJECT_SOURCE_DIR}/mocca/src)
+CreateSourceGroups("${MOCCA_HEADER}" ${PROJECT_SOURCE_DIR}/mocca/include/mocca)
+
+ADD_LIBRARY(mocca OBJECT ${MOCCA_SOURCE} ${MOCCA_HEADER})
+
+target_link_libraries (mocca ${CMAKE_THREAD_LIBS_INIT})

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 // VS2013 doesn't support the 'noexcept' directive
 #ifndef _MSC_VER
@@ -18,7 +18,10 @@ namespace mocca {
 class Error : public std::runtime_error {
 public:
     Error(const std::string& msg, const std::string& file, int line)
-        : std::runtime_error(""), msg_(msg), file_(file), line_(line) {
+        : std::runtime_error("")
+        , msg_(msg)
+        , file_(file)
+        , line_(line) {
         std::stringstream str;
         str << msg_;
         std::string internalMsg = internalError();
@@ -30,8 +33,6 @@ public:
 #endif
         msg_ = str.str();
     }
-
-    virtual ~Error() {}
 
     const char* what() const NOEXCEPT override { return msg_.c_str(); }
 

@@ -1,25 +1,27 @@
 #pragma once
 
-#include "mocca/base/Containers.h"
+#include <string>
 
 namespace mocca {
 namespace net {
 
 class Endpoint {
 public:
-    Endpoint(const std::string& transport, const std::string& connectionString);
+    Endpoint(const std::string& protocol, const std::string& address);
+    Endpoint(const std::string& str);
 
     bool equals(const Endpoint& other) const;
-    friend bool operator==(const Endpoint& lhs, const Endpoint& rhs) { return lhs.equals(rhs); }
-    std::string toString() const;
-    friend std::ostream& operator<<(std::ostream& os, const Endpoint& obj) { return os << obj.toString(); }
+    friend bool operator==(const Endpoint& lhs, const Endpoint& rhs);
 
-    std::string transport() const;
-    std::string connectionString() const;
+    std::string toString() const;
+    friend std::ostream& operator<<(std::ostream& os, const Endpoint& obj);
+
+    std::string protocol() const;
+    std::string address() const;
 
 private:
-    std::string transport_;
-    std::string connectionString_;
+    std::string protocol_;
+    std::string address_;
 };
 }
 }
