@@ -16,25 +16,19 @@
 
 #include "mainwindow.h"
 
+#include <BrainVisIO/Data/MERData.h>
+#include <iostream>
+
 int main(int argc, char *argv[])
 {
 
     QApplication a(argc, argv);
 
-
-    /*QSurfaceFormat format;
-    format = QSurfaceFormat::defaultFormat();
-    format.setProfile(QSurfaceFormat::CompatibilityProfile);
-    format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
-    format.setMajorVersion(4);
-    format.setMinorVersion(1);
-    QSurfaceFormat::setDefaultFormat(format);*/
-
     MainWindow w;
     w.show();
 
-   // DriveWidget* drive = new DriveWidget(&w);
-   // drive->show();
+    BrainVisIO::MERData::MERData data(-4,std::string("C:/Users/andre/Documents/BrainVis/build/bin/s_c_3_d_-4.txt"));
+    std::vector<double> spectralPower = data.getSpectralPowerNormalized();
 
     return a.exec();
 }

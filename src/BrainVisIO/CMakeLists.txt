@@ -1,10 +1,12 @@
 file(GLOB BRAINVISIO_SOURCE *.c *.cpp
                 DICOM/*.cpp
-				MER-Data/*.cpp
+		MER-Data/*.cpp
+		Data/*.cpp
                 FFT/*.cpp)
 file(GLOB BRAINVISIO_HEADER *.h
                 DICOM/*.h
-				MER-Data/*.h
+		MER-Data/*.h
+		Data/*.h
                 FFT/*.h)
 
 
@@ -15,9 +17,11 @@ target_include_directories (BRAINVISIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries (BRAINVISIO LINK_PUBLIC Core)
 target_link_libraries (BRAINVISIO LINK_PUBLIC jpeglib)
 
-#if (CUDA_FOUND)
-#	target_link_libraries (BRAINVISIO LINK_PUBLIC CUDAIO)
-#endif(CUDA_FOUND)
+IF(FFTW_LIBRARIES)
+	target_link_libraries (BRAINVISIO ${FFTW_LIBRARIES})
+ELSE(FFTW_LIBRARIES)
+	target_link_libraries (BRAINVISIO "${BRAINVIS_ROOT_DIR}/ext/FFTW/libfftw3-3.lib" )
+ENDIF(FFTW_LIBRARIES)
 
 if(WIN32)
     target_link_libraries (BRAINVISIO LINK_PUBLIC Shlwapi)
