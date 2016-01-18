@@ -14,7 +14,6 @@ class MainWindow;
 class RenderWidget;
 class CtRegistrationWidget;
 class DataHandle;
-class DriveWidget;
 class HistogrammWidget;
 class FrameWidget;
 /*!
@@ -138,7 +137,6 @@ private:
     int                                                 _renderIDCounter;
 
     std::shared_ptr<CtRegistrationWidget>               _registrationWidget;
-    std::shared_ptr<DriveWidget>                        _driveWidget;
 
     std::shared_ptr<HistogrammWidget>                   _histogramm;
     std::shared_ptr<FrameWidget>                        _frame;

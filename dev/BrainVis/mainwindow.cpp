@@ -3,7 +3,6 @@
 #include <QFileDialog>
 
 #include "ctregistrationwidget.h"
-#include "drivewidget.h"
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -26,7 +25,6 @@ MainWindow::MainWindow(QWidget *parent) :
     _reloadData(true),
     _histogramm(nullptr),
     _frame(nullptr),
-    _driveWidget(nullptr),
     _registrationWidget(nullptr),
     _renderIDCounter(0)
 {
@@ -194,9 +192,7 @@ void MainWindow::on_actionRegistration_triggered()
 
 void MainWindow::on_actionDrive_Tool_triggered()
 {
-    if(_data != nullptr && _driveWidget == nullptr){
-        _driveWidget = std::make_shared<DriveWidget>(this,_data);
-    }
+
 }
 
 void MainWindow::on_actionHistogramm_triggered()
