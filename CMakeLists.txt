@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 2.8.4)
+
+#force release mode!
+message(STATUS "Setting build type to 'Release' as none was specified.")
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release")
+
 project(BrainVis)
 
 if (UNIX)
@@ -49,7 +55,7 @@ set(CMAKE_PLATFORM_PATH ${BRAINVIS_ROOT_DIR}/cmake/platform)
 
 
 SET(CMAKE_FIND_LIBRARY_PREFIXES "")
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".so" ".dll")
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".so" ".dll" ".a")
 
 
 
@@ -87,7 +93,7 @@ if(WIN32)
     ADD_DEFINITIONS(-D_UNICODE)
 endif(WIN32)
 
-
+find_package(FFTW)
 
 add_subdirectory(src)
 add_subdirectory(ext)
