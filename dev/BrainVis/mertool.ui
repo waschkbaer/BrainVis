@@ -364,7 +364,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_4"/>
      </widget>
     </item>
    </layout>

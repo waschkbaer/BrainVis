@@ -11,6 +11,7 @@ MERimageentry::MERimageentry(QWidget *parent) :
     ui->setupUi(this);
 
     show();
+    setUpdatesEnabled(true);
 }
 
 MERimageentry::~MERimageentry()
@@ -37,14 +38,19 @@ void MERimageentry::createSpectralImage(const std::vector<double>& data){
 
     if(data.size() <= 0) return;
 
+    std::cout << data.size() << " img data size "<<std::endl;
+
     _lastSpectralData = data;
     _image->fill(QColor(255,255,255).rgb());
+
+    std::cout << "pixel per entry " <<_image->width()/data.size()<<std::endl;
 
     double value = 0;
     QColor col;
     for(int x = 0; x < _image->width();++x){
         value = (float)x/(float)(_image->width()-1) * (data.size()-1); //index
-        value = data[value];
+
+        value = data[(int)value];
 
         col = getSpectralColor(value);
 
@@ -59,7 +65,6 @@ void MERimageentry::createSignalImage(const std::vector<short>& data){
 }
 
 void MERimageentry::update(){
-    createSpectralImage(_lastSpectralData);
 }
 
 QColor MERimageentry::getSpectralColor(double value){
