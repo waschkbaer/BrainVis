@@ -9,13 +9,14 @@
 
 #include "merimageentry.h"
 
-merelectrodeentry::merelectrodeentry(QWidget *parent) :
+merelectrodeentry::merelectrodeentry(const std::string& electrodeName, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::merelectrodeentry)
 {
     ui->setupUi(this);
+    show();
 
-      show();
+    ui->nameLabel->setText(QString(electrodeName.c_str()));
 }
 
 merelectrodeentry::~merelectrodeentry()
@@ -31,5 +32,15 @@ void merelectrodeentry::createElectrodeEntries(std::shared_ptr<BrainVisIO::MERDa
         imgentry = new MERimageentry(this);
         imgentry->createSpectralImage(electrode->getMERData(i)->getSpectralPowerNormalizedAndWindowed());
         ui->entryframe->layout()->addWidget(imgentry);
+        _widgets.push_back(imgentry);
     }
+}
+
+void merelectrodeentry::clean(){
+    for(QWidget* w : _widgets){
+        ui->entryframe->layout()->removeWidget(w);
+        delete w;
+    }
+    _widgets.clear();
+
 }

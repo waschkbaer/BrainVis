@@ -14,13 +14,16 @@ class merelectrodeentry : public QWidget
     Q_OBJECT
 
 public:
-    explicit merelectrodeentry(QWidget *parent = 0);
+    explicit merelectrodeentry(const std::string& electrodeName = "none", QWidget *parent = 0);
     ~merelectrodeentry();
 
     void createElectrodeEntries(std::shared_ptr<BrainVisIO::MERData::MERElectrode> electrode);
+    void clean();
 
 private:
     Ui::merelectrodeentry *ui;
+
+    std::vector<QWidget*> _widgets;
 };
 
 #endif // MERELECTRODEENTRY_H
