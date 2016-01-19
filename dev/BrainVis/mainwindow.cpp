@@ -10,6 +10,7 @@
 #include "renderwidget.h"
 #include "framewidget.h"
 #include "histogrammwidget.h"
+#include "mertool.h"
 
 #include "ModiSingleton.h"
 #include "planingwidget.h"
@@ -192,7 +193,9 @@ void MainWindow::on_actionRegistration_triggered()
 
 void MainWindow::on_actionDrive_Tool_triggered()
 {
-
+    if(_MERTool == nullptr){
+        _MERTool = std::make_shared<MERTool>(this);
+    }
 }
 
 void MainWindow::on_actionHistogramm_triggered()

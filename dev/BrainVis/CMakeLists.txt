@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 2.8.11)
 
 file(GLOB BRAINVIS_SOURCE 	*.cpp
 				DriveTool/*.cpp
+				merwidgets/*.cpp
 				Utils/*.cpp)
 file(GLOB BRAINVIS_HEADER 	*.h
 				DriveTool/*.h
+				merwidgets/*.h
 				Utils/*.h)
 file(GLOB SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Shader/*.glsl)
 file(GLOB BUTTONS ${CMAKE_CURRENT_SOURCE_DIR}/Buttons/*.jpg)
@@ -32,6 +34,9 @@ QT5_WRAP_UI(UIS_HDRS planingwidget.ui)
 QT5_WRAP_UI(UIS_HDRS ctregistrationwidget.ui)
 QT5_WRAP_UI(UIS_HDRS histogrammwidget.ui)
 QT5_WRAP_UI(UIS_HDRS framewidget.ui)
+QT5_WRAP_UI(UIS_HDRS mertool.ui)
+QT5_WRAP_UI(UIS_HDRS merwidgets/merimageentry.ui)
+QT5_WRAP_UI(UIS_HDRS merwidgets/merelectrodeentry.ui)
 
 add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc)
 

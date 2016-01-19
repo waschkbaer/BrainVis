@@ -16,6 +16,8 @@ class CtRegistrationWidget;
 class DataHandle;
 class HistogrammWidget;
 class FrameWidget;
+class MERTool;
+
 /*!
  * \brief The MainWindow acts as a central hub for all widgets
  *
@@ -140,6 +142,7 @@ private:
 
     std::shared_ptr<HistogrammWidget>                   _histogramm;
     std::shared_ptr<FrameWidget>                        _frame;
+    std::shared_ptr<MERTool>                            _MERTool;
 };
 
 #endif // MAINWINDOW_H

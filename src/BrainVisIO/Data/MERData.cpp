@@ -110,6 +110,29 @@ std::vector<double> MERData::getSpectralPowerNormalized(int lowFreq, int highFre
     return spectralData;
 }
 
+std::vector<double> MERData::getSpectralPowerNormalizedAndWindowed(int window, int lowFreq, int highFreq, int minVal, int maxVal){
+    std::vector<double> spectralData = getSpectralPower(lowFreq,highFreq);
+
+    std::vector<double> windowed;
+
+    double val = 0;
+    double counter = 0;
+    for(int i = 0; i < spectralData.size();i += window){
+        val = 0;
+        counter = 0;
+        for(int j = i; j < (i+window) && j < spectralData.size();++j){
+            val += spectralData[j];
+            counter++;
+        }
+        val = val/counter;
+        val = (val-minVal)/(maxVal-minVal);
+        val = std::max(0.0,std::min(val,1.0));
+        windowed.push_back(val);
+    }
+
+    return windowed;
+}
+
 void MERData::addSignalRecording(short value){
     _signal.push_back(value);
     _recordedSeconds = _signal.size()/SAMPLESPERSECOND;

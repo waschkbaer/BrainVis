@@ -24,7 +24,10 @@ SOURCES += main.cpp\
     drivewidget.cpp \
     ctregistrationwidget.cpp \
     histogrammwidget.cpp \
-    framewidget.cpp
+    framewidget.cpp \
+    mertool.cpp \
+    merwidgets/merimageentry.cpp \
+    merwidgets/merelectrodeentry.cpp
 
 HEADERS  += mainwindow.h \
     renderwidget.h \
@@ -36,7 +39,10 @@ HEADERS  += mainwindow.h \
     drivewidget.h \
     ctregistrationwidget.h \
     histogrammwidget.h \
-    framewidget.h
+    framewidget.h \
+    mertool.h \
+    merwidgets/merimageentry.h \
+    merwidgets/merelectrodeentry.h
 
 FORMS    += mainwindow.ui \
     renderwidget.ui \
@@ -46,4 +52,7 @@ FORMS    += mainwindow.ui \
     drivewidget.ui \
     ctregistrationwidget.ui \
     histogrammwidget.ui \
-    framewidget.ui
+    framewidget.ui \
+    mertool.ui \
+    merwidgets/merimageentry.ui \
+    merwidgets/merelectrodeentry.ui
