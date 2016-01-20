@@ -293,3 +293,18 @@ void MERTool::fftCalcThreadRun(){
         std::this_thread::sleep_for(std::chrono::milliseconds(600));
     }
 }
+
+void MERTool::on_disconnectButton_clicked()
+{
+    if(_MERClient != nullptr){
+        _MERClient->setIsConnected(false);
+        _MERClient->waitForThread();
+        _MERClient.reset();
+    }
+
+    if(_fftCalcThread != nullptr){
+        _fftThreadStop = true;
+        _fftCalcThread->join();
+        _fftCalcThread.reset();
+    }
+}

@@ -62,6 +62,8 @@ private slots:
 
     void on_optionsButton_clicked();
 
+    void on_disconnectButton_clicked();
+
 private:
     void updateData(const std::string& bundlename);
 

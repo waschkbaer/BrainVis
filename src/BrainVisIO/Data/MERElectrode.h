@@ -13,8 +13,8 @@ class MERData;
 
 class MERElectrode{
 public:
-    MERElectrode(Core::Math::Vec3f startPosition = Core::Math::Vec3f(0,0,0), int startDepth = -10);
-    MERElectrode(const std::vector<std::string>& filelist, Core::Math::Vec3f startPosition = Core::Math::Vec3f(0,0,0),  int startDepth = -10);
+    MERElectrode(Core::Math::Vec3f targetPosition = Core::Math::Vec3f(0,0,0), int startDepth = -10);
+    MERElectrode(const std::vector<std::string>& filelist, Core::Math::Vec3f targetPosition = Core::Math::Vec3f(0,0,0),  int startDepth = -10);
     ~MERElectrode();
 
     void newRecording();
@@ -24,6 +24,12 @@ public:
 
     const std::shared_ptr<MERData> getMERData(int depth);
 
+    Core::Math::Vec3f getTargetPosition() const;
+    void setTargetPosition(const Core::Math::Vec3f &targetPosition);
+
+    Core::Math::Vec3f getElctrodeDirection() const;
+    void setElctrodeDirection(const Core::Math::Vec3f &elctrodeDirection);
+
 protected:
 
 private:
@@ -31,7 +37,8 @@ private:
 
     int                                     _currentDepth;
     std::map<int,std::shared_ptr<MERData>>  _data;
-    Core::Math::Vec3f                       _startPosition;
+    Core::Math::Vec3f                       _targetPosition;
+    Core::Math::Vec3f                       _elctrodeDirection;
 
 };
 

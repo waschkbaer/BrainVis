@@ -6,6 +6,8 @@
 #include <map>
 #include <memory>
 
+#include <core/Math/Vectors.h>
+
 namespace BrainVisIO{
 namespace MERData{
 
@@ -21,8 +23,10 @@ public:
 
     const std::shared_ptr<MERElectrode> getElectrode(const std::string& name);
 
+    void calculateElectrodePosition(Core::Math::Vec3f XAxis, Core::Math::Vec3f YAxis,
+                                    Core::Math::Vec3f target, Core::Math::Vec3f entry);
 protected:
-
+    void calculateDataPosition(std::shared_ptr<MERElectrode> electrode);
 private:
     std::map<std::string,std::shared_ptr<MERElectrode>> _electrodes;
 

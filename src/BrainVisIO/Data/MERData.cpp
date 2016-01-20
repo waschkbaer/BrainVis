@@ -265,6 +265,16 @@ void MERData::loadFile(const std::string& filename){
 
     _recordedSeconds = _signal.size()/SAMPLESPERSECOND;
 }
+Core::Math::Vec3f MERData::getPosition() const
+{
+    return _position;
+}
+
+void MERData::setPosition(const Core::Math::Vec3f &position)
+{
+    _position = position;
+}
+
 int MERData::getRecordedSeconds() const
 {
     return _recordedSeconds;

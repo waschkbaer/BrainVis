@@ -5,10 +5,11 @@
 
 using namespace BrainVisIO::MERData;
 
-MERElectrode::MERElectrode(Core::Math::Vec3f startPosition,
+MERElectrode::MERElectrode(Core::Math::Vec3f targetPosition,
                            int startDepth):
     _currentDepth(startDepth),
-    _startPosition(startPosition)
+    _targetPosition(targetPosition),
+    _elctrodeDirection(Core::Math::Vec3f(0,1,0))
 {
     _data.insert(std::pair<int,std::shared_ptr<MERData>>
                         (
@@ -18,10 +19,11 @@ MERElectrode::MERElectrode(Core::Math::Vec3f startPosition,
 }
 
 MERElectrode::MERElectrode(const std::vector<std::string>& filelist,
-                           Core::Math::Vec3f startPosition,
+                           Core::Math::Vec3f targetPosition,
                            int startDepth):
     _currentDepth(startDepth),
-    _startPosition(startPosition)
+    _targetPosition(targetPosition),
+    _elctrodeDirection(Core::Math::Vec3f(0,1,0))
 {
     loadRecordings(filelist);
 }
@@ -33,10 +35,14 @@ MERElectrode::~MERElectrode(){
 
 void MERElectrode::newRecording(){
     _currentDepth++;
+
+    std::shared_ptr<MERData> data = std::make_shared<MERData>(_currentDepth);
+    data->setPosition(_targetPosition + _elctrodeDirection*_currentDepth);
+
     _data.insert(std::pair<int,std::shared_ptr<MERData>>
                         (
                             _currentDepth,
-                            std::make_shared<MERData>(_currentDepth))
+                            data)
                         );
 }
 
@@ -69,3 +75,23 @@ void MERElectrode::loadRecordings(const std::vector<std::string>& filelist){
     }
     _currentDepth--;
 }
+Core::Math::Vec3f MERElectrode::getElctrodeDirection() const
+{
+    return _elctrodeDirection;
+}
+
+void MERElectrode::setElctrodeDirection(const Core::Math::Vec3f &elctrodeDirection)
+{
+    _elctrodeDirection = elctrodeDirection;
+}
+
+Core::Math::Vec3f MERElectrode::getTargetPosition() const
+{
+    return _targetPosition;
+}
+
+void MERElectrode::setTargetPosition(const Core::Math::Vec3f &targetPosition)
+{
+    _targetPosition = targetPosition;
+}
+

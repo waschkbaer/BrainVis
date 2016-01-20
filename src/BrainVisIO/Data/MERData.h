@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <core/Math/Vectors.h>
 
 namespace BrainVisIO{
 namespace MERData{
@@ -28,6 +29,9 @@ public:
 
     int getRecordedSeconds() const;
 
+    Core::Math::Vec3f getPosition() const;
+    void setPosition(const Core::Math::Vec3f &position);
+
 protected:
     void loadFile(const std::string& filename);
 
@@ -40,6 +44,8 @@ private:
     int                     _lastRequestTimer;
     std::vector<short>      _lastRequestedSeconds;
     std::vector<double>     _lastRequestedSpectralPower;
+
+    Core::Math::Vec3f       _position;
 
 };
 

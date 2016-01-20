@@ -5,6 +5,12 @@
 #include <BrainVisIO/MER-Data/ElectrodeManager.h>
 #include <cstdlib>
 
+
+#include <BrainVisIO/Data/MERBundleManager.h>
+#include <BrainVisIO/Data/MERBundle.h>
+#include <BrainVisIO/Data/MERElectrode.h>
+#include <BrainVisIO/Data/MERData.h>
+
 using namespace std;
 using namespace Tuvok::Renderer;
 
@@ -973,6 +979,80 @@ void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
 
 
 void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
+    //testing elctronde mer manager ------------------------------------
+    _targetBinder->Bind(target);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDisable(GL_BLEND);
+    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
+
+    Vec3f position;
+    Mat4f scaleT;
+    Mat4f transT;
+    scaleT.Scaling(1.0,1.0,1.0);
+    Mat4f worldScaling;
+    worldScaling.Scaling(_data->getCTScale());
+    Vec4f centerWorld = (worldScaling*Vec4f(_data->getCTCenter(),1));
+
+    _sphereFFTShader->Enable();
+    _sphereFFTShader->Set("projectionMatrix",_projection);
+    _sphereFFTShader->Set("viewMatrix",_view);
+    _sphereFFTShader->Set("fftRange",_data->getSpectralRange());
+    _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
+
+
+    std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle("13_1_2016_m2_rechts");
+    if(bundle != nullptr){
+        bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),_data->getRightSTN()._endWorldSpace,_data->getRightSTN()._startWorldSpace);
+
+        std::shared_ptr<BrainVisIO::MERData::MERElectrode> lat;
+        std::shared_ptr<BrainVisIO::MERData::MERElectrode> ant;
+        std::shared_ptr<BrainVisIO::MERData::MERElectrode> cen;
+        lat = bundle->getElectrode("lat");
+        ant = bundle->getElectrode("ant");
+        cen = bundle->getElectrode("cen");
+
+        for(int i = -10; i <= 5;++i){
+
+            position = cen->getMERData(i)->getPosition();
+            transT.Translation(position);
+            transT = scaleT*transT;
+            _sphereFFTShader->Set("fftValue",1.0f);
+            _sphereFFTShader->Set("worldMatrix",transT);
+            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+
+            _sphere->paint();
+
+            position = lat->getMERData(i)->getPosition();
+            transT.Translation(position);
+            transT = scaleT*transT;
+            _sphereFFTShader->Set("fftValue",1.0f);
+            _sphereFFTShader->Set("worldMatrix",transT);
+            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+
+            _sphere->paint();
+
+            position = ant->getMERData(i)->getPosition();
+            transT.Translation(position);
+            transT = scaleT*transT;
+            _sphereFFTShader->Set("fftValue",1.0f);
+            _sphereFFTShader->Set("worldMatrix",transT);
+            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+
+            _sphere->paint();
+        }
+
+
+    }
+
+    _sphereFFTShader->Disable();
+
+    _targetBinder->Unbind();
+
+    //testing elctronde mer manager END---------------------------------
+
+/*
     _targetBinder->Bind(target);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -1019,7 +1099,7 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
 
     _sphereFFTShader->Disable();
 
-    _targetBinder->Unbind();
+    _targetBinder->Unbind();*/
 }
 
 

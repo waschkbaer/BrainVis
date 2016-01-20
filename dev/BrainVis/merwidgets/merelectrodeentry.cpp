@@ -30,9 +30,9 @@ void merelectrodeentry::createElectrodeEntries(std::shared_ptr<BrainVisIO::MERDa
     MERimageentry* imgentry = NULL;
 
     for(int i = -10; i <= 5; ++i){
-        imgentry = new MERimageentry(i,_electrodeName,this);
         std::shared_ptr<BrainVisIO::MERData::MERData> data = electrode->getMERData(i);
         if(data != nullptr){
+            imgentry = new MERimageentry(i,_electrodeName,this);
             if(mode == MERDisplayMode::fft)
                 imgentry->createSpectralImage(electrode->getMERData(i)->getSpectralPowerNormalizedAndWindowed());
             else if(mode == MERDisplayMode::signal)
