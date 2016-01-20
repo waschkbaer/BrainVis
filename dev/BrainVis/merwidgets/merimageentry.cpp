@@ -39,7 +39,6 @@ void MERimageentry::createSpectralImage(const std::vector<double>& data){
        _image->height() != ui->imgLabel->height() ){
        _image = std::unique_ptr<QImage>(new QImage(ui->imgLabel->width(),ui->imgLabel->height(),QImage::Format_RGB888));
     }
-
     if(data.size() <= 0) return;
 
     _lastSpectralData = data;
@@ -67,6 +66,7 @@ void MERimageentry::createSignalImage(const std::vector<short>& data){
        _image->height() != ui->imgLabel->height() ){
        _image = std::unique_ptr<QImage>(new QImage(ui->imgLabel->width(),ui->imgLabel->height(),QImage::Format_RGB888));
     }
+    if(data.size() <= 0)return;
 
     _image->fill(QColor(255,255,255).rgb());
 

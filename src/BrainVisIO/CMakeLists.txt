@@ -3,13 +3,15 @@ file(GLOB BRAINVISIO_SOURCE *.c *.cpp
 		MER-Data/*.cpp
 		Data/*.cpp
                 FFT/*.cpp
-		SmallImage/*.cpp)
+		SmallImage/*.cpp
+		MERNetworking/*.cpp)
 file(GLOB BRAINVISIO_HEADER *.h
                 DICOM/*.h
 		MER-Data/*.h
 		Data/*.h
                 FFT/*.h
-		SmallImage/*.h)
+		SmallImage/*.h
+		MERNetworking/*.h)
 
 
 

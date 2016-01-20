@@ -15,7 +15,8 @@ _signal(),
 _spectralPower(),
 _lastRequestedSeconds(),
 _lastRequestedSpectralPower(),
-_lastRequestTimer(0){
+_lastRequestTimer(0),
+_recordedSeconds(0){
 
 }
 MERData::MERData(int recordingDepth, const std::string& filename):
@@ -24,19 +25,14 @@ _signal(),
 _spectralPower(),
 _lastRequestedSeconds(),
 _lastRequestedSpectralPower(),
-_lastRequestTimer(0){
+_lastRequestTimer(0),
+_recordedSeconds(0){
 
     loadFile(filename);
     executeFFTWelch(5,true);
 }
 
 const std::vector<short>& MERData::getSignal(int seconds){
-    if(     _lastRequestTimer == _signal.size() &&
-            _lastRequestedSeconds.size() == seconds*SAMPLESPERSECOND)
-    {
-        return _lastRequestedSeconds;
-    }
-
     if(_signal.size() >= seconds*SAMPLESPERSECOND){
         _lastRequestedSeconds.resize(seconds*SAMPLESPERSECOND);
         _lastRequestTimer =  _signal.size();
@@ -89,6 +85,8 @@ const std::vector<short>& MERData::getSignalFiltered(int seconds, int lowFreq, i
 std::vector<double> MERData::getSpectralPower(int lowFreq, int highFreq){
     std::vector<double> spectralData;
 
+    if(_spectralPower.size() <= 0) return spectralData;
+
     int lowFreqIndex = (float)lowFreq/((float)SAMPLESPERSECOND/2.0f) * _spectralPower.size();
     int highFreqIndex = (float)highFreq/((float)SAMPLESPERSECOND/2.0f) * _spectralPower.size();
     int elementCount = highFreqIndex-lowFreqIndex;
@@ -101,6 +99,7 @@ std::vector<double> MERData::getSpectralPower(int lowFreq, int highFreq){
 }
 std::vector<double> MERData::getSpectralPowerNormalized(int lowFreq, int highFreq, int minVal, int maxVal){
     std::vector<double> spectralData = getSpectralPower(lowFreq,highFreq);
+    if(spectralData.size() <= 0) return std::vector<double>();
 
     for(int i = 0; i < spectralData.size();++i){
         spectralData[i] = (spectralData[i]-minVal)/(maxVal-minVal);
@@ -112,6 +111,7 @@ std::vector<double> MERData::getSpectralPowerNormalized(int lowFreq, int highFre
 
 std::vector<double> MERData::getSpectralPowerNormalizedAndWindowed(int window, int lowFreq, int highFreq, int minVal, int maxVal){
     std::vector<double> spectralData = getSpectralPower(lowFreq,highFreq);
+    if(spectralData.size() <= 0) return std::vector<double>();
 
     double herzperindex = spectralData.size()/(float)(highFreq-lowFreq);
 
