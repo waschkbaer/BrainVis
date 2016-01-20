@@ -86,9 +86,21 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="optionsButton">
+        <widget class="QCheckBox" name="checkBox_2">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Options</string>
+          <string>learning</string>
          </property>
         </widget>
        </item>
@@ -222,6 +234,25 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="optionsButton">
+         <property name="minimumSize">
+          <size>
+           <width>75</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>75</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Options</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLineEdit" name="lineEdit_2">
          <property name="text">
           <string>INFO </string>
@@ -284,7 +315,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton">
+        <widget class="QRadioButton" name="signalRadio">
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -303,7 +334,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_2">
+        <widget class="QRadioButton" name="fftRadio">
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -319,10 +350,13 @@
          <property name="text">
           <string>FFT</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_3">
+        <widget class="QRadioButton" name="classifierRadio">
          <property name="minimumSize">
           <size>
            <width>100</width>

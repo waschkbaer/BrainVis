@@ -11,6 +11,7 @@
 
 merelectrodeentry::merelectrodeentry(const std::string& electrodeName, QWidget *parent) :
     QWidget(parent),
+    _electrodeName(electrodeName),
     ui(new Ui::merelectrodeentry)
 {
     ui->setupUi(this);
@@ -24,13 +25,16 @@ merelectrodeentry::~merelectrodeentry()
     delete ui;
 }
 
-void merelectrodeentry::createElectrodeEntries(std::shared_ptr<BrainVisIO::MERData::MERElectrode> electrode){
+void merelectrodeentry::createElectrodeEntries(std::shared_ptr<BrainVisIO::MERData::MERElectrode> electrode, MERDisplayMode mode){
 
     MERimageentry* imgentry = NULL;
 
     for(int i = -10; i <= 5; ++i){
-        imgentry = new MERimageentry(this);
-        imgentry->createSpectralImage(electrode->getMERData(i)->getSpectralPowerNormalizedAndWindowed());
+        imgentry = new MERimageentry(i,_electrodeName,this);
+        if(mode == MERDisplayMode::fft)
+            imgentry->createSpectralImage(electrode->getMERData(i)->getSpectralPowerNormalizedAndWindowed());
+        else if(mode == MERDisplayMode::signal)
+            imgentry->createSignalImage(electrode->getMERData(i)->getSignalFiltered(5));
         ui->entryframe->layout()->addWidget(imgentry);
         _widgets.push_back(imgentry);
     }
