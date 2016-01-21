@@ -104,6 +104,7 @@ void MERTool::on_loadButton_clicked()
 void MERTool::on_BundleSelection_activated(const QString &arg1)
 {
     updateData(arg1.toStdString());
+    MERBundleManager::getInstance().activateBundle(arg1.toStdString());
 }
 
 void MERTool::updateData(const std::string& bundlename){

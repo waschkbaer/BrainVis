@@ -31,3 +31,21 @@ const std::vector<std::string> MERBundleManager::getRegisteredBundles(){
     }
     return registeredBundles;
 }
+
+void MERBundleManager::disableAllBundles(){
+    std::map<std::string,std::shared_ptr<MERBundle>>::iterator it = _bundles.begin();
+    for(it = _bundles.begin(); it != _bundles.end(); ++it){
+        it->second->setIsActive(false);
+    }
+}
+
+void MERBundleManager::activateBundle(const std::string& name){
+    disableAllBundles();
+    getMERBundle(name)->setIsActive(true);
+    _activeBundleName = name;
+}
+std::string MERBundleManager::getActiveBundleName() const
+{
+    return _activeBundleName;
+}
+

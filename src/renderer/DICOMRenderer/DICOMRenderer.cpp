@@ -947,7 +947,7 @@ void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
 
     for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
         std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
-        if(!electrode->getIsSelected()) continue;
+        //if(!electrode->getIsSelected()) continue;
         if((electrode->getName().c_str())[0] == 'L'){
             startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
             startPos = (startPos-Vec3f(100,100,100));
@@ -1002,7 +1002,7 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
     _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
 
 
-    std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle("13_1_2016_m2_rechts");
+    std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle(BrainVisIO::MERData::MERBundleManager::getInstance().getActiveBundleName());
     if(bundle != nullptr){
         bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),_data->getRightSTN()._endWorldSpace,_data->getRightSTN()._startWorldSpace);
 
@@ -1018,7 +1018,7 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
             position = cen->getMERData(i)->getPosition();
             transT.Translation(position);
             transT = scaleT*transT;
-            _sphereFFTShader->Set("fftValue",1.0f);
+            _sphereFFTShader->Set("fftValue",(float)cen->getMERData(i)->getSpectralAverageNormalized());
             _sphereFFTShader->Set("worldMatrix",transT);
             _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
@@ -1027,7 +1027,7 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
             position = lat->getMERData(i)->getPosition();
             transT.Translation(position);
             transT = scaleT*transT;
-            _sphereFFTShader->Set("fftValue",1.0f);
+            _sphereFFTShader->Set("fftValue",(float)lat->getMERData(i)->getSpectralAverageNormalized());
             _sphereFFTShader->Set("worldMatrix",transT);
             _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
@@ -1036,7 +1036,7 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
             position = ant->getMERData(i)->getPosition();
             transT.Translation(position);
             transT = scaleT*transT;
-            _sphereFFTShader->Set("fftValue",1.0f);
+            _sphereFFTShader->Set("fftValue",(float)ant->getMERData(i)->getSpectralAverageNormalized());
             _sphereFFTShader->Set("worldMatrix",transT);
             _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 

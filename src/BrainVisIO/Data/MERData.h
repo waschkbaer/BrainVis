@@ -26,11 +26,16 @@ public:
 
     void executeFFT(int seconds = 5, bool powerOfTwo = false);
     void executeFFTWelch(int seconds = 5, bool powerOfTwo = false);
+    void calculateAverage(const std::vector<double>& input);
 
     int getRecordedSeconds() const;
 
     Core::Math::Vec3f getPosition() const;
     void setPosition(const Core::Math::Vec3f &position);
+
+    double getSpectralAverage() const;
+    double getSpectralAverageNormalized(int minVal = 2000, int maxVal = 25000) const;
+    void setSpectralAverage(double spectralAverage);
 
 protected:
     void loadFile(const std::string& filename);
@@ -44,6 +49,7 @@ private:
     int                     _lastRequestTimer;
     std::vector<short>      _lastRequestedSeconds;
     std::vector<double>     _lastRequestedSpectralPower;
+    double                  _spectralAverage;
 
     Core::Math::Vec3f       _position;
 

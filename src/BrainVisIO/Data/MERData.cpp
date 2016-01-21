@@ -16,7 +16,8 @@ _spectralPower(),
 _lastRequestedSeconds(),
 _lastRequestedSpectralPower(),
 _lastRequestTimer(0),
-_recordedSeconds(0){
+_recordedSeconds(0),
+_spectralAverage(0){
 
 }
 MERData::MERData(int recordingDepth, const std::string& filename):
@@ -111,6 +112,7 @@ std::vector<double> MERData::getSpectralPowerNormalized(int lowFreq, int highFre
 
 std::vector<double> MERData::getSpectralPowerNormalizedAndWindowed(int window, int lowFreq, int highFreq, int minVal, int maxVal){
     std::vector<double> spectralData = getSpectralPower(lowFreq,highFreq);
+    calculateAverage(spectralData);
     if(spectralData.size() <= 0) return std::vector<double>();
 
     double herzperindex = spectralData.size()/(float)(highFreq-lowFreq);
@@ -248,6 +250,15 @@ void MERData::executeFFTWelch(int seconds, bool powerOfTwo){
         }
 }
 
+void MERData::calculateAverage(const std::vector<double>& input){
+    _spectralAverage = 0.0;
+    for(double d : input){
+        _spectralAverage+= d*d;
+    }
+    _spectralAverage/= input.size();
+    _spectralAverage = std::sqrt(_spectralAverage);
+}
+
 void MERData::loadFile(const std::string& filename){
     std::string line;
 
@@ -265,6 +276,20 @@ void MERData::loadFile(const std::string& filename){
 
     _recordedSeconds = _signal.size()/SAMPLESPERSECOND;
 }
+double MERData::getSpectralAverage() const
+{
+    return _spectralAverage;
+}
+
+void MERData::setSpectralAverage(double spectralAverage)
+{
+    _spectralAverage = spectralAverage;
+}
+
+double MERData::getSpectralAverageNormalized(int minVal, int maxVal) const{
+    return (_spectralAverage-(double)minVal) / (double)(maxVal-minVal);
+}
+
 Core::Math::Vec3f MERData::getPosition() const
 {
     return _position;

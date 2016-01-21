@@ -25,12 +25,18 @@ public:
 
     const std::vector<std::string> getRegisteredBundles();
 
+    void disableAllBundles();
+    void activateBundle(const std::string& name);
+
+    std::string getActiveBundleName() const;
+
 protected:
 
 private:
     std::map<std::string,std::shared_ptr<MERBundle>> _bundles;
+    std::string                                      _activeBundleName;
 
-    MERBundleManager(){}
+    MERBundleManager():_activeBundleName(""){}
     ~MERBundleManager(){}
 };
 

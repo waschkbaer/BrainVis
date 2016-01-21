@@ -25,10 +25,14 @@ public:
 
     void calculateElectrodePosition(Core::Math::Vec3f XAxis, Core::Math::Vec3f YAxis,
                                     Core::Math::Vec3f target, Core::Math::Vec3f entry);
+    bool getIsActive() const;
+    void setIsActive(bool isActive);
+
 protected:
     void calculateDataPosition(std::shared_ptr<MERElectrode> electrode);
 private:
     std::map<std::string,std::shared_ptr<MERElectrode>> _electrodes;
+    bool                                                _isActive;
 
 };
 
