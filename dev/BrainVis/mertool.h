@@ -3,6 +3,8 @@
 
 #include <QDockWidget>
 
+#include <merwidgets/meroptions.h>
+
 #include <BrainVisIO/Data/MERData.h>
 #include <BrainVisIO/Data/MERElectrode.h>
 #include <BrainVisIO/Data/MERFileManager.h>
@@ -76,6 +78,8 @@ private:
 
     bool                                                      _fftThreadStop;
     std::unique_ptr<std::thread>                              _fftCalcThread;
+
+    std::shared_ptr<MERRecordSettings>                               _currentRecordingSettings;
 };
 
 #endif // MERTOOL_H

@@ -246,7 +246,9 @@ void MERTool::on_saveButton_clicked()
 
 void MERTool::on_optionsButton_clicked()
 {
-
+    if(_currentRecordingSettings == nullptr)
+        _currentRecordingSettings = std::make_shared<MERRecordSettings>();
+    MEROptions* options = new MEROptions(_currentRecordingSettings);
 }
 
 void MERTool::fftCalcThreadRun(){

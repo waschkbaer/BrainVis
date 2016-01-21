@@ -37,6 +37,7 @@ QT5_WRAP_UI(UIS_HDRS framewidget.ui)
 QT5_WRAP_UI(UIS_HDRS mertool.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/merimageentry.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/merelectrodeentry.ui)
+QT5_WRAP_UI(UIS_HDRS merwidgets/meroptions.ui)
 
 add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc)
 

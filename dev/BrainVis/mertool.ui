@@ -22,6 +22,9 @@
     <height>960</height>
    </size>
   </property>
+  <property name="allowedAreas">
+   <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+  </property>
   <property name="windowTitle">
    <string>MERTool</string>
   </property>
