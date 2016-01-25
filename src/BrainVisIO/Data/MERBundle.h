@@ -28,11 +28,24 @@ public:
     bool getIsActive() const;
     void setIsActive(bool isActive);
 
+    Core::Math::Vec3f getTarget() const;
+    void setTarget(const Core::Math::Vec3f &target);
+
+    Core::Math::Vec3f getEntry() const;
+    void setEntry(const Core::Math::Vec3f &entry);
+
+    bool getIsRightSide() const;
+    void setIsRightSide(bool isRightSide);
+
 protected:
     void calculateDataPosition(std::shared_ptr<MERElectrode> electrode);
 private:
     std::map<std::string,std::shared_ptr<MERElectrode>> _electrodes;
     bool                                                _isActive;
+
+    Core::Math::Vec3f                                   _target;
+    Core::Math::Vec3f                                   _entry;
+    bool                                                _isRightSide;
 
 };
 

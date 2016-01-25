@@ -3,9 +3,12 @@
 
 #include <iostream>
 
-MEROptions::MEROptions(std::shared_ptr<MERRecordSettings> settings, QWidget *parent) :
+MEROptions::MEROptions(std::shared_ptr<MERRecordSettings> settings
+                       ,std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle,
+                       QWidget *parent) :
     QDockWidget(parent),
     _settings(settings),
+    _bundle(bundle),
     ui(new Ui::MEROptions)
 {
     ui->setupUi(this);
@@ -91,7 +94,6 @@ void MEROptions::updateSettings(){
     _settings->_targetPosition.y = ui->ty->text().toFloat();
     _settings->_targetPosition.z = ui->tz->text().toFloat();
 
-
     if(ui->cenCheck->isChecked()){
         _settings->_centerIndex =  ui->cenSpin->value()+1;
     }else{
@@ -126,6 +128,10 @@ void MEROptions::updateSettings(){
         _settings->_isRightSide = true;
     else
         _settings->_isRightSide = false;
+
+    _bundle->setTarget(Core::Math::Vec3f(_settings->_targetPosition.x ,_settings->_targetPosition.y,_settings->_targetPosition.z));
+    _bundle->setEntry(Core::Math::Vec3f(_settings->_entryPosition.x,_settings->_entryPosition.y,_settings->_entryPosition.z));
+    _bundle->setIsRightSide(_settings->_isRightSide);
 
 }
 

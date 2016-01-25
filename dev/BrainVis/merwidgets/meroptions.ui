@@ -54,7 +54,7 @@
        </size>
       </property>
       <property name="title">
-       <string>Positioning</string>
+       <string>Recording Positioning</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="4">
@@ -178,7 +178,7 @@
        </size>
       </property>
       <property name="title">
-       <string>Channels</string>
+       <string>Live Channel Info</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="1" column="1">

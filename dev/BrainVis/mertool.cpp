@@ -90,9 +90,9 @@ void MERTool::on_loadButton_clicked()
 
     std::shared_ptr<BrainVisIO::MERData::MERBundle> bunlde = BrainVisIO::MERData::MERFileManager::getInstance().openFolder(directory.toStdString());
 
-    std::cout << "loaded"<<std::endl;
-
     MERBundleManager::getInstance().addMERBundle(p[p.size()-1], bunlde);
+
+    updateSettings(bunlde);
 
     if( ui->BundleSelection->findText(QString(p[p.size()-1].c_str())) == -1)
         ui->BundleSelection->addItem(QString(p[p.size()-1].c_str()));
@@ -101,9 +101,20 @@ void MERTool::on_loadButton_clicked()
     on_BundleSelection_activated(ui->BundleSelection->currentText());
 }
 
+void MERTool::updateSettings(const std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle){
+    if(_currentRecordingSettings == nullptr){
+        _currentRecordingSettings = std::make_shared<MERRecordSettings>();
+    }
+
+    _currentRecordingSettings->_targetPosition = bundle->getTarget();
+    _currentRecordingSettings->_entryPosition = bundle->getEntry();
+    _currentRecordingSettings->_isRightSide = bundle->getIsRightSide();
+}
+
 void MERTool::on_BundleSelection_activated(const QString &arg1)
 {
     updateData(arg1.toStdString());
+    updateSettings(MERBundleManager::getInstance().getMERBundle(arg1.toStdString()));
     MERBundleManager::getInstance().activateBundle(arg1.toStdString());
 }
 
@@ -248,7 +259,9 @@ void MERTool::on_optionsButton_clicked()
 {
     if(_currentRecordingSettings == nullptr)
         _currentRecordingSettings = std::make_shared<MERRecordSettings>();
-    MEROptions* options = new MEROptions(_currentRecordingSettings);
+    MEROptions* options = new MEROptions(_currentRecordingSettings,
+                                         MERBundleManager::getInstance().
+                                         getMERBundle(ui->BundleSelection->currentText().toStdString()));
 }
 
 void MERTool::fftCalcThreadRun(){

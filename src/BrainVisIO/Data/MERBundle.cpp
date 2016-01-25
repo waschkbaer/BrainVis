@@ -4,11 +4,18 @@
 
 using namespace BrainVisIO::MERData;
 
-MERBundle::MERBundle(){
+MERBundle::MERBundle():
+    _isRightSide(false),
+    _target(0,0,0),
+    _entry(0,0,0),
+    _isActive(false){
 
 }
 MERBundle::MERBundle(const std::vector<std::string>& electrodeList):
-_isActive(false){
+    _isRightSide(false),
+    _target(0,0,0),
+    _entry(0,0,0),
+    _isActive(false){
     for(const std::string s : electrodeList){
         addElectrode(s);
     }
@@ -87,6 +94,36 @@ void MERBundle::calculateDataPosition(std::shared_ptr<MERElectrode> electrode){
         }
     }
 }
+bool MERBundle::getIsRightSide() const
+{
+    return _isRightSide;
+}
+
+void MERBundle::setIsRightSide(bool isRightSide)
+{
+    _isRightSide = isRightSide;
+}
+
+Core::Math::Vec3f MERBundle::getEntry() const
+{
+    return _entry;
+}
+
+void MERBundle::setEntry(const Core::Math::Vec3f &entry)
+{
+    _entry = entry;
+}
+
+Core::Math::Vec3f MERBundle::getTarget() const
+{
+    return _target;
+}
+
+void MERBundle::setTarget(const Core::Math::Vec3f &target)
+{
+    _target = target;
+}
+
 bool MERBundle::getIsActive() const
 {
     return _isActive;

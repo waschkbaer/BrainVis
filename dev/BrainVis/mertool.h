@@ -68,6 +68,7 @@ private slots:
 
 private:
     void updateData(const std::string& bundlename);
+    void updateSettings(const std::shared_ptr<BrainVisIO::MERData::MERBundle> bunlde);
 
     Ui::MERTool *ui;
 
@@ -79,7 +80,7 @@ private:
     bool                                                      _fftThreadStop;
     std::unique_ptr<std::thread>                              _fftCalcThread;
 
-    std::shared_ptr<MERRecordSettings>                               _currentRecordingSettings;
+    std::shared_ptr<MERRecordSettings>                        _currentRecordingSettings;
 };
 
 #endif // MERTOOL_H

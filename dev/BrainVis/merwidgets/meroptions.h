@@ -5,6 +5,8 @@
 
 #include <core/Math/Vectors.h>
 
+#include <BrainVisIO/Data/MERBundle.h>
+
 struct MERRecordSettings{
 
     MERRecordSettings():
@@ -39,13 +41,12 @@ class MEROptions : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit MEROptions(std::shared_ptr<MERRecordSettings> settings, QWidget *parent = 0);
+    explicit MEROptions(std::shared_ptr<MERRecordSettings> settings,std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle, QWidget *parent = 0);
     ~MEROptions();
 
     void updateSettings();
 
 private slots:
-
 
     void on_saveButton_clicked();
 
@@ -53,6 +54,7 @@ private:
     Ui::MEROptions *ui;
 
     std::shared_ptr<MERRecordSettings> _settings;
+    std::shared_ptr<BrainVisIO::MERData::MERBundle> _bundle;
 };
 
 #endif // MEROPTIONS_H

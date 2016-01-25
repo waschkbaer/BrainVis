@@ -21,6 +21,7 @@ public:
     const std::shared_ptr<MERBundle> openFolder(const std::string& folder);
 
 protected:
+    void loadMeta(const std::string& folder, std::shared_ptr<MERBundle> bundle);
 
 private:
     std::map<std::string,std::shared_ptr<MERBundle>> _bundles;
