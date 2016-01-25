@@ -23,6 +23,7 @@
 
 //brainvis classes
 #include <BrainVisIO/DataHandle.h>
+#include <BrainVisIO/Data/MERBundle.h>
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 #include <memory>
@@ -157,7 +158,7 @@ private:
         void updateTransferFunction();
         float gradientDecentStep();
         float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
-        void calculateElectrodeMatices();
+        Core::Math::Mat4f calculateElectrodeMatices(Core::Math::Vec3f entry, Core::Math::Vec3f target);
         void checkForErrorCodes(std::string note);
 
     private:
@@ -236,6 +237,7 @@ private:
 
         DICOMClipMode                   _clipMode;
 
+        std::shared_ptr<BrainVisIO::MERData::MERBundle> _currentElectrode;
         //matricies for the left and write electrode renderer (cylinder)
         Mat4f                           _electrodeLeftMatrix;
         Mat4f                           _electrodeRightMatix;

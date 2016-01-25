@@ -74,7 +74,8 @@ _displayBoundingBox(true),
 _displayFrame(true),
 _displayCenterACPC(true),
 _displayThreeDCursor(true),
-_displayTwoDCursor(true)
+_displayTwoDCursor(true),
+_currentElectrode(nullptr)
 {
 }
 
@@ -197,8 +198,6 @@ void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
     // sets the start rendermode
     _activeRenderMode = RenderMode::ThreeDMode;
 
-
-    calculateElectrodeMatices();
     sheduleRepaint();
 }
 
@@ -934,42 +933,50 @@ void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
     _electrodeGeometryShader->Set("projectionMatrix",_projection);
     _electrodeGeometryShader->Set("viewMatrix",_view);
 
-    Vec3f dirLeft = _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace;
-    float lengthLeft = dirLeft.length()+5;
-    dirLeft.normalize();
+    //new mode!
+    std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle(BrainVisIO::MERData::MERBundleManager::getInstance().getActiveBundleName());
 
-    Vec3f dirRight = _data->getRightSTN()._startWorldSpace-_data->getRightSTN()._endWorldSpace;
-    float lengthRight = dirRight.length()+5;
-    dirRight.normalize();
+    Vec3f t = bundle->getTarget();
+    t -= Vec3f(100,100,100);
+    t =  t.x*_data->getCTeX()+
+         t.y*_data->getCTeY()+
+         t.z*_data->getCTeZ()+
+         (_data->getCTCenter()*_data->getCTScale());
+    Vec3f e = bundle->getEntry();
+    e -= Vec3f(100,100,100);
+    e =  e.x*_data->getCTeX()+
+         e.y*_data->getCTeY()+
+         e.z*_data->getCTeZ()+
+         (_data->getCTCenter()*_data->getCTScale());
 
-    Vec3f startPos;
+    bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),t,e);
+
+    Vec3f dir = e-t;
+    float length = dir.length()+5;
+    dir.normalize();
+
+    Core::Math::Mat4f rotationmatrix = calculateElectrodeMatices(e,t);
+
     Mat4f translation;
+    std::shared_ptr<BrainVisIO::MERData::MERElectrode> currentElectrode;
+    std::shared_ptr<BrainVisIO::MERData::MERData>      currentData;
 
-    for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();++i){
-        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
-        //if(!electrode->getIsSelected()) continue;
-        if((electrode->getName().c_str())[0] == 'L'){
-            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
-            startPos = (startPos-Vec3f(100,100,100));
-            startPos =  startPos.x*_data->getCTeX()+
-                        startPos.y*_data->getCTeY()+
-                        startPos.z*_data->getCTeZ()+
-                        (_data->getCTCenter()*_data->getCTScale());
-            translation.Translation(startPos+dirLeft*lengthLeft);
+    for(int i = 0; i < 3;++i){
+        switch(i){
+            case 0: currentElectrode = bundle->getElectrode("lat");break;
+            case 1: currentElectrode = bundle->getElectrode("ant");break;
+            case 2: currentElectrode = bundle->getElectrode("cen");break;
+        }
+        if(currentElectrode != nullptr){
+            currentData = currentElectrode->getMERData(-10);
+            if(currentData != nullptr){
+                Vec3f p = currentData->getPosition();
 
-            _electrodeGeometryShader->Set("worldMatrix",_electrodeLeftMatrix*translation);
-            _electrodeGeometry->paint();
-        }else if((electrode->getName().c_str())[0] == 'R'){
-            startPos = electrode->getData(electrode->getDepthRange().x)->getDataPosition();
-            startPos = (startPos-Vec3f(100,100,100));
-            startPos =  startPos.x*_data->getCTeX()+
-                        startPos.y*_data->getCTeY()+
-                        startPos.z*_data->getCTeZ()+
-                        (_data->getCTCenter()*_data->getCTScale());
-            translation.Translation(startPos+dirRight*lengthRight);
+                translation.Translation(p+ dir*length);
 
-            _electrodeGeometryShader->Set("worldMatrix",_electrodeRightMatix*translation);
-            _electrodeGeometry->paint();
+                _electrodeGeometryShader->Set("worldMatrix",rotationmatrix*translation);
+                _electrodeGeometry->paint();
+            }
         }
     }
     _electrodeGeometryShader->Disable();
@@ -1684,13 +1691,13 @@ void DICOMRenderer::setClipMode(const DICOMClipMode &clipMode)
 }
 
 
-void DICOMRenderer::calculateElectrodeMatices(){
+Core::Math::Mat4f DICOMRenderer::calculateElectrodeMatices(Core::Math::Vec3f entry, Core::Math::Vec3f target){
     //left
     Vec3f to,from;
     float elecLength,dot,cross;
     Mat4f Fm,G,U,S,T;
 
-    to = _data->getLeftSTN()._endWorldSpace-_data->getLeftSTN()._startWorldSpace;
+    to = target-entry;
     elecLength = to.length()+5;
     from = Vec3f(0,1,0);
     to.normalize();
@@ -1721,13 +1728,15 @@ void DICOMRenderer::calculateElectrodeMatices(){
     U = Fm*G*Fm.inverse();
     S.Scaling(Vec3f(1,elecLength,1));
 
-    Vec3f outdir = ( _data->getLeftSTN()._startWorldSpace-_data->getLeftSTN()._endWorldSpace);
+    Vec3f outdir = ( entry-target);
     outdir.normalize();
-    T.Translation(_data->getLeftSTN()._startWorldSpace+  outdir*15.0f );
+    T.Translation(entry+  outdir*15.0f );
 
     _electrodeLeftMatrix = S*U;
+
+    return S*U;
     //LEFTEND;
-    to = _data->getRightSTN()._endWorldSpace-_data->getRightSTN()._startWorldSpace;
+    /*to = _data->getRightSTN()._endWorldSpace-_data->getRightSTN()._startWorldSpace;
     elecLength = to.length()+5;
     to.normalize();
 
@@ -1760,7 +1769,7 @@ void DICOMRenderer::calculateElectrodeMatices(){
     outdir.normalize();
     T.Translation(_data->getRightSTN()._startWorldSpace+  outdir*15.0f  );
 
-    _electrodeRightMatix = S*U;
+    _electrodeRightMatix = S*U;*/
 }
 
 bool DICOMRenderer::doesGradientDescent() const
@@ -1818,6 +1827,6 @@ void DICOMRenderer::findGFrame(){
         createFrameGeometry(_data->getRightMarker(),1);
     }
 
-    calculateElectrodeMatices();
+
     _doFrameDetection = false;
 }
