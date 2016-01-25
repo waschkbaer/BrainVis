@@ -74,7 +74,10 @@ void  MERBundle::calculateElectrodePosition(Core::Math::Vec3f XAxis, Core::Math:
     //lateral (seite)
     Core::Math::Vec3f laDir = YAxis % direction;
     laDir.normalize();
-    laDir = target + -2.0f*laDir;
+    if(_isRightSide)
+        laDir = target + -2.0f*laDir;
+    else
+        laDir = target + 2.0f*laDir;
     electrode = _electrodes.find("lat")->second;
 
     electrode->setTargetPosition(laDir);

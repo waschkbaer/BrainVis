@@ -1004,7 +1004,19 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
 
     std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle(BrainVisIO::MERData::MERBundleManager::getInstance().getActiveBundleName());
     if(bundle != nullptr){
-        bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),_data->getRightSTN()._endWorldSpace,_data->getRightSTN()._startWorldSpace);
+        Vec3f t = bundle->getTarget();
+        t -= Vec3f(100,100,100);
+        t =  t.x*_data->getCTeX()+
+             t.y*_data->getCTeY()+
+             t.z*_data->getCTeZ()+
+             (_data->getCTCenter()*_data->getCTScale());
+        Vec3f e = bundle->getEntry();
+        e -= Vec3f(100,100,100);
+        e =  e.x*_data->getCTeX()+
+             e.y*_data->getCTeY()+
+             e.z*_data->getCTeZ()+
+             (_data->getCTCenter()*_data->getCTScale());
+        bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),t,e);
 
         std::shared_ptr<BrainVisIO::MERData::MERElectrode> lat;
         std::shared_ptr<BrainVisIO::MERData::MERElectrode> ant;
