@@ -1,5 +1,5 @@
 #include <QString>
-
+#include <QDockWidget>
 #include "openglwidget.h"
 #include <ModiSingleton.h>
 
@@ -11,8 +11,6 @@
 #include "Utils/FontImagePainter.h"
 #include <BrainVisIO/DataHandle.h>
 #include <renderer/Context/GLMutex.h>
-#include <BrainVisIO/MER-Data/ElectrodeManager.h>
-
 using namespace Tuvok::Renderer;
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
@@ -190,23 +188,11 @@ void OpenGLWidget::renderFont(){
         //draw all stuff needed
         _fontImage->setFontColor(0,128,255);
         //string : left electrode:[ depth -5, {LAnt: ?}{LCen: ?}{LLat: ?} ]
-        std::string leftElec = "left electrode:[ {displayed depth: "+
-                                std::to_string(_data->getDisplayedDriveRange().y)+
-                                "},{depth range:("+
-                                std::to_string((int)(_data->getElectrode("LCen")->getDepthRange().x))+
-                                ","+
-                                std::to_string((int)(_data->getElectrode("LCen")->getDepthRange().y))+
-                                "} ]";
+        std::string leftElec = "electrode info here";
         _fontImage->drawText(2,14,leftElec);
 
         _fontImage->setFontColor(0,128,255);
-        std::string rightElec = "right electrode:[ {displayed depth: "+
-                                std::to_string(_data->getDisplayedDriveRange().y)+
-                                "},{depth range:("+
-                                std::to_string((int)(_data->getElectrode("RCen")->getDepthRange().x))+
-                                ","+
-                                std::to_string((int)(_data->getElectrode("RCen")->getDepthRange().y))+
-                                "} ]";
+        std::string rightElec = "electrode info here";
         _fontImage->drawText(2,28,rightElec);
 
         _fontImage->setFontColor(255,255,0);

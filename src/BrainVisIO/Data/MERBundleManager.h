@@ -36,7 +36,7 @@ private:
     std::map<std::string,std::shared_ptr<MERBundle>> _bundles;
     std::string                                      _activeBundleName;
 
-    MERBundleManager():_activeBundleName(""){}
+    MERBundleManager():_activeBundleName("none"){}
     ~MERBundleManager(){}
 };
 

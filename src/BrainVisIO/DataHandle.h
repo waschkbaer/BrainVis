@@ -11,35 +11,6 @@
 #include <thread>
 #include <vector>
 
-class iElectrode;
-
-struct Trajectory{
-    Trajectory():
-        _startPlaning(0,0,0),
-        _endPlaning(0,0,0),
-        _startWorldSpace(0,0,0),
-        _endWorldSpace(0,0,0),
-        _startVolumeSpace(0,0,0),
-        _endVolumeSpace(0,0,0)
-    {}
-
-    Trajectory(Core::Math::Vec3f startP, Core::Math::Vec3f endP):
-        _startPlaning(startP),
-        _endPlaning(endP),
-        _startWorldSpace(0,0,0),
-        _endWorldSpace(0,0,0),
-        _startVolumeSpace(0,0,0),
-        _endVolumeSpace(0,0,0)
-    {}
-
-    Core::Math::Vec3f _startPlaning;
-    Core::Math::Vec3f _endPlaning;
-    Core::Math::Vec3f _startWorldSpace;
-    Core::Math::Vec3f _endWorldSpace;
-    Core::Math::Vec3f _startVolumeSpace;
-    Core::Math::Vec3f _endVolumeSpace;
-};
-
 class DataHandle
 {
 public:
@@ -122,12 +93,6 @@ public:
     Core::Math::Vec3f getCTeZ() const;
     void setCTeZ(const Core::Math::Vec3f &CTeZ);
 
-    Trajectory getLeftSTN() const;
-    void setLeftSTN(const Trajectory &leftSTN);
-
-    Trajectory getRightSTN() const;
-    void setRightSTN(const Trajectory &rightSTN);
-
     Core::Math::Mat4f getMRWorld() const;
     void setMRWorld(const Core::Math::Mat4f &MRWorld);
 
@@ -163,9 +128,6 @@ public:
 
     void loadMERFiles(const std::string& path,const std::vector<std::string>& types);
     void loadMERNetwork(std::vector<std::string> types);
-
-    std::shared_ptr<iElectrode> getElectrode(const std::string& name);
-    std::shared_ptr<iElectrode> getElectrode(const int i);
 
     bool getUsesNetworkMER() const;
     void NetworkUpdateThread();
@@ -256,8 +218,6 @@ private:
 
     Core::Math::Vec2i                               _displayedDriveRange;
     Core::Math::Vec2f                               _spectralRange;
-    Trajectory                                      _leftSTN;
-    Trajectory                                      _rightSTN;
     float                                           _MRCTBlend;
     std::vector<Core::Math::Vec3f>                  _FFTColorImage;
 

@@ -25,8 +25,6 @@ private slots:
 
     void on_mrButton_clicked();
 
-    void on_merButton_clicked();
-
 private:
     Ui::PlaningWidget *ui;
 };

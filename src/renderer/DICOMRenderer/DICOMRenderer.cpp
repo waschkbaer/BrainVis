@@ -2,7 +2,6 @@
 #include <renderer/OpenGL/OpenGLDefines.h>
 #include <algorithm>
 #include <renderer/Context/ContextMutex.h>
-#include <BrainVisIO/MER-Data/ElectrodeManager.h>
 #include <cstdlib>
 
 
@@ -321,7 +320,8 @@ void DICOMRenderer::Paint(){
     if(_needsUpdate){
         //std::cout << "[DICOM Renderer] starting complete new frame :" << _data->getDataSetStatus() <<std::endl;
         //check if the camera has to be placed automaticly
-        if(ElectrodeManager::getInstance().isTrackingMode()){
+
+        /*if(ElectrodeManager::getInstance().isTrackingMode()){
             std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
             if(elec != nullptr){
                 _fokuslookat = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
@@ -333,7 +333,7 @@ void DICOMRenderer::Paint(){
                           _data->getCTCenter()*_data->getCTScale();
                 setCameraLookAt(_fokuslookat);
             }
-        }
+        }*/
 
         generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
         generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
@@ -809,7 +809,7 @@ void DICOMRenderer::drawCenterCube(std::shared_ptr<GLFBOTex> target){
         Mat4f scaleT;
         scaleT.Scaling(1.0,1.0,1.0);
         Mat4f transT;
-        transT.Translation(_data->getLeftSTN()._endWorldSpace);
+        transT.Translation(0,0,0);
         transT = scaleT*transT;
 
         _frontFaceShader->Enable();
@@ -935,6 +935,7 @@ void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
 
     //new mode!
     std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle(BrainVisIO::MERData::MERBundleManager::getInstance().getActiveBundleName());
+    if(bundle == nullptr) return;
 
     Vec3f t = bundle->getTarget();
     t -= Vec3f(100,100,100);
@@ -1010,115 +1011,66 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
 
 
     std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle = BrainVisIO::MERData::MERBundleManager::getInstance().getMERBundle(BrainVisIO::MERData::MERBundleManager::getInstance().getActiveBundleName());
-    if(bundle != nullptr){
-        Vec3f t = bundle->getTarget();
-        t -= Vec3f(100,100,100);
-        t =  t.x*_data->getCTeX()+
-             t.y*_data->getCTeY()+
-             t.z*_data->getCTeZ()+
-             (_data->getCTCenter()*_data->getCTScale());
-        Vec3f e = bundle->getEntry();
-        e -= Vec3f(100,100,100);
-        e =  e.x*_data->getCTeX()+
-             e.y*_data->getCTeY()+
-             e.z*_data->getCTeZ()+
-             (_data->getCTCenter()*_data->getCTScale());
-        bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),t,e);
+    if(bundle == nullptr) return;
 
-        std::shared_ptr<BrainVisIO::MERData::MERElectrode> lat;
-        std::shared_ptr<BrainVisIO::MERData::MERElectrode> ant;
-        std::shared_ptr<BrainVisIO::MERData::MERElectrode> cen;
-        lat = bundle->getElectrode("lat");
-        ant = bundle->getElectrode("ant");
-        cen = bundle->getElectrode("cen");
+    Vec3f t = bundle->getTarget();
+    t -= Vec3f(100,100,100);
+    t =  t.x*_data->getCTeX()+
+         t.y*_data->getCTeY()+
+         t.z*_data->getCTeZ()+
+         (_data->getCTCenter()*_data->getCTScale());
+    Vec3f e = bundle->getEntry();
+    e -= Vec3f(100,100,100);
+    e =  e.x*_data->getCTeX()+
+         e.y*_data->getCTeY()+
+         e.z*_data->getCTeZ()+
+         (_data->getCTCenter()*_data->getCTScale());
+    bundle->calculateElectrodePosition(_data->getCTeX(),_data->getCTeY(),t,e);
 
-        for(int i = -10; i <= 5;++i){
+    std::shared_ptr<BrainVisIO::MERData::MERElectrode> lat;
+    std::shared_ptr<BrainVisIO::MERData::MERElectrode> ant;
+    std::shared_ptr<BrainVisIO::MERData::MERElectrode> cen;
 
-            position = cen->getMERData(i)->getPosition();
-            transT.Translation(position);
-            transT = scaleT*transT;
-            _sphereFFTShader->Set("fftValue",(float)cen->getMERData(i)->getSpectralAverageNormalized());
-            _sphereFFTShader->Set("worldMatrix",transT);
-            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+    lat = bundle->getElectrode("lat");
+    ant = bundle->getElectrode("ant");
+    cen = bundle->getElectrode("cen");
 
-            _sphere->paint();
+    for(int i = -10; i <= 5;++i){
 
-            position = lat->getMERData(i)->getPosition();
-            transT.Translation(position);
-            transT = scaleT*transT;
-            _sphereFFTShader->Set("fftValue",(float)lat->getMERData(i)->getSpectralAverageNormalized());
-            _sphereFFTShader->Set("worldMatrix",transT);
-            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+        position = cen->getMERData(i)->getPosition();
+        transT.Translation(position);
+        transT = scaleT*transT;
+        _sphereFFTShader->Set("fftValue",(float)cen->getMERData(i)->getSpectralAverageNormalized());
+        _sphereFFTShader->Set("worldMatrix",transT);
+        _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
-            _sphere->paint();
+        _sphere->paint();
 
-            position = ant->getMERData(i)->getPosition();
-            transT.Translation(position);
-            transT = scaleT*transT;
-            _sphereFFTShader->Set("fftValue",(float)ant->getMERData(i)->getSpectralAverageNormalized());
-            _sphereFFTShader->Set("worldMatrix",transT);
-            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+        position = lat->getMERData(i)->getPosition();
+        transT.Translation(position);
+        transT = scaleT*transT;
+        _sphereFFTShader->Set("fftValue",(float)lat->getMERData(i)->getSpectralAverageNormalized());
+        _sphereFFTShader->Set("worldMatrix",transT);
+        _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
-            _sphere->paint();
-        }
+        _sphere->paint();
 
+        position = ant->getMERData(i)->getPosition();
+        transT.Translation(position);
+        transT = scaleT*transT;
+        _sphereFFTShader->Set("fftValue",(float)ant->getMERData(i)->getSpectralAverageNormalized());
+        _sphereFFTShader->Set("worldMatrix",transT);
+        _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
+        _sphere->paint();
     }
+
+
+
 
     _sphereFFTShader->Disable();
 
     _targetBinder->Unbind();
-
-    //testing elctronde mer manager END---------------------------------
-
-/*
-    _targetBinder->Bind(target);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glDisable(GL_BLEND);
-    glCullFace(GL_BACK);
-    glDisable(GL_CULL_FACE);
-
-    //draw the electrodes----------------------------
-    Vec3f position;
-    Mat4f scaleT;
-    Mat4f transT;
-    scaleT.Scaling(1.0,1.0,1.0);
-    Mat4f worldScaling;
-    worldScaling.Scaling(_data->getCTScale());
-    Vec4f centerWorld = (worldScaling*Vec4f(_data->getCTCenter(),1));
-
-    _sphereFFTShader->Enable();
-    _sphereFFTShader->Set("projectionMatrix",_projection);
-    _sphereFFTShader->Set("viewMatrix",_view);
-    _sphereFFTShader->Set("fftRange",_data->getSpectralRange());
-    _sphereFFTShader->SetTexture1D("fftColor",_FFTColor->GetGLID(),0);
-
-    for(int i = 0; i < ElectrodeManager::getInstance().getElectrodeCount();i++){
-        std::shared_ptr<iElectrode> electrode = _data->getElectrode(i);
-        if(!electrode->getIsSelected()) continue;
-        if(electrode != nullptr){
-            for(int k = (int)electrode->getDepthRange().x; k <= _data->getDisplayedDriveRange().y; ++k){
-                std::shared_ptr<iMERData> data = electrode->getData(k);
-                if(data != nullptr){
-
-                    position = data->getDataPosition()-Vec3f(100,100,100);
-                    position = centerWorld.xyz() + _data->getCTeX()*position.x + _data->getCTeY()*position.y + _data->getCTeZ()*position.z;
-                    transT.Translation(position);
-                    transT = scaleT*transT;
-                    _sphereFFTShader->Set("fftValue",(float)data->getSpectralAverage());
-                    _sphereFFTShader->Set("worldMatrix",transT);
-                    _sphereFFTShader->Set("fftRange",Vec2f(electrode->getSpectralPowerRange().x,electrode->getSpectralPowerRange().y));
-
-                    _sphere->paint();
-                }
-            }
-        }
-    }
-
-    _sphereFFTShader->Disable();
-
-    _targetBinder->Unbind();*/
 }
 
 
@@ -1506,9 +1458,9 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
     _frameSearchShader->Set("maxBox",maxBox);
     _frameSearchShader->Disable();
 
-    std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
+    //std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
     while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
-        std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
+        //std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
         //render slide
         foundData = false;
         _data->setSelectedSlices(currentSlide);
@@ -1537,7 +1489,7 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
         //    screenshot(counter++);
 
         if(foundData || !foundStart){
-            std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
+            //std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
             currentSlide.x += stepX*0.5f;
         }else{
             foundEnd = true;
@@ -1545,7 +1497,7 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
 
         _targetBinder->Unbind();
     }
-    std::cout << "[DICOMRenderer] will end search "<<currentSlide <<std::endl;
+    //std::cout << "[DICOMRenderer] will end search "<<currentSlide <<std::endl;
 
     return frameData;
 }

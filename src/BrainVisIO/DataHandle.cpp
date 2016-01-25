@@ -2,16 +2,10 @@
 #include "DataHandle.h"
 #include <algorithm>
 
-#include "MER-Data/FileElectrode.h"
-
-#include <BrainVisIO/MER-Data/ElectrodeManager.h>
-
 DataHandle::DataHandle():
     _transferFunction(nullptr),
     _position(0.5f),
     _gradient(0.5f),
-    _leftSTN(),
-    _rightSTN(),
     _MRLoaded(false),
     _CTLoaded(false),
     _MRCTBlend(1.0f),
@@ -38,8 +32,6 @@ DataHandle::DataHandle():
 {
     incrementStatus();
     createFFTColorImage();
-
-    ElectrodeManager::getInstance().clear();
 }
 
 
@@ -85,36 +77,6 @@ void DataHandle::loadCTData(const std::string& path)
 }
 
 void DataHandle::loadMERFiles(const std::string& path,const std::vector<std::string>& types){
-    std::vector<std::string> csvs;
-    Core::FileFinder::getInstance().readFilesWithEnding(path,csvs,".csv");
-
-    std::vector<std::string> positionList;
-    std::vector<std::string> spectralList;
-    std::string spec;
-
-    for(int i = 0; i < types.size();++i){
-        spec = types[i]+"Spec";
-        for(int j = 0; j < csvs.size();++j){
-            if(csvs[j].find(types[i]) != std::string::npos &&
-               csvs[j].find(spec) == std::string::npos){
-
-                positionList.push_back(csvs[j]);
-
-            }else if(csvs[j].find(spec) != std::string::npos){
-                spectralList.push_back(csvs[j]);
-
-            }
-        }
-    }
-
-    for(int i = 0; i < positionList.size();++i){
-        std::shared_ptr<iElectrode> elec = std::make_shared<FileElectrode>(types[i], Core::Math::Vec2d(250,1000),positionList[i],spectralList[i]);
-
-        ElectrodeManager::getInstance().addElectrode(elec);
-
-        _spectralRange.x = std::min((float)elec->getSpectralPowerRange().x, _spectralRange.x);
-        _spectralRange.y = std::max((float)elec->getSpectralPowerRange().y, _spectralRange.y);
-    }
 }
 
 void DataHandle::loadMERNetwork(std::vector<std::string> types){
@@ -561,26 +523,7 @@ void DataHandle::setCTeZ(const Core::Math::Vec3f &CTeZ)
     _CTeZ = CTeZ;
     incrementStatus();
 }
-Trajectory DataHandle::getLeftSTN() const
-{
-    return _leftSTN;
-}
 
-void DataHandle::setLeftSTN(const Trajectory &leftSTN)
-{
-    _leftSTN = leftSTN;
-    incrementStatus();
-}
-Trajectory DataHandle::getRightSTN() const
-{
-    return _rightSTN;
-}
-
-void DataHandle::setRightSTN(const Trajectory &rightSTN)
-{
-    _rightSTN = rightSTN;
-    incrementStatus();
-}
 Core::Math::Mat4f DataHandle::getMRWorld() const
 {
     return _MRWorld;
@@ -653,7 +596,7 @@ bool DataHandle::calculateCTUnitVectors(){
     std::cout <<"[DataHandle] testD L : "<< d.length() << " in worldspace avg "<< (_CTScale*d).length()<<std::endl;
 
 
-    //test length
+    /*//test length
     std::cout << "[DataHandle] Length X l0r0 : "<< (_CTScale*_rightMarker[0]-_CTScale*_leftMarker[0]).length() <<std::endl;
     std::cout << "[DataHandle] Length X l1r1 : "<< (_CTScale*_rightMarker[1]-_CTScale*_leftMarker[1]).length() <<std::endl;
     std::cout << "[DataHandle] Length X l2r2 : "<< (_CTScale*_rightMarker[2]-_CTScale*_leftMarker[2]).length() <<std::endl;
@@ -668,7 +611,7 @@ bool DataHandle::calculateCTUnitVectors(){
     std::cout << "[DataHandle] Length Y l2l3 : "<< (_CTScale*_leftMarker[3]-_CTScale*_leftMarker[2]).length() <<std::endl;
     std::cout << "[DataHandle] Length Y r1r0 : "<< (_CTScale*_rightMarker[0]-_CTScale*_rightMarker[1]).length() <<std::endl;
     std::cout << "[DataHandle] Length Y r2r3 : "<< (_CTScale*_rightMarker[3]-_CTScale*_rightMarker[2]).length() <<std::endl;
-
+    */
 
     Mat4f worldScaling;
     worldScaling.Scaling(_CTScale);
@@ -690,31 +633,6 @@ bool DataHandle::calculateCTUnitVectors(){
 
     Vec4f worldcenter = (worldScaling*Vec4f(_CTCenter,1));
 
-    Trajectory leftSTN(_leftSTN._startPlaning,_leftSTN._endPlaning);
-    Trajectory rightSTN(_rightSTN._startPlaning,_rightSTN._endPlaning);
-
-
-    //calculate STN World Space Position!
-    Vec3f leftSTNDistanceEntry = leftSTN._startPlaning-Vec3f(100,100,100);
-    Vec3f rightSTNDistanceEntry = rightSTN._startPlaning-Vec3f(100,100,100);
-    Vec3f leftSTNDistance = leftSTN._endPlaning-Vec3f(100,100,100);
-    Vec3f rightSTNDistance = rightSTN._endPlaning-Vec3f(100,100,100);
-
-    leftSTN._endWorldSpace = worldcenter.xyz() + leftSTNDistance.x * _CTeX + leftSTNDistance.y * _CTeY + leftSTNDistance.z * _CTeZ;
-    rightSTN._endWorldSpace = worldcenter.xyz() + rightSTNDistance.x * _CTeX + rightSTNDistance.y * _CTeY + rightSTNDistance.z * _CTeZ;
-
-    leftSTN._startWorldSpace = worldcenter.xyz() + leftSTNDistanceEntry.x * _CTeX + leftSTNDistanceEntry.y * _CTeY + leftSTNDistanceEntry.z * _CTeZ;
-    rightSTN._startWorldSpace = worldcenter.xyz() + rightSTNDistanceEntry.x * _CTeX + rightSTNDistanceEntry.y * _CTeY + rightSTNDistanceEntry.z * _CTeZ;
-
-    leftSTN._endVolumeSpace = (Vec4f(leftSTN._endWorldSpace,1)*worldScaling.inverse()).xyz()+Vec3f(0.5f,0.5f,0.5f);
-    rightSTN._endVolumeSpace = (Vec4f(rightSTN._endWorldSpace,1)*worldScaling.inverse()).xyz()+Vec3f(0.5f,0.5f,0.5f);
-    leftSTN._startVolumeSpace = (Vec4f(leftSTN._startWorldSpace,1)*worldScaling.inverse()).xyz()+Vec3f(0.5f,0.5f,0.5f);
-    rightSTN._startVolumeSpace = (Vec4f(rightSTN._startWorldSpace,1)*worldScaling.inverse()).xyz()+Vec3f(0.5f,0.5f,0.5f);
-
-
-    _leftSTN = leftSTN;
-    _rightSTN = rightSTN;
-
     _CTOffset = -_CTCenter;
 
     //debug out!
@@ -725,16 +643,6 @@ bool DataHandle::calculateCTUnitVectors(){
     std::cout << "[DataHandle] Ex: " << _CTeX << std::endl;
     std::cout << "[DataHandle] Ey: " << _CTeY << std::endl;
     std::cout << "[DataHandle] Ez: " << _CTeZ << std::endl;
-    std::cout << "[DataHandle] ------------------"<<std::endl;
-    std::cout << "[DataHandle] target left : "<< leftSTN._endWorldSpace <<std::endl;
-    std::cout << "[DataHandle] target right : "<< rightSTN._endWorldSpace <<std::endl;
-    std::cout << "[DataHandle] entry left : "<< leftSTN._startWorldSpace <<std::endl;
-    std::cout << "[DataHandle] entry right : "<< rightSTN._startWorldSpace <<std::endl;
-    std::cout << "[DataHandle] ------------------"<<std::endl;
-    std::cout << "[DataHandle] target leftvs : "<< leftSTN._endVolumeSpace <<std::endl;
-    std::cout << "[DataHandle] target rightvs : "<< rightSTN._endVolumeSpace <<std::endl;
-    std::cout << "[DataHandle] entry leftvs : "<< leftSTN._startVolumeSpace <<std::endl;
-    std::cout << "[DataHandle] entry rightvs : "<< rightSTN._startVolumeSpace <<std::endl;
     std::cout << "[DataHandle] ------------------"<<std::endl;
 
     incrementStatus();
@@ -759,21 +667,8 @@ bool DataHandle::getUsesNetworkMER() const
     return _usesNetworkMER;
 }
 
-
-std::shared_ptr<iElectrode> DataHandle::getElectrode(const std::string& name){
-    return ElectrodeManager::getInstance().getElectrode(name);
-}
-
-std::shared_ptr<iElectrode> DataHandle::getElectrode(const int i){
-    if(i >= 0 && i < ElectrodeManager::getInstance().getElectrodeCount()){
-        return ElectrodeManager::getInstance().getElectrode(i);
-    }else{
-        return nullptr;
-    }
-}
-
 void DataHandle::checkFocusPoint(){
-    if(ElectrodeManager::getInstance().getTrackedElectrode() != "none"){
+    /*if(ElectrodeManager::getInstance().getTrackedElectrode() != "none"){
         std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
         if(elec == nullptr) return;
 
@@ -789,7 +684,7 @@ void DataHandle::checkFocusPoint(){
             setSelectedSlices(volumeSpace);
             incrementStatus();
         }
-    }
+    }*/
 }
 
 const std::vector<uint16_t>& DataHandle::getCTHistogramm(){

@@ -62,14 +62,6 @@ void PlaningWidget::on_Start_clicked()
     _dataHandle->setPC(Vec3f(ui->PCX->text().toFloat(),ui->PCY->text().toFloat(),ui->PCZ->text().toFloat()));
     _dataHandle->setMR(Vec3f(ui->MRX->text().toFloat(),ui->MRY->text().toFloat(),ui->MRZ->text().toFloat()));
 
-    //target
-    Vec3f lEntry = Vec3f(ui->eLeftX->text().toFloat(),ui->eLeftY->text().toFloat(),ui->eLeftZ->text().toFloat());
-    Vec3f lTarget = Vec3f(ui->tLeftX->text().toFloat(),ui->tLeftY->text().toFloat(),ui->tLeftZ->text().toFloat());
-    Vec3f rEntry = Vec3f(ui->eRightX->text().toFloat(),ui->eRightY->text().toFloat(),ui->eRightZ->text().toFloat());
-    Vec3f rTarget = Vec3f(ui->tRightX->text().toFloat(),ui->tRightY->text().toFloat(),ui->tRightZ->text().toFloat());
-
-    _dataHandle->setLeftSTN(Trajectory(lEntry,lTarget));
-    _dataHandle->setRightSTN(Trajectory(rEntry,rTarget));
 
     _dataHandle->setBFoundCTFrame(false);
 
@@ -83,38 +75,6 @@ void PlaningWidget::on_Start_clicked()
     if(_dataHandle->getMRPath().size() > 1){
         _dataHandle->loadMRData(mr);
     }
-
-
-
-    //load mer data
-    std::vector<std::string> electrodes;
-    if(ui->trLat->isChecked()){
-        electrodes.push_back("LLat");
-        electrodes.push_back("RLat");
-    }
-    if(ui->trAnt->isChecked()){
-        electrodes.push_back("LAnt");
-        electrodes.push_back("RAnt");
-    }
-    if(ui->trCen->isChecked()){
-        electrodes.push_back("LCen");
-        electrodes.push_back("RCen");
-    }
-    std::string merPath =ui->MERPath_2->text().toLocal8Bit().constData();
-    std::string suffix = "\\";
-    if(merPath.compare(merPath.size() - suffix.size(), suffix.size(), suffix) != 0){
-        std::cout << "does not end with \\"<<std::endl;
-        merPath+= "\\";
-    }
-    if(!ui->mernetworkbox->isChecked()){
-        _dataHandle->loadMERFiles(merPath,electrodes);
-    }else{
-        std::string merHost =ui->merip->text().toLocal8Bit().constData();
-        int port = ui->merport->text().toInt();
-
-        _dataHandle->loadMERNetwork(electrodes);
-    }
-
 
     w->setDataHandle(_dataHandle);
 
@@ -135,12 +95,3 @@ void PlaningWidget::on_LoadSettings_clicked()
 
 
 
-void PlaningWidget::on_merButton_clicked()
-{
-    QFileDialog dialog;
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setOption(QFileDialog::ShowDirsOnly);
-    QString fileName = dialog.getExistingDirectory();
-
-    ui->MERPath_2->setText(fileName);
-}
