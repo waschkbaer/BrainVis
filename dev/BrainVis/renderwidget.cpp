@@ -7,6 +7,9 @@
 
 
 #include <BrainVisIO/DataHandle.h>
+#include "ActivityManager.h"
+
+using namespace BrainVis;
 
 RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, int renderID) :
     QDockWidget(parent),
@@ -28,7 +31,6 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, in
 
     ui->openGLWidget->setDataHandle(data);
     ui->openGLWidget->setRendererID(_renderID);
-
 }
 
 RenderWidget::~RenderWidget()
@@ -43,6 +45,7 @@ void RenderWidget::Cleanup(){
 
 void RenderWidget::on_ThreeD_clicked()
 {
+    ActivityManager::getInstance().setActiveRenderer(_renderID);
     ui->openGLWidget->setRenderMode(RenderMode::ThreeDMode);
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(true);
@@ -52,6 +55,7 @@ void RenderWidget::on_ThreeD_clicked()
 
 void RenderWidget::on_ZAxis_clicked()
 {
+    ActivityManager::getInstance().setActiveRenderer(_renderID);
     ui->openGLWidget->setRenderMode(RenderMode::ZAxis);
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(true);
@@ -61,6 +65,7 @@ void RenderWidget::on_ZAxis_clicked()
 
 void RenderWidget::on_XAxis_clicked()
 {
+    ActivityManager::getInstance().setActiveRenderer(_renderID);
     ui->openGLWidget->setRenderMode(RenderMode::XAxis);
     ui->XAxis->setEnabled(false);
     ui->YAxis->setEnabled(true);
@@ -70,6 +75,7 @@ void RenderWidget::on_XAxis_clicked()
 
 void RenderWidget::on_YAxis_clicked()
 {
+    ActivityManager::getInstance().setActiveRenderer(_renderID);
     ui->openGLWidget->setRenderMode(RenderMode::YAxis);
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(false);
@@ -88,6 +94,7 @@ int RenderWidget::renderID() const
 
 
 void RenderWidget::keyPressEvent(QKeyEvent *event){
+    ActivityManager::getInstance().setActiveRenderer(_renderID);
     if(event->key() == Qt::Key_R){
         std::cout << "mode: rotatecam" << std::endl;
         ModiSingleton::getInstance().setActiveMode(Mode::CameraRotation);
@@ -187,9 +194,6 @@ void RenderWidget::keyPressEvent(QKeyEvent *event){
     if(event->key() == Qt::Key_Alt){
         ui->openGLWidget->switchScrollMode();
     }
-    if(event->key() == Qt::Key_0){
-        ui->openGLWidget->setDoGradientDescent(true);
-    }
 }
 
 void RenderWidget::keyReleaseEvent(QKeyEvent *event){
@@ -202,17 +206,9 @@ void RenderWidget::setClipMode(DICOMClipMode mode){
     ui->openGLWidget->setClipMode(mode);
 }
 
-void RenderWidget::startGradientDescent(){
-    ui->openGLWidget->setDoGradientDescent(true);
-}
-
 void RenderWidget::closeEvent(QCloseEvent *bar){
     MainWindow* w = (MainWindow*)this->parent();
     if(w != NULL){
         w->removeRenderer(_renderID);
     }
-}
-
-void RenderWidget::startFrameFind(){
-    ui->openGLWidget->startFrameFind();
 }

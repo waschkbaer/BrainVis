@@ -9,8 +9,12 @@
 #include <cstring>
 
 #include "Utils/FontImagePainter.h"
-#include <BrainVisIO/DataHandle.h>
+#include <BrainVisIO/DataHandleManager.h>
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
+#include "ActivityManager.h"
 #include <renderer/Context/GLMutex.h>
+
+using namespace BrainVis;
 using namespace Tuvok::Renderer;
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
@@ -18,7 +22,9 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       _leftMouseDown(false),
       _rightMouseDown(false),
       _windowSize(0,0),
-      _scrollMode(true)
+      _scrollMode(true),
+      _rendererID(-1),
+      _renderer(nullptr)
 {
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -76,8 +82,9 @@ void OpenGLWidget::paintGL(){
         renderFont();
         _renderer->Paint();
 
-    }else{
-        _renderer = std::unique_ptr<DICOMRenderer>(new DICOMRenderer());
+    }else if(_rendererID != -1){
+        _renderer = DicomRenderManager::getInstance().getRenderer(_rendererID);
+        _renderer->SetDataHandle(_data);
         _renderer->Initialize();
     }
     //doneCurrent();
@@ -105,6 +112,7 @@ void OpenGLWidget::mouseReleaseEvent (QMouseEvent * event ){
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
+    ActivityManager::getInstance().setActiveRenderer(_rendererID);
     GLMutex::getInstance().lockContext();
     if(_leftMouseDown){
 
@@ -211,10 +219,6 @@ void OpenGLWidget::renderFont(){
     }
 }
 
-void OpenGLWidget::setDoGradientDescent(bool value){
-    _renderer->setDoesGradientDescent(value);
-}
-
 void OpenGLWidget::setClipMode(DICOMClipMode mode){
      _renderer->setClipMode(mode);
 }
@@ -224,7 +228,6 @@ void OpenGLWidget::setRenderMode(RenderMode mode) {
 }
 
 void OpenGLWidget::setDataHandle(std::shared_ptr<DataHandle> data){
-    _renderer->SetDataHandle(data);
     _data = data;
 }
 
@@ -234,8 +237,4 @@ void OpenGLWidget::changeSlide(int slidedelta){
 
 void OpenGLWidget::zoom(int zoomdelta){
     _renderer->ZoomTwoD(zoomdelta);
-}
-
-void OpenGLWidget::startFrameFind(){
-    _renderer->setDoFrameDetection(true);
 }

@@ -667,24 +667,22 @@ bool DataHandle::getUsesNetworkMER() const
     return _usesNetworkMER;
 }
 
-void DataHandle::checkFocusPoint(){
-    /*if(ElectrodeManager::getInstance().getTrackedElectrode() != "none"){
-        std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
-        if(elec == nullptr) return;
+void DataHandle::setFocusPoint(Core::Math::Vec3f position){
 
-        Vec3f CTSpacePosition = elec->getData(getDisplayedDriveRange().y)->getDataPosition();
+    /*Vec3f CTSpacePosition = elec->getData(getDisplayedDriveRange().y)->getDataPosition();
 
-        CTSpacePosition = CTSpacePosition-Vec3f(100,100,100);
-        Vec3f worldSpace =  getCTeX()*CTSpacePosition.x +
-                            getCTeY()*CTSpacePosition.y +
-                            getCTeZ()*CTSpacePosition.z;
-        Vec3f volumeSpace = (worldSpace/_CTScale)+this->getCTCenter()+Vec3f(0.5f,0.5f,0.5f);
+    CTSpacePosition = CTSpacePosition-Vec3f(100,100,100);
+    Vec3f worldSpace =  getCTeX()*CTSpacePosition.x +
+                        getCTeY()*CTSpacePosition.y +
+                        getCTeZ()*CTSpacePosition.z;*/
+    Vec3f worldSpace = position;
+    Vec3f volumeSpace = (worldSpace/_CTScale)+this->getCTCenter()+Vec3f(0.5f,0.5f,0.5f);
 
-        if(volumeSpace != getSelectedSlices()){
-            setSelectedSlices(volumeSpace);
-            incrementStatus();
-        }
-    }*/
+    if(volumeSpace != getSelectedSlices()){
+        setSelectedSlices(volumeSpace);
+        incrementStatus();
+    }
+
 }
 
 const std::vector<uint16_t>& DataHandle::getCTHistogramm(){

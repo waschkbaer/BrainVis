@@ -137,7 +137,7 @@ public:
 
     Core::Math::Vec3f getSelectedWorldSpacePositon() const;
 
-    void checkFocusPoint();
+    void setFocusPoint(Core::Math::Vec3f position);
     void incrementStatus();
 
     float getFTranslationStep() const;

@@ -5,11 +5,18 @@
 
 #include <iostream>
 
-MERimageentry::MERimageentry(int depth ,const std::string& name,QWidget *parent) :
+#include "../ActivityManager.h"
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
+#include <BrainVisIO/DataHandleManager.h>
+
+using namespace BrainVis;
+
+MERimageentry::MERimageentry(int depth ,const std::string& name,std::shared_ptr<BrainVisIO::MERData::MERData> data,QWidget *parent) :
     QWidget(parent),
     _lastSpectralData(),
     _depth(depth),
     _name(name),
+    _data(data),
     ui(new Ui::MERimageentry)
 {
     ui->setupUi(this);
@@ -148,4 +155,9 @@ QColor MERimageentry::getSpectralColor(double value){
 void MERimageentry::mousePressEvent(QMouseEvent* event){
    // emit clicked();
     std::cout << "here"<< _depth << "  "<< _name<<std::endl;
+
+    uint16_t handle = ActivityManager::getInstance().getActiveDataset();
+    std::shared_ptr<DataHandle> d = DataHandleManager::getInstance().getDataHandle(handle);
+
+    d->setFocusPoint(_data->getPosition());
 }

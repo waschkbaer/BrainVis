@@ -29,9 +29,6 @@ public:
 
     void setClipMode(DICOMClipMode mode);
 
-    void startGradientDescent();
-    void startFrameFind();
-
     void closeEvent(QCloseEvent *bar);
 
     void Cleanup();

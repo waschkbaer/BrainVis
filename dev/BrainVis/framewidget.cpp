@@ -6,6 +6,11 @@
 #include <mainwindow.h>
 #include <renderwidget.h>
 
+#include "ActivityManager.h"
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
+
+using namespace BrainVis;
+
 FrameWidget::FrameWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
     ui(new Ui::FrameWidget),
@@ -138,8 +143,10 @@ void FrameWidget::setSliders(){
 
 void FrameWidget::on_pushButton_clicked()
 {
-    MainWindow* parent = (MainWindow*)this->parent();
-    parent->getWorkingRenderer()->startFrameFind();
+    uint16_t handle = ActivityManager::getInstance().getActiveRenderer();
+    std::shared_ptr<DICOMRenderer> r = DicomRenderManager::getInstance().getRenderer(handle);
+    if(r != nullptr)
+        r->setDoFrameDetection(true);
 }
 
 void FrameWidget::closeEvent(QCloseEvent *bar){

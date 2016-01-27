@@ -282,7 +282,6 @@ void DICOMRenderer::checkDatasetStatus(){
 
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
-    _data->checkFocusPoint();
 
     checkDatasetStatus();
 

@@ -57,33 +57,33 @@ void PlaningWidget::on_Start_clicked()
     uint16_t handle = DataHandleManager::getInstance().createNewDataHandle();
     ActivityManager::getInstance().setActiveDataset(handle);
 
-    std::shared_ptr<DataHandle> _dataHandle = DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset());
+    std::shared_ptr<DataHandle> dataHandle = DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset());
 
     MainWindow* w = (MainWindow*)this->parent();
 
-    _dataHandle->setCTPath(ui->CTPath->text().toLocal8Bit().constData());
-    _dataHandle->setMRPath(ui->MRPath->text().toLocal8Bit().constData());
+    dataHandle->setCTPath(ui->CTPath->text().toLocal8Bit().constData());
+    dataHandle->setMRPath(ui->MRPath->text().toLocal8Bit().constData());
 
     //AC-PC
-    _dataHandle->setAC(Vec3f(ui->ACX->text().toFloat(),ui->ACY->text().toFloat(),ui->ACZ->text().toFloat()));
-    _dataHandle->setPC(Vec3f(ui->PCX->text().toFloat(),ui->PCY->text().toFloat(),ui->PCZ->text().toFloat()));
-    _dataHandle->setMR(Vec3f(ui->MRX->text().toFloat(),ui->MRY->text().toFloat(),ui->MRZ->text().toFloat()));
+    dataHandle->setAC(Vec3f(ui->ACX->text().toFloat(),ui->ACY->text().toFloat(),ui->ACZ->text().toFloat()));
+    dataHandle->setPC(Vec3f(ui->PCX->text().toFloat(),ui->PCY->text().toFloat(),ui->PCZ->text().toFloat()));
+    dataHandle->setMR(Vec3f(ui->MRX->text().toFloat(),ui->MRY->text().toFloat(),ui->MRZ->text().toFloat()));
 
 
-    _dataHandle->setBFoundCTFrame(false);
+    dataHandle->setBFoundCTFrame(false);
 
-    std::string ct = _dataHandle->getCTPath();
-    std::string mr = _dataHandle->getMRPath();
+    std::string ct = dataHandle->getCTPath();
+    std::string mr = dataHandle->getMRPath();
 
-    if(_dataHandle->getCTPath().size() > 1){
-        _dataHandle->loadCTData(ct);
+    if(dataHandle->getCTPath().size() > 1){
+        dataHandle->loadCTData(ct);
     }
 
-    if(_dataHandle->getMRPath().size() > 1){
-        _dataHandle->loadMRData(mr);
+    if(dataHandle->getMRPath().size() > 1){
+        dataHandle->loadMRData(mr);
     }
 
-    w->setDataHandle(_dataHandle);
+    w->setDataHandle(dataHandle);
 
     w->createNewRenderWidger();
 

@@ -7,6 +7,11 @@
 #include "renderwidget.h"
 #include <BrainVisIO/DataHandle.h>
 
+#include "ActivityManager.h"
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
+
+using namespace BrainVis;
+
 CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
     ui(new Ui::CtRegistrationWidget),
@@ -69,8 +74,11 @@ void CtRegistrationWidget::on_registerButton_clicked()
     _data->setFTranslationStepScale(_translationScaling);
     _data->setFRotationStep(_rotationStep);
     _data->setFRotationStepScale(_rotationScaling);
-    MainWindow* parent = (MainWindow*)this->parent();
-    parent->getWorkingRenderer()->startGradientDescent();
+
+    uint16_t handle = ActivityManager::getInstance().getActiveRenderer();
+    std::shared_ptr<DICOMRenderer> r = DicomRenderManager::getInstance().getRenderer(handle);
+    if(r != nullptr)
+        r->setDoesGradientDescent(true);
 }
 
 void CtRegistrationWidget::on_translationStepSize_sliderMoved(int position)

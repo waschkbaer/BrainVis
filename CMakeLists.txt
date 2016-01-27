@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.4)
 
 #force release mode!
-message(STATUS "Setting build type to 'Release' as none was specified.")
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release")
+#message(STATUS "Setting build type to 'Release' as none was specified.")
+#set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+#set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release")
 
 project(BrainVis)
 

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "mertoolenums.h"
+#include <BrainVisIO/Data/MERData.h>
 
 namespace Ui {
 class MERimageentry;
@@ -17,7 +18,7 @@ class MERimageentry : public QWidget
     Q_OBJECT
 
 public:
-    explicit MERimageentry(int depth = -10,const std::string& name = "none",QWidget *parent = 0);
+    explicit MERimageentry(int depth = -10,const std::string& name = "none",std::shared_ptr<BrainVisIO::MERData::MERData> data = nullptr,QWidget *parent = 0);
     ~MERimageentry();
 
     void createSpectralImage(const std::vector<double>& data);
@@ -40,6 +41,8 @@ private:
 
     int                     _depth;
     std::string             _name;
+
+    std::shared_ptr<BrainVisIO::MERData::MERData> _data;
 };
 
 #endif // MERIMAGEENTRY_H

@@ -17,6 +17,7 @@
 #include <iostream>
 
 #include <BrainVisIO/DataHandleManager.h>
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
 #include "ActivityManager.h"
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
@@ -46,7 +47,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::createNewRenderWidger(){
     if(ActivityManager::getInstance().getActiveDataset() != -1){
-        m_vActiveRenderer.push_back(std::make_shared<RenderWidget>(DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()),this,this->getNextRenderIDCounter()));
+        int renderHandle = DicomRenderManager::getInstance().addRenderer();
+        ActivityManager::getInstance().setActiveRenderer(renderHandle);
+
+        m_vActiveRenderer.push_back(std::make_shared<RenderWidget>(
+                                        DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()),
+                                        this,
+                                        renderHandle)
+                                    );
     }
 }
 
