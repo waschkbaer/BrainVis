@@ -23,6 +23,8 @@ MERimageentry::MERimageentry(int depth ,const std::string& name,std::shared_ptr<
 
     show();
     setUpdatesEnabled(true);
+
+    ui->stnBox->setChecked(data->getIsSTNclassified());
 }
 
 MERimageentry::~MERimageentry()
@@ -155,5 +157,11 @@ QColor MERimageentry::getSpectralColor(double value){
 void MERimageentry::mousePressEvent(QMouseEvent* event){
     uint16_t handle = ActivityManager::getInstance().getActiveDataset();
     std::shared_ptr<DataHandle> d = DataHandleManager::getInstance().getDataHandle(handle);
-    d->setFocusPoint(_data->getPosition());
+    if(d != nullptr)
+        d->setFocusPoint(_data->getPosition());
+}
+
+void MERimageentry::on_stnBox_clicked()
+{
+    _data->setIsSTNclassified(ui->stnBox->isChecked());
 }

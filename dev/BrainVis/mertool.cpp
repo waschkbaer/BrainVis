@@ -23,12 +23,13 @@ MERTool::MERTool(QWidget *parent) :
     ui(new Ui::MERTool)
 {
     ui->setupUi(this);
-
     setFloating(true);
-
     show();
 
     on_checkBox_clicked();
+    on_classificationBox_clicked();
+
+    _perceptron = std::unique_ptr<Perceptron>(new Perceptron());
 
     timerId = startTimer(1000);
 }
@@ -102,7 +103,8 @@ void MERTool::on_loadButton_clicked()
     ui->BundleSelection->setCurrentIndex(ui->BundleSelection->findText(QString(p[p.size()-1].c_str())));
     on_BundleSelection_activated(ui->BundleSelection->currentText());
 
-    DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
+    if( DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()) != nullptr)
+        DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
 }
 
 void MERTool::updateSettings(const std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle){
@@ -121,7 +123,8 @@ void MERTool::on_BundleSelection_activated(const QString &arg1)
     updateSettings(MERBundleManager::getInstance().getMERBundle(arg1.toStdString()));
     MERBundleManager::getInstance().activateBundle(arg1.toStdString());
 
-    DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
+    if( DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()) != nullptr)
+        DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
 }
 
 void MERTool::updateData(const std::string& bundlename){
@@ -309,7 +312,8 @@ void MERTool::fftCalcThreadRun(){
                 }
                 if(data->getRecordedSeconds()-lastRecord > 0){
                     lastRecord = data->getRecordedSeconds();
-                    DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
+                    if( DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()) != nullptr)
+                        DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
                 }
 
                 merClientMutex.unlock();
@@ -332,4 +336,122 @@ void MERTool::on_disconnectButton_clicked()
         _fftCalcThread->join();
         _fftCalcThread.reset();
     }
+}
+
+void MERTool::on_classifyButton_clicked()
+{
+    std::shared_ptr<MERBundle> bundle =  MERBundleManager::getInstance().getMERBundle(MERBundleManager::getInstance().getActiveBundleName());
+
+    std::vector<double> d;
+    std::shared_ptr<MERElectrode> electrode;
+
+    for(int j = 0; j < 3;++j){
+        switch(j){
+        case 0 :
+            electrode = bundle->getElectrode("lat"); break;
+        case 1 :
+            electrode = bundle->getElectrode("cen"); break;
+        case 2 :
+            electrode = bundle->getElectrode("ant"); break;
+        default : electrode = nullptr;
+        }
+        if(electrode == nullptr) continue;
+
+        for(int i = -10; i <= 5; ++i){
+            std::shared_ptr<BrainVisIO::MERData::MERData> data = electrode->getMERData(i);
+            if(data == nullptr) continue;
+
+            d = electrode->getMERData(i)->getSpectralPowerNormalizedAndWindowed();
+            d.push_back(i);
+
+            _perceptron->setInputs(d);
+            if(_perceptron->weights().size() != d.size()) _perceptron->setBaseWeights(d.size());
+
+            data->setIsSTNclassified(_perceptron->classify());
+        }
+    }
+
+    updateData(MERBundleManager::getInstance().getActiveBundleName());
+}
+
+void MERTool::on_learnelectrodeButton_clicked()
+{
+    std::shared_ptr<MERBundle> bundle =  MERBundleManager::getInstance().getMERBundle(MERBundleManager::getInstance().getActiveBundleName());
+    learnElectrodeBundle(bundle);
+
+    for(const double d : _perceptron->weights()){
+        std::cout << d << std::endl;
+    }
+}
+
+void MERTool::on_learnAllelectrodeButton_clicked()
+{
+   std::vector<std::string> bundles =  MERBundleManager::getInstance().getRegisteredBundles();
+   std::shared_ptr<MERBundle> bundle;
+
+   bool madeChangesCounter = 0;
+
+   do{
+       madeChangesCounter = 0;
+       for(int i = 0; i < bundles.size();++i){
+            bundle = MERBundleManager::getInstance().getMERBundle(bundles[i]);
+            if(!learnElectrodeBundle(bundle)){
+                madeChangesCounter++;
+            }
+       }
+   }while(madeChangesCounter != 0);
+
+   for(const double d : _perceptron->weights()){
+       std::cout << d << std::endl;
+   }
+}
+
+void MERTool::on_classificationBox_clicked()
+{
+    if(ui->classificationBox->isChecked()){
+        ui->classificationFrame->show();
+    }else{
+        ui->classificationFrame->hide();
+    }
+}
+
+bool MERTool::learnElectrodeBundle(std::shared_ptr<MERBundle> bundle){
+    std::vector<double> d;
+    std::shared_ptr<MERElectrode> electrode;
+
+    bool allcorrect = true;
+    int notCorrectCounter = 0;
+    do{
+        notCorrectCounter = 0;
+        for(int j = 0; j < 3;++j){
+            switch(j){
+            case 0 :
+            electrode = bundle->getElectrode("lat"); break;
+            case 1 :
+            electrode = bundle->getElectrode("cen"); break;
+            case 2 :
+            electrode = bundle->getElectrode("ant"); break;
+            default : electrode = nullptr;
+            }
+            if(electrode == nullptr) continue;
+
+            for(int i = -10; i <= 5; ++i){
+                std::shared_ptr<BrainVisIO::MERData::MERData> data = electrode->getMERData(i);
+                if(data == nullptr) continue;
+
+                d = electrode->getMERData(i)->getSpectralPowerNormalizedAndWindowed();
+                d.push_back(i);
+
+                _perceptron->setInputs(d);
+                if(_perceptron->weights().size() != d.size()) _perceptron->setBaseWeights(d.size());
+
+                if(!_perceptron->train(data->getIsSTNclassified())){
+                    notCorrectCounter++;
+                    allcorrect = false;
+                }
+            }
+        }
+    }while(notCorrectCounter != 0);
+
+    return allcorrect;
 }

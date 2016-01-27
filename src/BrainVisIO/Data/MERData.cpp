@@ -17,7 +17,8 @@ _lastRequestedSeconds(),
 _lastRequestedSpectralPower(),
 _lastRequestTimer(0),
 _recordedSeconds(0),
-_spectralAverage(0){
+_spectralAverage(0),
+_isSTNclassified(false){
 
 }
 MERData::MERData(int recordingDepth, const std::string& filename):
@@ -27,7 +28,8 @@ _spectralPower(),
 _lastRequestedSeconds(),
 _lastRequestedSpectralPower(),
 _lastRequestTimer(0),
-_recordedSeconds(0){
+_recordedSeconds(0),
+_isSTNclassified(false){
 
     loadFile(filename);
     executeFFTWelch(5,true);
@@ -276,6 +278,16 @@ void MERData::loadFile(const std::string& filename){
 
     _recordedSeconds = _signal.size()/SAMPLESPERSECOND;
 }
+bool MERData::getIsSTNclassified() const
+{
+    return _isSTNclassified;
+}
+
+void MERData::setIsSTNclassified(bool isSTNclassified)
+{
+    _isSTNclassified = isSTNclassified;
+}
+
 double MERData::getSpectralAverage() const
 {
     return _spectralAverage;

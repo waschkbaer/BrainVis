@@ -37,6 +37,9 @@ public:
     double getSpectralAverageNormalized(int minVal = 2000, int maxVal = 25000) const;
     void setSpectralAverage(double spectralAverage);
 
+    bool getIsSTNclassified() const;
+    void setIsSTNclassified(bool isSTNclassified);
+
 protected:
     void loadFile(const std::string& filename);
 
@@ -52,6 +55,8 @@ private:
     double                  _spectralAverage;
 
     Core::Math::Vec3f       _position;
+
+    bool                    _isSTNclassified;
 
 };
 

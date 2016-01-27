@@ -14,6 +14,8 @@
 #include "merwidgets/merelectrodeentry.h"
 #include "merwidgets/mertoolenums.h"
 
+#include "Utils/Perceptron.h"
+
 #include <vector>
 #include <memory>
 #include <map>
@@ -66,7 +68,16 @@ private slots:
 
     void on_disconnectButton_clicked();
 
+    void on_classifyButton_clicked();
+
+    void on_learnelectrodeButton_clicked();
+
+    void on_learnAllelectrodeButton_clicked();
+
+    void on_classificationBox_clicked();
+
 private:
+    bool learnElectrodeBundle(std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle);
     void updateData(const std::string& bundlename);
     void updateSettings(const std::shared_ptr<BrainVisIO::MERData::MERBundle> bunlde);
 
@@ -81,6 +92,8 @@ private:
     std::unique_ptr<std::thread>                              _fftCalcThread;
 
     std::shared_ptr<MERRecordSettings>                        _currentRecordingSettings;
+
+    std::unique_ptr<Perceptron>                               _perceptron;
 };
 
 #endif // MERTOOL_H
