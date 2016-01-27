@@ -5,13 +5,16 @@
 
 #include <string>
 
-#include <BrainVisIO/DataHandle.h>
 #include <mainwindow.h>
 #include <renderwidget.h>
 
 #include <histogrammwidget.h>
 #include <framewidget.h>
 
+#include <ActivityManager.h>
+#include <BrainVisIO/DataHandleManager.h>
+
+using namespace BrainVis;
 
 PlaningWidget::PlaningWidget(QWidget *parent) :
     QDockWidget(parent),
@@ -50,7 +53,11 @@ void PlaningWidget::on_mrButton_clicked()
 
 void PlaningWidget::on_Start_clicked()
 {
-    std::shared_ptr<DataHandle> _dataHandle = std::make_shared<DataHandle>();
+
+    uint16_t handle = DataHandleManager::getInstance().createNewDataHandle();
+    ActivityManager::getInstance().setActiveDataset(handle);
+
+    std::shared_ptr<DataHandle> _dataHandle = DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset());
 
     MainWindow* w = (MainWindow*)this->parent();
 
@@ -79,11 +86,6 @@ void PlaningWidget::on_Start_clicked()
     w->setDataHandle(_dataHandle);
 
     w->createNewRenderWidger();
-
-    /*HistogrammWidget* hw = new HistogrammWidget(w,_dataHandle);
-    hw->createHistogramms(_dataHandle->getCTHistogramm(),_dataHandle->getMRHistogramm());
-
-    FrameWidget* fw = new FrameWidget(w,_dataHandle);*/
 
     this->close();
 }

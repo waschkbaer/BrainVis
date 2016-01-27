@@ -14,9 +14,9 @@ public:
         return instance;
     }
 
-    void updateFocusPointOnAllRenderer();
     uint16_t addRenderer(std::shared_ptr<DICOMRenderer> r = nullptr);
     const std::shared_ptr<DICOMRenderer> getRenderer(uint16_t);
+    void deleteRenderer(uint16_t id);
 
 protected:
 

@@ -16,9 +16,11 @@
 #include "planingwidget.h"
 #include <iostream>
 
-#include <BrainVisIO/DataHandle.h>
+#include <BrainVisIO/DataHandleManager.h>
+#include "ActivityManager.h"
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
+using namespace BrainVis;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -43,10 +45,11 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::createNewRenderWidger(){
-    if(_data != nullptr){
-        m_vActiveRenderer.push_back(std::make_shared<RenderWidget>(_data,this,this->getNextRenderIDCounter()));
+    if(ActivityManager::getInstance().getActiveDataset() != -1){
+        m_vActiveRenderer.push_back(std::make_shared<RenderWidget>(DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()),this,this->getNextRenderIDCounter()));
     }
 }
+
 int MainWindow::getNextRenderIDCounter()
 {
     _renderIDCounter++;
