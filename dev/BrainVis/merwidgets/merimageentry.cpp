@@ -153,11 +153,7 @@ QColor MERimageentry::getSpectralColor(double value){
 }
 
 void MERimageentry::mousePressEvent(QMouseEvent* event){
-   // emit clicked();
-    std::cout << "here"<< _depth << "  "<< _name<<std::endl;
-
     uint16_t handle = ActivityManager::getInstance().getActiveDataset();
     std::shared_ptr<DataHandle> d = DataHandleManager::getInstance().getDataHandle(handle);
-
     d->setFocusPoint(_data->getPosition());
 }

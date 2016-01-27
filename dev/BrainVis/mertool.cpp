@@ -6,12 +6,14 @@
 
 #include "merwidgets/merimageentry.h"
 #include "BrainVisIO/Data/MERBundleManager.h"
+#include "ActivityManager.h"
+#include "BrainVisIO/DataHandleManager.h"
 
 #include "merwidgets/merelectrodeentry.h"
 
 #include <mocca/base/StringTools.h>
 
-
+using namespace BrainVis;
 using namespace BrainVisIO::MERData;
 
 MERTool::MERTool(QWidget *parent) :
@@ -99,6 +101,8 @@ void MERTool::on_loadButton_clicked()
 
     ui->BundleSelection->setCurrentIndex(ui->BundleSelection->findText(QString(p[p.size()-1].c_str())));
     on_BundleSelection_activated(ui->BundleSelection->currentText());
+
+    DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
 }
 
 void MERTool::updateSettings(const std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle){
@@ -116,6 +120,8 @@ void MERTool::on_BundleSelection_activated(const QString &arg1)
     updateData(arg1.toStdString());
     updateSettings(MERBundleManager::getInstance().getMERBundle(arg1.toStdString()));
     MERBundleManager::getInstance().activateBundle(arg1.toStdString());
+
+    DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
 }
 
 void MERTool::updateData(const std::string& bundlename){
@@ -193,9 +199,6 @@ void MERTool::on_connectButton_clicked()
     if( ui->BundleSelection->findText(QString("recording")) == -1)
         ui->BundleSelection->addItem(QString("recording"));
 
-    //ui->BundleSelection->setCurrentIndex(ui->BundleSelection->findText(QString("recording")));
-    //on_BundleSelection_activated(ui->BundleSelection->currentText());
-
     MERElectrodeIds ids(2,3,4);
 
     _MERClient = std::unique_ptr<MERClient>(new MERClient(400000));
@@ -205,6 +208,10 @@ void MERTool::on_connectButton_clicked()
     _MERClient->connect(ui->hostEdit->text().toStdString(),ids);
 
     _MERClient->setIsRecording(false);
+
+    //force options
+    on_optionsButton_clicked();
+    MERBundleManager::getInstance().activateBundle("recording");
 
     _fftThreadStop = false;
     _fftCalcThread = std::unique_ptr<std::thread>(new std::thread(&MERTool::fftCalcThreadRun,this));
@@ -300,8 +307,10 @@ void MERTool::fftCalcThreadRun(){
                 if(data->getRecordedSeconds() >= 5 && data->getRecordedSeconds()-lastRecord > 0){
                     data->executeFFTWelch(5,true);
                 }
-                if(data->getRecordedSeconds()-lastRecord > 0)
+                if(data->getRecordedSeconds()-lastRecord > 0){
                     lastRecord = data->getRecordedSeconds();
+                    DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset())->incrementStatus();
+                }
 
                 merClientMutex.unlock();
             }

@@ -1035,6 +1035,7 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
     cen = bundle->getElectrode("cen");
 
     for(int i = -10; i <= 5;++i){
+		if (cen->getMERData(i) == nullptr) continue;
 
         position = cen->getMERData(i)->getPosition();
         transT.Translation(position);
