@@ -19,6 +19,7 @@ public:
     }
 
     const std::shared_ptr<MERBundle> openFolder(const std::string& folder);
+    void saveRecordings(std::shared_ptr<MERBundle> recording, const std::string& folder);
 
 protected:
     void loadMeta(const std::string& folder, std::shared_ptr<MERBundle> bundle);

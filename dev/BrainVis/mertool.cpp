@@ -12,6 +12,8 @@
 #include "merwidgets/merelectrodeentry.h"
 
 #include <mocca/base/StringTools.h>
+#include <ctime>
+#include <stdlib.h>
 
 using namespace BrainVis;
 using namespace BrainVisIO::MERData;
@@ -198,9 +200,15 @@ void MERTool::on_connectButton_clicked()
     b->addElectrode("cen");
     b->addElectrode("ant");
 
-    MERBundleManager::getInstance().addMERBundle("recording",b);
-    if( ui->BundleSelection->findText(QString("recording")) == -1)
-        ui->BundleSelection->addItem(QString("recording"));
+    time_t t = time(0);   // get time now
+    struct tm * now = localtime( & t );
+    std::string dateString =    std::to_string(now->tm_mday)+"_"+
+                                std::to_string(now->tm_mon+1)+"_"+
+                                std::to_string(now->tm_yday+1989);
+
+    MERBundleManager::getInstance().addMERBundle(dateString,b);
+    if( ui->BundleSelection->findText(QString(dateString.c_str())) == -1)
+        ui->BundleSelection->addItem(QString(dateString.c_str()));
 
     MERElectrodeIds ids(2,3,4);
 
@@ -214,7 +222,8 @@ void MERTool::on_connectButton_clicked()
 
     //force options
     on_optionsButton_clicked();
-    MERBundleManager::getInstance().activateBundle("recording");
+    MERBundleManager::getInstance().activateBundle(dateString);
+    ActivityManager::getInstance().setActiveElectrode(dateString);
 
     _fftThreadStop = false;
     _fftCalcThread = std::unique_ptr<std::thread>(new std::thread(&MERTool::fftCalcThreadRun,this));
@@ -262,7 +271,8 @@ void MERTool::on_nextButton_clicked()
 
 void MERTool::on_saveButton_clicked()
 {
-
+    MERFileManager::getInstance().saveRecordings(MERBundleManager::getInstance().getMERBundle(ActivityManager::getInstance().getActiveElectrode()),
+                                                 ActivityManager::getInstance().getActiveElectrode());
 }
 
 void MERTool::on_optionsButton_clicked()
@@ -279,6 +289,7 @@ void MERTool::fftCalcThreadRun(){
     std::shared_ptr<MERBundle> bundle;
     int lastRecord = 0;
     int depth = _MERClient->getCurrentDepth();
+    std::vector<double> perceptronInputs;
 
     while(!_fftThreadStop){
         if(depth != _MERClient->getCurrentDepth()){
@@ -299,16 +310,28 @@ void MERTool::fftCalcThreadRun(){
 
                 if(data->getRecordedSeconds() >= 5 && data->getRecordedSeconds()-lastRecord > 0){
                     data->executeFFTWelch(5,true);
+                    perceptronInputs = data->getSpectralPowerNormalizedAndWindowed();
+                    perceptronInputs.push_back(_MERClient->getCurrentDepth());
+                    _perceptron->setInputs(perceptronInputs);
+                    _perceptron->classify();
                 }
 
                 data = bundle->getElectrode("ant")->getMERData(_MERClient->getCurrentDepth());
                 if(data->getRecordedSeconds() >= 5 && data->getRecordedSeconds()-lastRecord > 0){
                     data->executeFFTWelch(5,true);
+                    perceptronInputs = data->getSpectralPowerNormalizedAndWindowed();
+                    perceptronInputs.push_back(_MERClient->getCurrentDepth());
+                    _perceptron->setInputs(perceptronInputs);
+                    _perceptron->classify();
                 }
 
                 data = bundle->getElectrode("cen")->getMERData(_MERClient->getCurrentDepth());
                 if(data->getRecordedSeconds() >= 5 && data->getRecordedSeconds()-lastRecord > 0){
                     data->executeFFTWelch(5,true);
+                    perceptronInputs = data->getSpectralPowerNormalizedAndWindowed();
+                    perceptronInputs.push_back(_MERClient->getCurrentDepth());
+                    _perceptron->setInputs(perceptronInputs);
+                    _perceptron->classify();
                 }
                 if(data->getRecordedSeconds()-lastRecord > 0){
                     lastRecord = data->getRecordedSeconds();
@@ -382,6 +405,7 @@ void MERTool::on_learnelectrodeButton_clicked()
     for(const double d : _perceptron->weights()){
         std::cout << d << std::endl;
     }
+    _perceptron->saveWeights();
 }
 
 void MERTool::on_learnAllelectrodeButton_clicked()
@@ -404,6 +428,7 @@ void MERTool::on_learnAllelectrodeButton_clicked()
    for(const double d : _perceptron->weights()){
        std::cout << d << std::endl;
    }
+   _perceptron->saveWeights();
 }
 
 void MERTool::on_classificationBox_clicked()

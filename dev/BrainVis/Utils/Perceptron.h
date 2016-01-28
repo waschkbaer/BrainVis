@@ -2,6 +2,7 @@
 #define PERCEPTRON
 
 #include <vector>
+#include <string>
 
 class Perceptron{
 public:
@@ -22,6 +23,9 @@ public:
 
     double threshold() const;
     void setThreshold(double threshold);
+
+    void loadWeights();
+    void saveWeights();
 
 private:
     std::vector<double> _weights;

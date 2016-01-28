@@ -1,10 +1,11 @@
 #include "Perceptron.h"
 #include <iostream>
+#include <fstream>
 
 Perceptron::Perceptron():
 _threshold(0),
-_learnrate(0.5){
-
+_learnrate(0.2){
+    loadWeights();
 }
 
 Perceptron::~Perceptron(){
@@ -100,4 +101,38 @@ void Perceptron::setBaseWeights(int n){
     for(int i = 0; i < n;i++){
         _weights[i] = 1;
     }
+}
+
+void Perceptron::loadWeights(){
+    std::ifstream file  ("weights.txt", std::ios::in | std::ios::binary);
+    _weights.clear();
+    _weights.resize(0);
+    double d;
+    if (file.is_open())
+    {
+        while ( !file.eof() )
+        {
+            file.read( (char*)&d, sizeof(double));
+            if(!file.eof()){
+                _weights.push_back(d);
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        std::cout << "Unable to open file" << std::endl;
+    }
+}
+
+void Perceptron::saveWeights(){
+    std::ofstream file  ("weights.txt", std::ios::out | std::ios::binary);
+       if (file.is_open())
+       {
+           for(double d : _weights){
+               file.write((char*) &d, sizeof(double));
+           }
+         file.close();
+       }
+       else std::cout << "Unable to open file";
 }
