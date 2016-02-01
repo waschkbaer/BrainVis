@@ -15,6 +15,9 @@ uniform int     cutMode = 1;
 uniform float   stepSize = 2500.0f;
 uniform float   isCTImage = 0.0f;
 
+uniform float   MRIValue = 0.0f;
+uniform vec3   MRIPosition = vec3(0,0,0);
+
 // INPUT VARIABLES
 in vec3 normalview;
 in vec3 entranceInViewSpace;
@@ -84,8 +87,10 @@ void main(void)
   float value = 0;
   vec4 viewPos = vec4(0,0,0,0);
   bool isCut = false;
+
+  vec4 targetPos = worldFragmentMatrix*vec4(MRIPosition-vec3(0.5,0.5,0.5),1);
   
-  for(int i = 0; i < 4000;++i){
+  for(int i = 0; i < 8000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
     switch(cutMode){
@@ -105,10 +110,25 @@ void main(void)
 
         	value = texture(volume, texturePos).x;
           value *= tfScaling;
+          float mrivaluedelta = abs((texture(volume, texturePos).x * 65535.0f)-MRIValue);
           vec4 color =  texture(transferfunction, value);
 
+
+          //work in progress
+          /*if(length(abs(targetPos-viewPos)) < 3){
+            if(mrivaluedelta < 20){
+              finalColor.xyz = finalColor.xyz + vec3(value,value*1.5f,value)*(1.0-finalColor.w)*color.w;
+              finalColor.w = finalColor.w+color.w;
+            }else{
+              finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
+              finalColor.w = finalColor.w+color.w;
+            }
+          }
+        	*/
           finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
-        	finalColor.w = finalColor.w+color.w;
+          finalColor.w = finalColor.w+color.w;
+          
+
           if(finalColor.w >= 1.0f){  
             viewPos = viewFragmentMatrix*viewPos;
             
@@ -120,12 +140,12 @@ void main(void)
             break;
           }
     }
-    texturePos += rayDir/stepSize;
+    texturePos += rayDir/(2*stepSize);
 
   	//early ray termination
   	if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||
   		texturePos.x < 0.0f || texturePos.y < 0.0f || texturePos.z < 0.0f){
-  	i = 1000;
+  	   i = 20000;
   		break;
   	}
   }

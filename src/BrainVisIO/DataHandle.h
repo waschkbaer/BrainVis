@@ -173,6 +173,8 @@ public:
 
     uint16_t getMriValue() const;
 
+    Core::Math::Vec3f getMriVolumePosition() const;
+
 private:
     void updateMRWorld();
 
@@ -235,6 +237,7 @@ private:
     //status, used for sheduling repaints!
     uint64_t                                        _dataSetStatus;
     uint16_t                                        _mriValue;
+    Core::Math::Vec3f                               _mriVolumePosition;
 
     //networklayer -> soon better
     bool                                            _usesNetworkMER;

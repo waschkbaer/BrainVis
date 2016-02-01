@@ -313,22 +313,6 @@ void DICOMRenderer::Paint(){
 
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
-        //std::cout << "[DICOM Renderer] starting complete new frame :" << _data->getDataSetStatus() <<std::endl;
-        //check if the camera has to be placed automaticly
-
-        /*if(ElectrodeManager::getInstance().isTrackingMode()){
-            std::shared_ptr<iElectrode> elec = ElectrodeManager::getInstance().getElectrode(ElectrodeManager::getInstance().getTrackedElectrode());
-            if(elec != nullptr){
-                _fokuslookat = elec->getData(_data->getDisplayedDriveRange().y)->getDataPosition();
-
-                _fokuslookat = _fokuslookat-frameCenter;
-                _fokuslookat =  _data->getCTeX()*_fokuslookat.x +
-                          _data->getCTeY()*_fokuslookat.y +
-                          _data->getCTeZ()*_fokuslookat.z +
-                          _data->getCTCenter()*_data->getCTScale();
-                setCameraLookAt(_fokuslookat);
-            }
-        }*/
         if(_isTracking)
             setCameraLookAt(_data->getSelectedWorldSpacePositon());
 
@@ -650,6 +634,9 @@ void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
     shader->Set("eyePos",_camera->GetWorldPosition());
     shader->Set("focusWorldPos",_data->getSelectedWorldSpacePositon());
     shader->Set("stepSize",rayStepPara);
+    shader->Set("MRIValue",(float)_data->getMriValue());
+    shader->Set("MRIPosition",_data->getMriVolumePosition());
+
 
     if(isCT){
         shader->Set("isCTImage",1.0f);
@@ -1694,42 +1681,7 @@ Core::Math::Mat4f DICOMRenderer::calculateElectrodeMatices(Core::Math::Vec3f ent
 
     _electrodeLeftMatrix = S*U;
 
-    return S*U;
-    //LEFTEND;
-    /*to = _data->getRightSTN()._endWorldSpace-_data->getRightSTN()._startWorldSpace;
-    elecLength = to.length()+5;
-    to.normalize();
-
-    dot = from^to;
-    cross = ((from%to).length());
-
-    Fm;
-    Fm.m11 = from.x;
-    Fm.m21 = from.y;
-    Fm.m31 = from.z;
-
-    Fm.m12 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).x;
-    Fm.m22 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).y;
-    Fm.m32 = ((to - (from^to)*from) / ((to - (from^to)*from).length())).z;
-
-    Fm.m13 = (to%from).x;
-    Fm.m23 = (to%from).y;
-    Fm.m33 = (to%from).z;
-
-
-    G;
-    G.m11 = dot;
-    G.m12 = cross;
-    G.m22 = dot;
-    G.m21 = -cross;
-
-    U = Fm*G*Fm.inverse();
-    S.Scaling(Vec3f(1,elecLength,1));
-    outdir = ( _data->getRightSTN()._startWorldSpace-_data->getRightSTN()._endWorldSpace);
-    outdir.normalize();
-    T.Translation(_data->getRightSTN()._startWorldSpace+  outdir*15.0f  );
-
-    _electrodeRightMatix = S*U;*/
+    return S*U; 
 }
 
 bool DICOMRenderer::doesGradientDescent() const
