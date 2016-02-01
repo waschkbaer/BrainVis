@@ -141,6 +141,9 @@
    </property>
   </action>
   <action name="actionMove">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>Buttons/move.png</normaloff>Buttons/move.png</iconset>
@@ -156,6 +159,9 @@
    </property>
   </action>
   <action name="actionRotate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>Buttons/rotation.png</normaloff>Buttons/rotation.png</iconset>
@@ -171,6 +177,9 @@
    </property>
   </action>
   <action name="actionWindowing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>Buttons/transfer.png</normaloff>Buttons/transfer.png</iconset>
@@ -183,6 +192,9 @@
    </property>
   </action>
   <action name="actionPicking">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>Buttons/target.png</normaloff>Buttons/target.png</iconset>

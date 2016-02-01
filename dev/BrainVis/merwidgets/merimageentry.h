@@ -32,7 +32,8 @@ public:
     void mousePressEvent(QMouseEvent* event);
 
 private slots:
-    void on_stnBox_clicked();
+
+    void on_stnLine_textChanged(const QString &arg1);
 
 private:
     QColor getSpectralColor(double value);

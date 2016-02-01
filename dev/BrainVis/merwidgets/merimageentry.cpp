@@ -23,8 +23,13 @@ MERimageentry::MERimageentry(int depth ,const std::string& name,std::shared_ptr<
 
     show();
     setUpdatesEnabled(true);
+    ui->depthLabel->setText(QString(std::to_string(depth).c_str()));
 
-    ui->stnBox->setChecked(data->getIsSTNclassified());
+    if(data->getIsSTNclassified()){
+        ui->stnLine->setText("stn");
+    }else{
+        ui->stnLine->setText("");
+    }
 }
 
 MERimageentry::~MERimageentry()
@@ -33,12 +38,20 @@ MERimageentry::~MERimageentry()
 }
 bool MERimageentry::isSTN() const
 {
-    return ui->stnBox->isChecked();
+    if(ui->stnLine->text().toStdString() == "stn" || ui->stnLine->text().toStdString() == "Stn" || ui->stnLine->text().toStdString() == "STN"){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 void MERimageentry::setIsSTN(bool isSTN)
 {
-    ui->stnBox->setChecked(isSTN);
+    if(isSTN){
+        ui->stnLine->setText("stn");
+    }else{
+        ui->stnLine->setText("");
+    }
 }
 
 
@@ -161,7 +174,11 @@ void MERimageentry::mousePressEvent(QMouseEvent* event){
         d->setFocusPoint(_data->getPosition());
 }
 
-void MERimageentry::on_stnBox_clicked()
+void MERimageentry::on_stnLine_textChanged(const QString &arg1)
 {
-    _data->setIsSTNclassified(ui->stnBox->isChecked());
+    if(arg1.toStdString() == "stn" || arg1.toStdString() == "Stn" || arg1.toStdString() == "STN"){
+        _data->setIsSTNclassified(true);
+    }else{
+        _data->setIsSTNclassified(false);
+    }
 }

@@ -74,7 +74,8 @@ _displayFrame(true),
 _displayCenterACPC(true),
 _displayThreeDCursor(true),
 _displayTwoDCursor(true),
-_currentElectrode(nullptr)
+_currentElectrode(nullptr),
+_isTracking(true)
 {
 }
 
@@ -194,9 +195,6 @@ void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
     // the filtered dB of the FFT
     if(!LoadFFTColorTex()) cout << "error in ffttex"<< endl;
 
-    // sets the start rendermode
-    _activeRenderMode = RenderMode::ThreeDMode;
-
     sheduleRepaint();
 }
 
@@ -307,8 +305,6 @@ void DICOMRenderer::Paint(){
             }else{
                 _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
                 _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
-                //std::cout << "next stepsize "<< _data->getFTranslationStep() << std::endl;
-                //std::cout << "skiped slices"<<(_data->getFTranslationStep()*4.0f) <<std::endl;
             }
         }
         _data->setMRCTBlend( 0.5f);
@@ -333,6 +329,8 @@ void DICOMRenderer::Paint(){
                 setCameraLookAt(_fokuslookat);
             }
         }*/
+        if(_isTracking)
+            setCameraLookAt(_data->getSelectedWorldSpacePositon());
 
         generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
         generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
@@ -524,6 +522,16 @@ void DICOMRenderer::checkForErrorCodes(std::string note){
         }
     }
 }
+void DICOMRenderer::setIsTracking(bool isTracking)
+{
+    _isTracking = isTracking;
+}
+
+RenderMode DICOMRenderer::activeRenderMode() const
+{
+    return _activeRenderMode;
+}
+
 void DICOMRenderer::setDoFrameDetection(bool doFrameDetection)
 {
     _doFrameDetection = doFrameDetection;

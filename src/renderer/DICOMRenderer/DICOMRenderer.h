@@ -106,6 +106,10 @@ class DICOMRenderer{
 
         void setDoFrameDetection(bool doFrameDetection);
 
+        RenderMode activeRenderMode() const;
+
+        void setIsTracking(bool isTracking);
+
 private:
         //Loading stuff
         bool LoadShaderResources();
@@ -231,6 +235,7 @@ private:
         Mat4f                           _view;
 
         std::unique_ptr<Camera>         _camera;
+        bool                            _isTracking;
 
         bool                            _needsUpdate;
         uint64_t                        _datasetStatus;

@@ -12,6 +12,30 @@ uint16_t DicomRenderManager::addRenderer(std::shared_ptr<DICOMRenderer> r){
     return id;
 }
 
+const std::shared_ptr<DICOMRenderer> DicomRenderManager::getRenderer(RenderMode mode){
+    std::map<uint16_t,std::shared_ptr<DICOMRenderer>>::iterator it = _rendererMap.begin();
+    std::shared_ptr<DICOMRenderer> r = nullptr;
+    for(it = _rendererMap.begin(); it != _rendererMap.end(); ++it){
+        if(mode == it->second->activeRenderMode()){
+            r = it->second;
+            it = _rendererMap.end();
+            break;
+        }
+    }
+    return r;
+}
+
+void DicomRenderManager::setTrackMode(bool mode){
+    std::map<uint16_t,std::shared_ptr<DICOMRenderer>>::iterator it = _rendererMap.begin();
+    std::shared_ptr<DICOMRenderer> r = nullptr;
+    for(it = _rendererMap.begin(); it != _rendererMap.end(); ++it){
+            r = it->second;
+            r->setIsTracking(mode);
+            std::cout << mode << std::endl;
+
+    }
+}
+
 const std::shared_ptr<DICOMRenderer> DicomRenderManager::getRenderer(uint16_t id){
     if(_rendererMap.find(id) != _rendererMap.end()){
         return _rendererMap.find(id)->second;

@@ -35,6 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     showMaximized();
     ui->centralWidget->setStyleSheet("background-color: #8D9294;");
+
+    ui->actionMove->setChecked(false);
+    ui->actionRotate->setChecked(true);
 }
 
 MainWindow::~MainWindow()
@@ -45,7 +48,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::createNewRenderWidger(){
+void MainWindow::createNewRenderWidger(RenderMode mode,Core::Math::Vec2ui position){
     if(ActivityManager::getInstance().getActiveDataset() != -1){
         int renderHandle = DicomRenderManager::getInstance().addRenderer();
         ActivityManager::getInstance().setActiveRenderer(renderHandle);
@@ -53,8 +56,12 @@ void MainWindow::createNewRenderWidger(){
         m_vActiveRenderer.push_back(std::make_shared<RenderWidget>(
                                         DataHandleManager::getInstance().getDataHandle(ActivityManager::getInstance().getActiveDataset()),
                                         this,
-                                        renderHandle)
-                                    );
+                                        renderHandle,
+                                        mode,
+                                        position)
+                                   );
+
+
     }
 }
 
@@ -100,6 +107,10 @@ void MainWindow::closeHistogrammWidget(){
     _histogramm = nullptr;
 }
 
+void MainWindow::closeMERTool(){
+    _MERTool = nullptr;
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     PlaningWidget* p = new PlaningWidget(this);
@@ -109,22 +120,31 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionMove_triggered()
 {
-    ModiSingleton::getInstance().setActiveMode(Mode::CameraMovement);
+    ModiSingleton::getInstance().setActiveModeLeftClick(Mode::CameraMovement);
+    ui->actionRotate->setChecked(false);
+    ui->actionMove->setChecked(true);
+    DicomRenderManager::getInstance().setTrackMode(false);
 }
 
 void MainWindow::on_actionRotate_triggered()
 {
-    ModiSingleton::getInstance().setActiveMode(Mode::CameraRotation);
+    ModiSingleton::getInstance().setActiveModeLeftClick(Mode::CameraRotation);
+    ui->actionMove->setChecked(false);
+    ui->actionRotate->setChecked(true);
+    DicomRenderManager::getInstance().setTrackMode(true);
 }
 
 void MainWindow::on_actionWindowing_triggered()
 {
-    ModiSingleton::getInstance().setActiveMode(Mode::TFEditor);
+    ModiSingleton::getInstance().setActiveModeRightClick(Mode::TFEditor);
 }
 
 void MainWindow::on_actionPicking_triggered()
 {
-    ModiSingleton::getInstance().setActiveMode(Mode::VolumePicking);
+    ModiSingleton::getInstance().setActiveModeRightClick(Mode::VolumePicking);
+}
+
+void MainWindow::disableControllBoxes(){
 }
 
 void MainWindow::on_actionCubic_Cut_triggered()
@@ -206,6 +226,7 @@ void MainWindow::on_actionDrive_Tool_triggered()
 {
     if(_MERTool == nullptr){
         _MERTool = std::make_shared<MERTool>(this);
+        this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea ,(QDockWidget*)(_MERTool.get()));
     }
 }
 

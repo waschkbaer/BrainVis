@@ -1,6 +1,8 @@
 #include "mertool.h"
 #include "ui_mertool.h"
 
+#include "mainwindow.h"
+
 #include <QFileDialog>
 #include <QTimer>
 
@@ -25,7 +27,7 @@ MERTool::MERTool(QWidget *parent) :
     ui(new Ui::MERTool)
 {
     ui->setupUi(this);
-    setFloating(true);
+    //setFloating(true);
     show();
 
     on_checkBox_clicked();
@@ -34,6 +36,8 @@ MERTool::MERTool(QWidget *parent) :
     _perceptron = std::unique_ptr<Perceptron>(new Perceptron());
 
     timerId = startTimer(1000);
+
+    loadDataBase();
 }
 
 void MERTool::timerEvent(QTimerEvent *event)
@@ -56,6 +60,9 @@ void MERTool::closeEvent(QCloseEvent *event){
         _fftCalcThread.reset();
     }
     killTimer(timerId);
+
+    MainWindow* parent = (MainWindow*)this->parent();
+    parent->closeMERTool();
 }
 
 MERTool::~MERTool()
@@ -81,6 +88,20 @@ void MERTool::on_checkBox_clicked()
         ui->liveModeFrame->show();
     }else{
         ui->liveModeFrame->hide();
+    }
+}
+
+void MERTool::loadDataBase(){
+    std::vector<std::string> electrodes = MERBundleManager::getInstance().getRegisteredBundles();
+
+    for(const std::string s: electrodes){
+        if( ui->BundleSelection->findText(QString(s.c_str())) == -1)
+            ui->BundleSelection->addItem(QString(s.c_str()));
+    }
+
+    if(electrodes.size() > 0){
+        ui->BundleSelection->setCurrentIndex(0);
+        on_BundleSelection_activated(ui->BundleSelection->currentText());
     }
 }
 

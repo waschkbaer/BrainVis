@@ -16,14 +16,17 @@ public:
          return instance;
     }
 
-    Mode getActiveMode() const {return _activeMode;}
-    void setActiveMode(Mode m){_activeMode = m;}
+    Mode getActiveModeLeftClick() const {return _activeModeLeft;}
+    Mode getActiveModeRightClick() const {return _activeModeRight;}
+    void setActiveModeLeftClick(Mode m){_activeModeLeft = m;}
+    void setActiveModeRightClick(Mode m){_activeModeRight = m;}
 
 private:
-    ModiSingleton():_activeMode(Mode::TFEditor){};
+    ModiSingleton():_activeModeLeft(Mode::CameraRotation),_activeModeRight(Mode::TFEditor){};
     ~ModiSingleton(){};
 
-    Mode            _activeMode;
+    Mode            _activeModeLeft;
+    Mode            _activeModeRight;
 
 };
 

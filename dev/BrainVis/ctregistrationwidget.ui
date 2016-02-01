@@ -415,6 +415,13 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Load Registration</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="resetButton">
          <property name="minimumSize">
           <size>

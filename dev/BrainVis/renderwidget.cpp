@@ -7,11 +7,16 @@
 
 
 #include <BrainVisIO/DataHandle.h>
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
 #include "ActivityManager.h"
 
 using namespace BrainVis;
 
-RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, int renderID) :
+RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data,
+                           QWidget *parent,
+                           int renderID,
+                           RenderMode mode,
+                           Core::Math::Vec2ui windowPosition) :
     QDockWidget(parent),
     ui(new Ui::RenderWidget),
     _data(data),
@@ -20,17 +25,26 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent, in
 {
     setFloating(true);
     ui->setupUi(this);
-    move(0,0);
+    move(windowPosition.x,windowPosition.y);
 
     show();
 
     ui->XAxis->setEnabled(true);
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(true);
-    ui->ThreeD->setEnabled(false);
+    ui->ThreeD->setEnabled(true);
 
     ui->openGLWidget->setDataHandle(data);
     ui->openGLWidget->setRendererID(_renderID);
+
+
+    DicomRenderManager::getInstance().getRenderer(renderID)->SetRenderMode(mode);
+    switch(mode){
+        case RenderMode::ThreeDMode :  ui->ThreeD->setEnabled(false);break;
+        case RenderMode::XAxis      :  ui->XAxis->setEnabled(false);break;
+        case RenderMode::YAxis      :  ui->YAxis->setEnabled(false);break;
+        case RenderMode::ZAxis      :  ui->ZAxis->setEnabled(false);break;
+    }
 }
 
 RenderWidget::~RenderWidget()
@@ -96,20 +110,18 @@ int RenderWidget::renderID() const
 void RenderWidget::keyPressEvent(QKeyEvent *event){
     ActivityManager::getInstance().setActiveRenderer(_renderID);
     if(event->key() == Qt::Key_R){
-        std::cout << "mode: rotatecam" << std::endl;
-        ModiSingleton::getInstance().setActiveMode(Mode::CameraRotation);
+        ModiSingleton::getInstance().setActiveModeLeftClick(Mode::CameraRotation);
     }
     if(event->key() == Qt::Key_M){
-        std::cout << "mode: movecam" << std::endl;
-        ModiSingleton::getInstance().setActiveMode(Mode::CameraMovement);
+        ModiSingleton::getInstance().setActiveModeLeftClick(Mode::CameraMovement);
     }
     if(event->key() == Qt::Key_T){
         std::cout << "mode: tfeditor" << std::endl;
-        ModiSingleton::getInstance().setActiveMode(Mode::TFEditor);
+        ModiSingleton::getInstance().setActiveModeRightClick(Mode::TFEditor);
     }
     if(event->key() == Qt::Key_P){
         std::cout << "mode: picking" << std::endl;
-        ModiSingleton::getInstance().setActiveMode(Mode::VolumePicking);
+        ModiSingleton::getInstance().setActiveModeRightClick(Mode::VolumePicking);
     }
 
     //manual move
@@ -207,6 +219,8 @@ void RenderWidget::setClipMode(DICOMClipMode mode){
 }
 
 void RenderWidget::closeEvent(QCloseEvent *bar){
+    DicomRenderManager::getInstance().deleteRenderer(_renderID);
+
     MainWindow* w = (MainWindow*)this->parent();
     if(w != NULL){
         w->removeRenderer(_renderID);

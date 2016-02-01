@@ -15,7 +15,8 @@ using namespace BrainVis;
 CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
     ui(new Ui::CtRegistrationWidget),
-    _data(data)
+    _data(data),
+    _registrationRenderer(nullptr)
 {
     ui->setupUi(this);
 
@@ -76,9 +77,11 @@ void CtRegistrationWidget::on_registerButton_clicked()
     _data->setFRotationStepScale(_rotationScaling);
 
     uint16_t handle = ActivityManager::getInstance().getActiveRenderer();
-    std::shared_ptr<DICOMRenderer> r = DicomRenderManager::getInstance().getRenderer(handle);
-    if(r != nullptr)
-        r->setDoesGradientDescent(true);
+    _registrationRenderer = DicomRenderManager::getInstance().getRenderer(RenderMode::XAxis);
+    if(_registrationRenderer == nullptr)
+        _registrationRenderer = DicomRenderManager::getInstance().getRenderer(handle);
+    if(_registrationRenderer != nullptr)
+        _registrationRenderer->setDoesGradientDescent(true);
 }
 
 void CtRegistrationWidget::on_translationStepSize_sliderMoved(int position)
@@ -114,6 +117,15 @@ void CtRegistrationWidget::on_rotatioDegSize_sliderMoved(int position)
 }
 
 void CtRegistrationWidget::update(){
+    if(_registrationRenderer != nullptr && _registrationRenderer->doesGradientDescent()){
+        ui->registerButton->setEnabled(false);
+        ui->resetButton->setEnabled(false);
+        this->setWindowTitle(QString("Registration Widget : Registering"));
+    }else{
+        ui->registerButton->setEnabled(true);
+        ui->resetButton->setEnabled(true);
+        this->setWindowTitle(QString("Registration Widget"));
+    }
     ui->currentTranslationX->setText(QString(std::to_string(_data->getMROffset().x).c_str()));
     ui->currentTranslationY->setText(QString(std::to_string(_data->getMROffset().y).c_str()));
     ui->currentTranslationZ->setText(QString(std::to_string(_data->getMROffset().z).c_str()));

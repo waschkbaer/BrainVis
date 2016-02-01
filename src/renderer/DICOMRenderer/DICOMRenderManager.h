@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "DICOMRenderer.h"
+#include "DICOMRendererEnums.h"
 
 class DicomRenderManager{
 public:
@@ -16,6 +17,8 @@ public:
 
     uint16_t addRenderer(std::shared_ptr<DICOMRenderer> r = nullptr);
     const std::shared_ptr<DICOMRenderer> getRenderer(uint16_t);
+    const std::shared_ptr<DICOMRenderer> getRenderer(RenderMode mode);
+    void setTrackMode(bool mode);
     void deleteRenderer(uint16_t id);
 
 protected:

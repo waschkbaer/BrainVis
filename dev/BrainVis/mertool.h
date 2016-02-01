@@ -80,6 +80,7 @@ private:
     bool learnElectrodeBundle(std::shared_ptr<BrainVisIO::MERData::MERBundle> bundle);
     void updateData(const std::string& bundlename);
     void updateSettings(const std::shared_ptr<BrainVisIO::MERData::MERBundle> bunlde);
+    void loadDataBase();
 
     Ui::MERTool *ui;
 

@@ -6,7 +6,8 @@
 
 #include <vector>
 #include <memory>
-
+#include <renderer/DICOMRenderer/DICOMRendererEnums.h>
+#include <core/Math/Vectors.h>
 namespace Ui {
 class MainWindow;
 }
@@ -59,7 +60,7 @@ public:
      * needed memory and achieve data synchronization between all
      * renderwidgets
      */
-    void createNewRenderWidger();
+    void createNewRenderWidger(RenderMode mode = RenderMode::ThreeDMode, Core::Math::Vec2ui position = Core::Math::Vec2ui(0,80));
 
     /*!
      * \brief returns a renderwidget to be used for some commands
@@ -87,6 +88,7 @@ public:
     void closeRegistrationWidget();
     void closeFrameWidget();
     void closeHistogrammWidget();
+    void closeMERTool();
 
 private slots:
     void on_actionAdd_RenderWidget_triggered();
@@ -130,6 +132,7 @@ private slots:
     void on_actionFrame_Detection_triggered();
 
 private:
+    void disableControllBoxes();
     Ui::MainWindow *ui;
 
     std::vector<QDockWidget*>                           m_vActiveWidgets;

@@ -9,6 +9,7 @@ class CtRegistrationWidget;
 }
 
 class DataHandle;
+class DICOMRenderer;
 
 class CtRegistrationWidget : public QDockWidget
 {
@@ -43,6 +44,8 @@ private:
     float _translationScaling;
     float _rotationStep;
     float _rotationScaling;
+
+    std::shared_ptr<DICOMRenderer> _registrationRenderer;
 };
 
 #endif // CTREGISTRATIONWIDGET_H

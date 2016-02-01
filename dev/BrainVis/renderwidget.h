@@ -7,6 +7,7 @@
 #include <memory>
 
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
+#include <core/Math/Vectors.h>
 
 class DataHandle;
 
@@ -19,7 +20,11 @@ class RenderWidget : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit RenderWidget(std::shared_ptr<DataHandle> data, QWidget *parent = 0, int renderID = 0);
+    explicit RenderWidget(std::shared_ptr<DataHandle> data,
+                          QWidget *parent = 0,
+                          int renderID = 0,
+                          RenderMode mode = RenderMode::ThreeDMode,
+                          Core::Math::Vec2ui windowPosition = Core::Math::Vec2ui(0,80));
     ~RenderWidget();
 
     void keyPressEvent(QKeyEvent *event);
