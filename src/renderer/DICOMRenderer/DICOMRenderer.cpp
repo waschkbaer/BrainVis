@@ -10,9 +10,12 @@
 #include <BrainVisIO/Data/MERElectrode.h>
 #include <BrainVisIO/Data/MERData.h>
 
+#include <core/Time/Timer.h>
+
 using namespace std;
 using namespace Tuvok::Renderer;
 
+static Core::Time::Timer timer;
 
 static int screenshot(int i)
 {
@@ -300,7 +303,9 @@ void DICOMRenderer::Paint(){
                  _gradientDataBuffer.clear();
                  _gradientDataBuffer.resize(1);
 
-                 std::cout << "end gdc"<<std::endl;
+                 double d = timer.elapsed();
+                 std::cout << "end gdc : " << d<<std::endl;
+
             }else{
                 _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
                 _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
@@ -1949,6 +1954,8 @@ bool DICOMRenderer::doesGradientDescent() const
 void DICOMRenderer::setDoesGradientDescent(bool doesGradientDescent)
 {
     _doesGradientDescent = doesGradientDescent;
+    if(_doesGradientDescent)
+        timer.start();
 }
 
 void DICOMRenderer::generateLeftFrameBoundingBox(Vec3f center, Vec3f scale){
