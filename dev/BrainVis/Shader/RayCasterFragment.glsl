@@ -63,8 +63,6 @@ bool isCubicCut(vec3 curPos, vec3 focusPos, vec3 start){
       ){
     return true;
   }
-
-
   return false;
 }
 
@@ -90,7 +88,10 @@ void main(void)
 
   vec4 targetPos = worldFragmentMatrix*vec4(MRIPosition-vec3(0.5,0.5,0.5),1);
   
-  for(int i = 0; i < 4000;++i){
+
+  float stepper = 1.0f/1536.0f;
+
+  for(int i = 0; i < 4096;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
     switch(cutMode){
@@ -105,48 +106,56 @@ void main(void)
                               cutPlaneNormal);
                         break;
     }
-
     if(!isCut){
-
         	value = texture(volume, texturePos).x;
           value *= tfScaling;
-          float mrivaluedelta = abs((texture(volume, texturePos).x * 65535.0f)-MRIValue);
           vec4 color =  texture(transferfunction, value);
 
-
           //work in progress
-          /*if(length(abs(targetPos-viewPos)) < 3){
-            if(mrivaluedelta < 20){
-              finalColor.xyz = finalColor.xyz + vec3(value,value*1.5f,value)*(1.0-finalColor.w)*color.w;
+          /*
+          float mrivaluedelta = abs((texture(volume, texturePos).x * 65535.0f)-MRIValue);
+          if(length(abs(targetPos-viewPos)) < 3){
+            if(mrivaluedelta < 5){
+              float col =  1.0f - (mrivaluedelta/5.0f);
+              finalColor.xyz = finalColor.xyz + vec3(col,col,1)*(1.0-finalColor.w)*color.w;
               finalColor.w = finalColor.w+color.w;
             }else{
-              finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
-              finalColor.w = finalColor.w+color.w;
+              if(!isCut){
+                finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
+                finalColor.w = finalColor.w+color.w;
+              }
             }
-          }
-        	*/
-          finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
-          finalColor.w = finalColor.w+color.w;
-          
-
-          if(finalColor.w >= 1.0f){  
-            viewPos = viewFragmentMatrix*viewPos;
+          }else{
             
-            outputColor = vec4(finalColor.xyz,viewPos.z);
+          }*/
+  
 
-            outputPosition = vec4(texturePos,viewPos.z);
-
-            i = 1000;
-            break;
+        finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
+        finalColor.w = finalColor.w+color.w;
+            
+        
+        if(finalColor.w >= 1.0f){  
+          viewPos = viewFragmentMatrix*viewPos;
+             
+          if(finalColor.x == 0 && finalColor.y == 0 && finalColor.z == 0){
+            finalColor.xyz = vec3(0.0001,0.0001,0.0001);
           }
+            
+          outputColor = vec4(finalColor.xyz,viewPos.z);
+          outputPosition = vec4(texturePos,viewPos.z);
+          
+          i = 999999;
+          break;
+        }
     }
-    texturePos += rayDir/(2*stepSize);
+
+    texturePos += rayDir*stepper;
 
   	//early ray termination
   	if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||
   		texturePos.x < 0.0f || texturePos.y < 0.0f || texturePos.z < 0.0f){
-  	   i = 20000;
-  		break;
+  	   i = 999999;
+  	   break;
   	}
   }
   

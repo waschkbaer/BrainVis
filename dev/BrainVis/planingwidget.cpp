@@ -86,11 +86,10 @@ void PlaningWidget::on_Start_clicked()
     w->setDataHandle(dataHandle);
 
 
-    //w->createNewRenderWidger(RenderMode::XAxis, Core::Math::Vec2ui(390,80));
-    //w->createNewRenderWidger(RenderMode::YAxis, Core::Math::Vec2ui(0,540));
-    //w->createNewRenderWidger(RenderMode::ZAxis, Core::Math::Vec2ui(390,540));
+    w->createNewRenderWidger(RenderMode::XAxis, Core::Math::Vec2ui(390,80));
+    w->createNewRenderWidger(RenderMode::YAxis, Core::Math::Vec2ui(0,540));
+    w->createNewRenderWidger(RenderMode::ZAxis, Core::Math::Vec2ui(390,540));
     w->createNewRenderWidger(RenderMode::ThreeDMode, Core::Math::Vec2ui(0,80));
-
     this->close();
 }
 

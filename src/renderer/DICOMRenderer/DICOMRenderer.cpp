@@ -2003,6 +2003,7 @@ void DICOMRenderer::findGFrame(){
         createFrameGeometry(_data->getRightMarker(),1);
     }
 
+    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
 
     _doFrameDetection = false;
 }
