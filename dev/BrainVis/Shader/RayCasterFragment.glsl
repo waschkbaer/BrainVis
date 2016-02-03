@@ -90,7 +90,7 @@ void main(void)
 
   vec4 targetPos = worldFragmentMatrix*vec4(MRIPosition-vec3(0.5,0.5,0.5),1);
   
-  for(int i = 0; i < 8000;++i){
+  for(int i = 0; i < 4000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
     switch(cutMode){

@@ -53,8 +53,6 @@ static int screenshot(int i)
 }
 
 
-
-
 DICOMRenderer::DICOMRenderer():
 _activeRenderMode(ThreeDMode),
 _windowSize(512,512),
@@ -93,6 +91,7 @@ void DICOMRenderer::Initialize(){
 
     //starting with some fix projection / view / viwport
     _projection.Perspective(45, 512.0f/512.0f,0.01f, 1000.0f);
+    //_projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
     _view = _camera->buildLookAt();
 
     glViewport(0,0,512,512);
@@ -137,6 +136,7 @@ void DICOMRenderer::SetWindowSize(uint32_t width, uint32_t height){
 
         //update projection and viewport
         _projection.Perspective(45, (float)width/(float)height,0.01f, 1000.0f);
+        //_projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
         glViewport(0,0,width,height);
 
         //recreate the framebuffers
@@ -286,14 +286,13 @@ void DICOMRenderer::Paint(){
     if(_doFrameDetection){
         findGFrame();
     }
-
     //while(_doesGradientDescent){
     if(_doesGradientDescent){
         if(_gradientDataBuffer.size() != _windowSize.x*_windowSize.y){
             _gradientDataBuffer.resize(_windowSize.x*_windowSize.y);
         }
 
-        float done = gradientDecentStep();
+        float done = gradientDecentStep2();
 
         if(done < 0.0f){
             if(_data->getFTranslationStep() < 0.5f){
@@ -313,6 +312,7 @@ void DICOMRenderer::Paint(){
 
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
+
         if(_isTracking)
             setCameraLookAt(_data->getSelectedWorldSpacePositon());
 
@@ -322,6 +322,7 @@ void DICOMRenderer::Paint(){
         updateTransferFunction();
 
         if(_activeRenderMode == ThreeDMode){
+            //subVolumesV2();
             RayCast();
         }else{
             SliceRendering();
@@ -370,6 +371,16 @@ bool DICOMRenderer::LoadShaderResources(){
     if(!LoadAndCheckShaders(_rayCastShader,sd)) return false;
     checkForErrorCodes("@ Load RayCastShader");
 
+
+    vs.clear();
+    fs.clear();
+    vs.push_back("Shader/RayCasterVertex.glsl");
+    fs.push_back("Shader/RayCasterSubtractFragment.glsl");
+    sd = ShaderDescriptor(vs,fs);
+    if(!LoadAndCheckShaders(_subtractRayCastShader,sd)) return false;
+    checkForErrorCodes("@ Load RayCastSubtractShader");
+
+
     vs.clear();
     fs.clear();
     vs.push_back("Shader/ComposeVertex.glsl");
@@ -393,8 +404,6 @@ bool DICOMRenderer::LoadShaderResources(){
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_compositingVolumeSubstraction,sd)) return false;
     checkForErrorCodes("@ Load Compositing2DShader");
-
-
 
     vs.clear();
     fs.clear();
@@ -1199,81 +1208,191 @@ static int counter= 0;
 
 float DICOMRenderer::gradientDecentStep(){
     //store the current "default" framebuffer QT-Shit
+        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
+
+        Vec2ui subWindowSize(_windowSize.x,_windowSize.y);
+
+        //create the needed framebuffer, if they do not exist
+        if(COMPOSITING == nullptr) COMPOSITING = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, subWindowSize.x, subWindowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
+
+        //we just render on half the resolution
+        //much faster, maybe more inaccurate
+        glViewport(0,0,subWindowSize.x,subWindowSize.y);
+
+        //select rendermode
+        _activeRenderMode = RenderMode::XAxis;
+
+        Vec3f MROffset = _data->getMROffset();
+        Vec3f MRRotation = _data->getMRRotation();
+        Vec3f scaleCurrent = _data->getMRScale();
+        //std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
+
+        //subtract Both Volumes and store the value
+        float subValueCurrent = subVolumes(subWindowSize);
+
+        //store possible translation/rotation in a vector
+        std::vector<float> subValues;
+        //xP,xM,yP,yM,zP,zM
+        //xPr,xMr,yPr,yMr,zPr,zMr
+
+        //calculate the substraction-value for each axis after moving the volume
+        _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMROffset(MROffset);
+        _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMROffset(MROffset);
+        _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMROffset(MROffset);
+        _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMROffset(MROffset);
+        _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep()));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMROffset(MROffset);
+        _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep()));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMROffset(MROffset);
+
+        //same for rotation
+        _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMRRotation(MRRotation);
+        _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMRRotation(MRRotation);
+        _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMRRotation(MRRotation);
+        _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMRRotation(MRRotation);
+        _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMRRotation(MRRotation);
+        _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));
+        subValues.push_back(subVolumes(subWindowSize));
+        _data->setMRRotation(MRRotation);
+
+        //reset some values which are no longer needed
+        _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
+        glViewport(0,0,_windowSize.x,_windowSize.y);
+
+        //iterate over the vector to find the smalles substraction value
+        float minSubstraction = std::abs(subValues[0]);
+        int bestIndex = 0;
+        for(int i = 1; i < subValues.size();++i){
+            if(minSubstraction > std::abs(subValues[i])){
+                minSubstraction = std::abs(subValues[i]);
+                bestIndex = i;
+            }
+        }
+
+        //IFF the substraction is better after any translation we have to continue
+        //no minimum found!
+        if(minSubstraction < std::abs(subValueCurrent)){
+            //std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
+            switch(bestIndex){
+                case 0: _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0)); break;
+                case 1: _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0)); break;
+                case 2: _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0)); break;
+                case 3: _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0)); break;
+                case 4: _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep())); break;
+                case 5: _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep())); break;
+
+                case 6: _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));break;
+                case 7: _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));break;
+                case 8: _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));break;
+                case 9: _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));break;
+                case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));break;
+                case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));break;
+
+                //case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));break;
+                //case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));break;
+            }
+            return 1.0f; // 1 = continue
+        }
+
+        return -1.0f; // -1 finish
+}
+
+float DICOMRenderer::gradientDecentStep2(){
+    //store the current "default" framebuffer QT-Shit
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-
-    Vec2ui subWindowSize(_windowSize.x,_windowSize.y);
-
-    //create the needed framebuffer, if they do not exist
-    if(COMPOSITING == nullptr) COMPOSITING = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, subWindowSize.x, subWindowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-
-    //we just render on half the resolution
-    //much faster, maybe more inaccurate
-    glViewport(0,0,subWindowSize.x,subWindowSize.y);
-
-    //select rendermode
-    _activeRenderMode = RenderMode::XAxis;
 
     Vec3f MROffset = _data->getMROffset();
     Vec3f MRRotation = _data->getMRRotation();
-    Vec3f scaleCurrent = _data->getMRScale();
-    //std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
-
-    //subtract Both Volumes and store the value
-    float subValueCurrent = subVolumes(subWindowSize);
-
-    //store possible translation/rotation in a vector
+    std::vector<Mat4f> MRMatrixList;
     std::vector<float> subValues;
-    //xP,xM,yP,yM,zP,zM
-    //xPr,xMr,yPr,yMr,zPr,zMr
 
-    //calculate the substraction-value for each axis after moving the volume
+    //get currentvalue;
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+    float base = subVolumesV2(MRMatrixList)[0];
+    MRMatrixList.clear();
+
     _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep()));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMROffset(MROffset);
     _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep()));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMROffset(MROffset);
 
     //same for rotation
     _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMRRotation(MRRotation);
     _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));
-    subValues.push_back(subVolumes(subWindowSize));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
     _data->setMRRotation(MRRotation);
+
+    //MRMatrixList : {ori, xtP, xtM, ytP, ytM, ztP, ztM, xrP, xrM, yrP, yrM, zrP, zrM }
+
+    subValues = subVolumesV2(MRMatrixList);
 
     //reset some values which are no longer needed
     _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
-    glViewport(0,0,_windowSize.x,_windowSize.y);
 
     //iterate over the vector to find the smalles substraction value
     float minSubstraction = std::abs(subValues[0]);
     int bestIndex = 0;
-    for(int i = 1; i < subValues.size();++i){
+    for(int i = 2; i < subValues.size();++i){
         if(minSubstraction > std::abs(subValues[i])){
             minSubstraction = std::abs(subValues[i]);
             bestIndex = i;
@@ -1282,8 +1401,7 @@ float DICOMRenderer::gradientDecentStep(){
 
     //IFF the substraction is better after any translation we have to continue
     //no minimum found!
-    if(minSubstraction < std::abs(subValueCurrent)){
-        //std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
+    if(std::abs(minSubstraction < std::abs(base)) ){
         switch(bestIndex){
             case 0: _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0)); break;
             case 1: _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0)); break;
@@ -1306,6 +1424,145 @@ float DICOMRenderer::gradientDecentStep(){
     }
 
     return -1.0f; // -1 finish
+}
+
+std::vector<float> DICOMRenderer::subVolumesV2(std::vector<Mat4f> matrices){
+    //get the default framebuffer (QT Sucks hard!)
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
+
+    //render entry of CT
+
+    //variables
+    Core::Math::Mat4f ortho;
+    Core::Math::Mat4f view;
+    std::vector<float> values;
+
+    //read pixeldata!
+    std::vector<Vec4f>              dataBuffer1;
+    std::vector<Vec4f>              dataBuffer2;
+    std::vector<Vec4f>              dataBuffer3;
+    std::vector<Vec4f>              dataBuffer4;
+    std::vector<Vec4f>              dataBuffer5;
+
+    //initialization
+    ortho.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
+    view.BuildLookAt(Vec3f(0,200,0),Vec3f(0,0,0),Vec3f(0,0,-1));
+    values.resize(matrices.size());
+    for(int i = 0; i <  values.size();++i){
+         values[i] = 0;
+    }
+
+    //------- Raycaster Rendering
+    _targetBinder->Bind(_rayEntryCT);
+
+    ClearBackground(Vec4f(0,0,0,0));
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
+    _NearPlanShader->Enable();
+    _NearPlanShader->Set("viewMatrixInverse", view.inverse());
+    _NearPlanShader->Set("projectionMatrixInverse", ortho.inverse());
+    _NearPlanShader->Set("worldMatrixInverse", _data->getCTWorld().inverse());
+
+    _renderPlane->paint();
+
+    _NearPlanShader->Disable();
+
+    _frontFaceShader->Enable();
+    _frontFaceShader->Set("projectionMatrix",ortho);
+    _frontFaceShader->Set("viewMatrix",view);
+    _frontFaceShader->Set("worldMatrix",_data->getCTWorld());
+
+    _volumeBox->paint();
+
+    _frontFaceShader->Disable();
+
+    _targetBinder->Unbind();
+
+
+    //render backfaces
+    _targetBinder->Bind(_rayCastColorCT,_rayCastPositionCT,_rayCastColorMR,_rayCastPositionMR);
+    ClearBackground(Vec4f(0,0,0,-1000.0f));
+
+    glCullFace(GL_FRONT);
+    _subtractRayCastShader->Enable();
+    _subtractRayCastShader->Set("projectionMatrix",ortho);
+    _subtractRayCastShader->Set("viewMatrix",view);
+    _subtractRayCastShader->Set("worldMatrix",_data->getCTWorld());
+
+    _subtractRayCastShader->SetTexture2D("rayStartPoint",_rayEntryCT->GetTextureHandle(),0);
+    _subtractRayCastShader->SetTexture3D("CTVolume",_GL_CTVolume->GetGLID(),1);
+    _subtractRayCastShader->SetTexture3D("MRVolume",_GL_MRVolume->GetGLID(),2);
+
+    _subtractRayCastShader->Set("worldFragmentMatrix",_data->getCTWorld());
+    _subtractRayCastShader->Set("worldMRinverseFragmentMatrix",matrices);
+    _subtractRayCastShader->Set("MRmatricies",(int32_t)matrices.size());
+
+    _subtractRayCastShader->Set("CTScaling",_data->getCTTransferScaling());
+    _subtractRayCastShader->Set("MRScaling",_data->getMRTransferScaling());
+
+    _subtractRayCastShader->Set("stepSize",1.0f/512.0f);
+
+    _volumeBox->paint();
+
+    _subtractRayCastShader->Disable();
+    _targetBinder->Unbind();
+
+    dataBuffer1.resize(_windowSize.x*_windowSize.y);
+    _targetBinder->Bind(_rayCastColorCT);
+    glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+    glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(dataBuffer1[0]));
+
+    if(values.size() > 1){
+        dataBuffer2.resize(_windowSize.x*_windowSize.y);
+        dataBuffer3.resize(_windowSize.x*_windowSize.y);
+        dataBuffer4.resize(_windowSize.x*_windowSize.y);
+        dataBuffer5.resize(_windowSize.x*_windowSize.y);
+
+        _targetBinder->Bind(_rayCastPositionCT);
+        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(dataBuffer2[0]));
+
+
+        _targetBinder->Bind(_rayCastColorMR);
+        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(dataBuffer3[0]));
+
+
+        _targetBinder->Bind(_rayCastPositionMR);
+        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(dataBuffer4[0]));
+    }
+
+    for(int x = 0; x < dataBuffer1.size();++x){
+        values[0] += dataBuffer1[x].x;
+
+        if(values.size() > 1){
+            values[1] += dataBuffer1[x].y;
+            values[2] += dataBuffer1[x].z;
+
+
+            values[3] += dataBuffer2[x].x;
+            values[4] += dataBuffer2[x].y;
+            values[5] += dataBuffer2[x].z;
+
+            values[6] += dataBuffer3[x].x;
+            values[7] += dataBuffer3[x].y;
+            values[8] += dataBuffer3[x].z;
+
+            values[9] += dataBuffer4[x].x;
+            values[10] += dataBuffer4[x].y;
+            values[11] += dataBuffer4[x].z;
+
+            values[12] += dataBuffer5[x].x;
+        }
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
+    return values;
 }
 
 

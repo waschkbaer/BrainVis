@@ -153,6 +153,11 @@ void GLProgram::Set(const char *name, const Core::Math::Mat4f& value){
     glUniformMatrix4fv(m_currentVariableLocation, 1, false, (float*) &value.array[0]);
 }
 
+void GLProgram::Set(const char *name, const std::vector<Core::Math::Mat4f>& value){
+    m_currentVariableLocation = glGetUniformLocation(m_ShaderProgramm, name);
+    glUniformMatrix4fv(m_currentVariableLocation, value.size(), false, (float*) &((value[0]).array[0]));
+}
+
 void GLProgram::SetTexture3D(const char *name, const GLuint value, const uint8_t id){
     m_currentVariableLocation = glGetUniformLocation(m_ShaderProgramm, name);
     glUniform1i(m_currentVariableLocation, id);

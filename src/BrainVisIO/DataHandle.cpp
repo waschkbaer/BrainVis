@@ -141,8 +141,6 @@ void DataHandle::updateMRWorld(){
 
     scaleInv = scale.inverse();
 
-
-
     _MRWorld = scale*rotX*rotY*rotZ*trans;
 
     incrementStatus();

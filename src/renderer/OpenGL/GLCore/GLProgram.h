@@ -54,6 +54,7 @@ namespace Tuvok{
               void Set(const char *name, const Core::Math::Vec4i value);
 
               void Set(const char *name, const Core::Math::Mat4f& value);
+              void Set(const char *name, const std::vector<Core::Math::Mat4f>& value);
 
               void SetTexture3D(const char *name, const GLuint value, const uint8_t id);
 
