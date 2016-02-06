@@ -295,7 +295,7 @@ void DICOMRenderer::Paint(){
             _gradientDataBuffer.resize(_windowSize.x*_windowSize.y);
         }
 
-        float done = gradientDecentStep2();
+        float done = gradientDecentStep3();
 
         if(done < 0.0f){
             if(_data->getFTranslationStep() < 0.5f){
@@ -1333,8 +1333,7 @@ float DICOMRenderer::gradientDecentStep2(){
 
     //get currentvalue;
     MRMatrixList.push_back(_data->getMRWorld().inverse());
-    //float base = subVolumesV2(MRMatrixList)[0];
-    float base = subVolumesV3CPU(MRMatrixList)[0];
+    float base = subVolumesV2(MRMatrixList)[0];
     MRMatrixList.clear();
 
     _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
@@ -1391,7 +1390,126 @@ float DICOMRenderer::gradientDecentStep2(){
     //MRMatrixList : {ori, xtP, xtM, ytP, ytM, ztP, ztM, xrP, xrM, yrP, yrM, zrP, zrM }
 
     //subValues = subVolumesV2(MRMatrixList);
-    subValues = subVolumesV3CPU(MRMatrixList);
+    subValues = subVolumesV2(MRMatrixList);
+
+    //reset some values which are no longer needed
+    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
+
+    //iterate over the vector to find the smalles substraction value
+    float minSubstraction = std::abs(subValues[0]);
+    int bestIndex = 0;
+    for(int i = 2; i < subValues.size();++i){
+        if(minSubstraction > std::abs(subValues[i])){
+            minSubstraction = std::abs(subValues[i]);
+            bestIndex = i;
+        }
+    }
+
+    //IFF the substraction is better after any translation we have to continue
+    //no minimum found!
+    if(std::abs(minSubstraction < std::abs(base)) ){
+        switch(bestIndex){
+            case 0: _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0)); break;
+            case 1: _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0)); break;
+            case 2: _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0)); break;
+            case 3: _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0)); break;
+            case 4: _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep())); break;
+            case 5: _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep())); break;
+
+            case 6: _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));break;
+            case 7: _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));break;
+            case 8: _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));break;
+            case 9: _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));break;
+            case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));break;
+            case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));break;
+
+            //case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));break;
+            //case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));break;
+        }
+        return 1.0f; // 1 = continue
+    }
+
+    return -1.0f; // -1 finish
+}
+
+float DICOMRenderer::gradientDecentStep3(){
+    //store the current "default" framebuffer QT-Shit
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
+
+    Vec3f MROffset = _data->getMROffset();
+    Vec3f MRRotation = _data->getMRRotation();
+    std::vector<Mat4f> MRMatrixList;
+    std::vector<float> subValues;
+
+    //get currentvalue;
+    std::shared_ptr<std::vector<float>> results = std::make_shared<std::vector<float>>();
+    results->push_back(0);
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+    subVolumesV3CPUThreading(MRMatrixList,results);
+    float base = (*results)[0];
+    MRMatrixList.clear();
+
+    _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep()));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMROffset(MROffset);
+    _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep()));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMROffset(MROffset);
+
+    //same for rotation
+    _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMRRotation(MRRotation);
+    _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));
+    MRMatrixList.push_back(_data->getMRWorld().inverse());
+
+    _data->setMRRotation(MRRotation);
+
+    //MRMatrixList : {ori, xtP, xtM, ytP, ytM, ztP, ztM, xrP, xrM, yrP, yrM, zrP, zrM }
+
+    results->clear();
+    results->resize(MRMatrixList.size());
+    for(int i = 0; i < results->size();++i){
+        (*results)[i] = 0;
+    }
+
+    subVolumesV3CPUThreading(MRMatrixList,results);
+    subValues = (*results);
 
     //reset some values which are no longer needed
     _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
@@ -1572,19 +1690,33 @@ std::vector<float> DICOMRenderer::subVolumesV2(std::vector<Mat4f> matrices){
     return values;
 }
 
+void DICOMRenderer::subVolumesV3CPUThreading(std::vector<Mat4f> matrices, std::shared_ptr<std::vector<float>> result){
+    int N = 4;
+std::cout << "starting threads"<<std::endl;
+    std::vector<std::thread*> threads;
 
+    for(int i = 0; i < N;++i){
+        threads.push_back(new thread(&DICOMRenderer::subVolumesV3CPU,this,matrices,result,(double)i));
+    }
 
-std::vector<float> DICOMRenderer::subVolumesV3CPU(std::vector<Mat4f> matrices){
+    threads[0]->join();
+    threads[1]->join();
+    threads[2]->join();
+    threads[3]->join();
+
+    std::cout << " --- "<< std::endl;
+
+    for(int i = 0;i < result->size();++i){
+        std::cout <<  (*result)[i] << std::endl;
+    }
+}
+
+std::mutex resultLock;
+void DICOMRenderer::subVolumesV3CPU(std::vector<Mat4f> matrices, std::shared_ptr<std::vector<float>> result, double threadIndex){
     Vec3ui ctDim = _data->getCTDimensions();
     Vec3d ctSteps = Vec3d(1.0/(double)(ctDim.x-1) , 1.0/(double)(ctDim.y-1) , 1.0/(double)(ctDim.z-1));
     Vec3f CTVolPos;
     Vec4f MRVolPos;
-
-    std::vector<float> vals;
-    vals.resize(matrices.size());
-    for(int i = 0; i < vals.size();++i){
-        vals[i] = 0;
-    }
 
     float ctValue = 0;
     float mrValue = 0;
@@ -1592,7 +1724,18 @@ std::vector<float> DICOMRenderer::subVolumesV3CPU(std::vector<Mat4f> matrices){
     float ctMaxValue = _data->getCTHistogramm().size();
     float mrMaxValue = _data->getMRHistogramm().size();
 
-    for(double x = 0; x <= 1.0; x+= ctSteps.x){
+    double startx = threadIndex/4.0f;
+    double endx   = startx + 0.2499999999;
+
+    std::cout << startx << " <->" << endx << std::endl;
+
+    std::vector<float> vals;
+    vals.resize(matrices.size());
+    for(int i= 0; i < vals.size();++i){
+        vals[i] = 0;
+    }
+
+    for(double x = startx; x <= endx; x+= ctSteps.x){
         for(double y = 0; y <= 1.0; y += ctSteps.y){
             for(double z = 0; z <= 1.0; z += ctSteps.z){
                 mrValue = 0;
@@ -1629,13 +1772,16 @@ std::vector<float> DICOMRenderer::subVolumesV3CPU(std::vector<Mat4f> matrices){
         }
     }
 
+    resultLock.lock();
+    for(int i = 0; i < vals.size();++i){
+        (*result)[i] += vals[i];
+    }
+    resultLock.unlock();
 
-    std::cout << "---" << std::endl;
+    /*std::cout << "---" << std::endl;
     for(float f : vals){
         std::cout << f << std::endl;
-    }
-
-    return vals;
+    }*/
 }
 
 
