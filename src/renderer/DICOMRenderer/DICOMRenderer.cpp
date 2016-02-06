@@ -1333,7 +1333,8 @@ float DICOMRenderer::gradientDecentStep2(){
 
     //get currentvalue;
     MRMatrixList.push_back(_data->getMRWorld().inverse());
-    float base = subVolumesV2(MRMatrixList)[0];
+    //float base = subVolumesV2(MRMatrixList)[0];
+    float base = subVolumesV3CPU(MRMatrixList)[0];
     MRMatrixList.clear();
 
     _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
@@ -1389,7 +1390,8 @@ float DICOMRenderer::gradientDecentStep2(){
 
     //MRMatrixList : {ori, xtP, xtM, ytP, ytM, ztP, ztM, xrP, xrM, yrP, yrM, zrP, zrM }
 
-    subValues = subVolumesV2(MRMatrixList);
+    //subValues = subVolumesV2(MRMatrixList);
+    subValues = subVolumesV3CPU(MRMatrixList);
 
     //reset some values which are no longer needed
     _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
@@ -1569,6 +1571,74 @@ std::vector<float> DICOMRenderer::subVolumesV2(std::vector<Mat4f> matrices){
     glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
     return values;
 }
+
+
+
+std::vector<float> DICOMRenderer::subVolumesV3CPU(std::vector<Mat4f> matrices){
+    Vec3ui ctDim = _data->getCTDimensions();
+    Vec3d ctSteps = Vec3d(1.0/(double)(ctDim.x-1) , 1.0/(double)(ctDim.y-1) , 1.0/(double)(ctDim.z-1));
+    Vec3f CTVolPos;
+    Vec4f MRVolPos;
+
+    std::vector<float> vals;
+    vals.resize(matrices.size());
+    for(int i = 0; i < vals.size();++i){
+        vals[i] = 0;
+    }
+
+    float ctValue = 0;
+    float mrValue = 0;
+
+    float ctMaxValue = _data->getCTHistogramm().size();
+    float mrMaxValue = _data->getMRHistogramm().size();
+
+    for(double x = 0; x <= 1.0; x+= ctSteps.x){
+        for(double y = 0; y <= 1.0; y += ctSteps.y){
+            for(double z = 0; z <= 1.0; z += ctSteps.z){
+                mrValue = 0;
+                ctValue = 0;
+
+                CTVolPos = Vec3f(x,y,z);
+
+                CTVolPos.x = std::max(0.0f, std::min(CTVolPos.x, 1.0f));
+                CTVolPos.y = std::max(0.0f, std::min(CTVolPos.y, 1.0f));
+                CTVolPos.z = std::max(0.0f, std::min(CTVolPos.z, 1.0f));
+
+                ctValue = (float)_data->getCTValue(CTVolPos)/ctMaxValue;
+                if(ctValue > 0.6f){
+                    ctValue = 0;
+                }
+
+                for(int i = 0; i < matrices.size();++i){
+                    mrValue = 0;
+                    MRVolPos = _data->getCTWorld() * Vec4f(CTVolPos.x-0.5f,CTVolPos.y-0.5f,CTVolPos.z-0.5f,1) ;
+                    MRVolPos = MRVolPos*matrices[i];
+                    MRVolPos.x += 0.5f;
+                    MRVolPos.y += 0.5f;
+                    MRVolPos.z += 0.5f;
+
+
+                    if( MRVolPos.x >= 0.0f && MRVolPos.y >= 0.0f && MRVolPos.z >= 0.0f &&
+                        MRVolPos.y <= 1.0f && MRVolPos.y <= 1.0f && MRVolPos.z <= 1.0f){
+                        mrValue = (float)_data->getMRValue(MRVolPos.xyz())/mrMaxValue;
+                    }
+
+                    vals[i] += (ctValue-mrValue)*(ctValue-mrValue);
+                }
+            }
+        }
+    }
+
+
+    std::cout << "---" << std::endl;
+    for(float f : vals){
+        std::cout << f << std::endl;
+    }
+
+    return vals;
+}
+
+
 
 
 float DICOMRenderer::subVolumes(Vec2ui windowSize, float sliceSkip){

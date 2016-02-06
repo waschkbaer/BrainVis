@@ -175,6 +175,9 @@ public:
 
     Core::Math::Vec3f getMriVolumePosition() const;
 
+    uint16_t getCTValue(Vec3f volumespace);
+    uint16_t getMRValue(Vec3f volumespace);
+
 private:
     void updateMRWorld();
 

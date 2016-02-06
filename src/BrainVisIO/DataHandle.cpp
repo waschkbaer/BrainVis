@@ -699,3 +699,10 @@ const std::vector<uint16_t>& DataHandle::getMRHistogramm(){
     else
         return h;
 }
+
+uint16_t DataHandle::getCTValue(Vec3f volumespace){
+    return _CTVolume->getValue(volumespace);
+}
+uint16_t DataHandle::getMRValue(Vec3f volumespace){
+    return _MRVolume->getValue(volumespace);
+}

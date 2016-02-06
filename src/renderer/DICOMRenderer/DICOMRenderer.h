@@ -164,6 +164,7 @@ private:
         float gradientDecentStep2();
         float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
         std::vector<float> subVolumesV2(std::vector<Mat4f> matrices);
+        std::vector<float> subVolumesV3CPU(std::vector<Mat4f> matrices);
         Core::Math::Mat4f calculateElectrodeMatices(Core::Math::Vec3f entry, Core::Math::Vec3f target);
         void checkForErrorCodes(std::string note);
 

@@ -129,6 +129,10 @@ void DicomVolume::exportJPGFiles(const std::string& path){
     }
 }
 
+int getIndex(int x, int y, int z, int dx, int dy, int dz){
+    return  dx *  dy * z + dx *  y +x;
+}
+
 uint16_t DicomVolume::getValue(Core::Math::Vec3f volumePosition){
     if(volumePosition.x > 1.0f || volumePosition.x <0.0f ||
             volumePosition.y > 1.0f || volumePosition.y < 0.0f ||
@@ -138,19 +142,63 @@ uint16_t DicomVolume::getValue(Core::Math::Vec3f volumePosition){
 
 
   Core::Math::Vec3f arrayPos = volumePosition*Vec3f(m_vDimensions.x-1,m_vDimensions.y-1,m_vDimensions.z-1);
-  Core::Math::Vec3ui arrayIndex = Vec3ui(arrayPos.x+0.5f,arrayPos.y+0.5f,arrayPos.z+0.5f);
+  arrayPos.x = std::max(0.0f,std::min( arrayPos.x,(float)(m_vDimensions.x-1)));
+  arrayPos.y = std::max(0.0f,std::min( arrayPos.y,(float)(m_vDimensions.y-1)));
+  arrayPos.z = std::max(0.0f,std::min( arrayPos.z,(float)(m_vDimensions.z-1)));
 
+  Core::Math::Vec3f weights;
+  weights.x = arrayPos.x - (int)arrayPos.x;
+  weights.y = arrayPos.y - (int)arrayPos.y;
+  weights.z = arrayPos.z - (int)arrayPos.z;
+
+
+  Core::Math::Vec3i min = Core::Math::Vec3i(arrayPos.x-0.5f,arrayPos.y-0.5f,arrayPos.z-0.5f);
+  Core::Math::Vec3i max = Core::Math::Vec3i(arrayPos.x+0.5f,arrayPos.y+0.5f,arrayPos.z+0.5f);
+
+  min.x = std::max(0,std::min(min.x,(int32_t)(m_vDimensions.x-1)));
+  min.y = std::max(0,std::min(min.y,(int32_t)(m_vDimensions.y-1)));
+  min.z = std::max(0,std::min(min.z,(int32_t)(m_vDimensions.z-1)));
+
+  max.x = std::max(0,std::min(min.x,(int32_t)(m_vDimensions.x-1)));
+  max.y = std::max(0,std::min(min.y,(int32_t)(m_vDimensions.y-1)));
+  max.z = std::max(0,std::min(min.z,(int32_t)(m_vDimensions.z-1)));
+
+  float v1 = m_vData[getIndex(min.x,min.y,min.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+  float v2 = m_vData[getIndex(min.x,min.y,max.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+  float v3 = m_vData[getIndex(min.x,max.y,min.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+  float v4 = m_vData[getIndex(min.x,max.y,max.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+
+  float v5 = m_vData[getIndex(max.x,min.y,min.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+  float v6 = m_vData[getIndex(max.x,min.y,max.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+  float v7 = m_vData[getIndex(max.x,max.y,min.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+  float v8 = m_vData[getIndex(max.x,max.y,max.z,m_vDimensions.x,m_vDimensions.y,m_vDimensions.z)];
+
+  v1 = v1*(1.0f-weights.x) + v5*(weights.x);
+  v2 = v2*(1.0f-weights.x) + v6*(weights.x);
+  v3 = v3*(1.0f-weights.x) + v7*(weights.x);
+  v4 = v4*(1.0f-weights.x) + v8*(weights.x);
+
+  v1 = v1*(1.0f-weights.y) + v3*(weights.y);
+  v2 = v2*(1.0f-weights.y) + v4*(weights.y);
+
+  v1 = v1*(1.0f-weights.z) + v2*(weights.z);
+  return v1;
+
+    /*
+  Core::Math::Vec3i arrayIndex = Core::Math::Vec3i(arrayPos.x+0.5f,arrayPos.y+0.5f,arrayPos.z+0.5f);
   int index = m_vDimensions.x*m_vDimensions.y*arrayIndex.z +
                 m_vDimensions.x * arrayIndex.y +
                 arrayIndex.x;
-
-
   uint16_t value = m_vData[index];
 
-  /*std::cout <<"[DICOMVolume] array index"<< index<<std::endl;
+  std::cout <<"[DICOMVolume] array index"<< index<<std::endl;
   std::cout <<"[DICOMVolume] array float"<< arrayPos<<std::endl;
   std::cout <<"[DICOMVolume] array int"<< arrayIndex<<std::endl;
+  std::cout <<"[DICOMVolume] array weights"<< weights<<std::endl;
   std::cout <<"[DICOMVolume] elements"<< m_vDimensions<<std::endl;
-  std::cout << "[DicomVolume] VALUE: "<< value << std::endl;*/
-  return value;
+  std::cout << "[DicomVolume] VALUE: "<< value << std::endl;
+  std::cout << "[DicomVolume] VALUEinterp: "<< v1 << std::endl;
+
+  return value;*/
+
 }
