@@ -293,29 +293,24 @@ void DICOMRenderer::Paint(){
     if(_doFrameDetection){
         findGFrame();
     }
-    //while(_doesGradientDescent){
-    if(_doesGradientDescent){
-        if(_gradientDataBuffer.size() != _windowSize.x*_windowSize.y){
-            _gradientDataBuffer.resize(_windowSize.x*_windowSize.y);
-        }
+    while(_doesGradientDescent){
+    //if(_doesGradientDescent){
 
         if(_fusionMethod == nullptr){
-            //_fusionMethod = std::unique_ptr<iFusion>(new OpenGLFusion(_data,_windowSize,_GL_CTVolume->GetGLID(),_GL_MRVolume->GetGLID()));
-            _fusionMethod = std::unique_ptr<iFusion>(new CPUFusion(_data));
+            _fusionMethod = std::unique_ptr<iFusion>(new OpenGLFusion(_data,_windowSize,_GL_CTVolume->GetGLID(),_GL_MRVolume->GetGLID()));
+            //_fusionMethod = std::unique_ptr<iFusion>(new CPUFusion(_data));
         }
-
         _fusionMethod->init(_windowSize);
 
-        //float done = gradientDecentStep3();
-        float done = _fusionMethod->executeFusionStep();
+        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
+        float result = _fusionMethod->executeFusionStep();
+        glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
 
-        if(done < 0.0f){
+        if(result < 0.0f){
             if(_data->getFTranslationStep() < 0.5f){
                  _doesGradientDescent = false;
-                 _gradientDataBuffer.clear();
-                 _gradientDataBuffer.resize(1);
-
                  double d = timer.elapsed();
+                 _fusionMethod->reset();
                  std::cout << "end gdc : " << d<<std::endl;
             }else{
                 _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
@@ -1220,171 +1215,6 @@ void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,boo
     _clipMode = oldClipMode;
 }
 
-static int counter= 0;
-
-float DICOMRenderer::gradientDecentStep(){
-    //store the current "default" framebuffer QT-Shit
-        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-
-        Vec2ui subWindowSize(_windowSize.x,_windowSize.y);
-
-        //create the needed framebuffer, if they do not exist
-        if(COMPOSITING == nullptr) COMPOSITING = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, subWindowSize.x, subWindowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-
-        //we just render on half the resolution
-        //much faster, maybe more inaccurate
-        glViewport(0,0,subWindowSize.x,subWindowSize.y);
-
-        //select rendermode
-        _activeRenderMode = RenderMode::XAxis;
-
-        Vec3f MROffset = _data->getMROffset();
-        Vec3f MRRotation = _data->getMRRotation();
-        Vec3f scaleCurrent = _data->getMRScale();
-        //std::cout << "[DicomRenderer] center "<< MROffset << "rotation " << MRRotation << std::endl;
-
-        //subtract Both Volumes and store the value
-        float subValueCurrent = subVolumes(subWindowSize);
-
-        //store possible translation/rotation in a vector
-        std::vector<float> subValues;
-        //xP,xM,yP,yM,zP,zM
-        //xPr,xMr,yPr,yMr,zPr,zMr
-
-        //calculate the substraction-value for each axis after moving the volume
-        _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMROffset(MROffset);
-        _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMROffset(MROffset);
-        _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMROffset(MROffset);
-        _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMROffset(MROffset);
-        _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep()));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMROffset(MROffset);
-        _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep()));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMROffset(MROffset);
-
-        //same for rotation
-        _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMRRotation(MRRotation);
-        _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMRRotation(MRRotation);
-        _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMRRotation(MRRotation);
-        _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMRRotation(MRRotation);
-        _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMRRotation(MRRotation);
-        _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));
-        subValues.push_back(subVolumes(subWindowSize));
-        _data->setMRRotation(MRRotation);
-
-        //reset some values which are no longer needed
-        _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
-        glViewport(0,0,_windowSize.x,_windowSize.y);
-
-        //iterate over the vector to find the smalles substraction value
-        float minSubstraction = std::abs(subValues[0]);
-        int bestIndex = 0;
-        for(int i = 1; i < subValues.size();++i){
-            if(minSubstraction > std::abs(subValues[i])){
-                minSubstraction = std::abs(subValues[i]);
-                bestIndex = i;
-            }
-        }
-
-        //IFF the substraction is better after any translation we have to continue
-        //no minimum found!
-        if(minSubstraction < std::abs(subValueCurrent)){
-            //std::cout <<"[DicomRenderer] "<< minSubstraction << " is smaller then "<< std::abs(subValueCurrent)<<std::endl;
-            switch(bestIndex){
-                case 0: _data->setMROffset(MROffset+Vec3f(_data->getFTranslationStep(),0,0)); break;
-                case 1: _data->setMROffset(MROffset+Vec3f(-_data->getFTranslationStep(),0,0)); break;
-                case 2: _data->setMROffset(MROffset+Vec3f(0,_data->getFTranslationStep(),0)); break;
-                case 3: _data->setMROffset(MROffset+Vec3f(0,-_data->getFTranslationStep(),0)); break;
-                case 4: _data->setMROffset(MROffset+Vec3f(0,0,_data->getFTranslationStep())); break;
-                case 5: _data->setMROffset(MROffset+Vec3f(0,0,-_data->getFTranslationStep())); break;
-
-                case 6: _data->setMRRotation(MRRotation+Vec3f(_data->getFRotationStep(),0,0));break;
-                case 7: _data->setMRRotation(MRRotation+Vec3f(-_data->getFRotationStep(),0,0));break;
-                case 8: _data->setMRRotation(MRRotation+Vec3f(0,_data->getFRotationStep(),0));break;
-                case 9: _data->setMRRotation(MRRotation+Vec3f(0,-_data->getFRotationStep(),0));break;
-                case 10: _data->setMRRotation(MRRotation+Vec3f(0,0,_data->getFRotationStep()));break;
-                case 11: _data->setMRRotation(MRRotation+Vec3f(0,0,-_data->getFRotationStep()));break;
-
-                //case 12: _data->setMRScale(scaleCurrent*Vec3f(1.0f+ scaleStepSize,1.0f+ scaleStepSize,1.0f+ scaleStepSize));break;
-                //case 13: _data->setMRScale(scaleCurrent*Vec3f(1.0f- scaleStepSize,1.0f- scaleStepSize,1.0f- scaleStepSize));break;
-            }
-            return 1.0f; // 1 = continue
-        }
-
-        return -1.0f; // -1 finish
-}
-
-float DICOMRenderer::subVolumes(Vec2ui windowSize, float sliceSkip){
-    //checking for glerrors
-    checkForErrorCodes("@sub volumes1");
-
-    //will store the substraction value
-    float volumeValue = 0.0f;
-    float skipedSlices = (_data->getFTranslationStep()*4.0f);
-    skipedSlices = std::max(skipedSlices,3.0f);
-
-    //initial cleaning of the targetframebuffer
-    _targetBinder->Bind(COMPOSITING);
-    ClearBackground(Vec4f(0,0,0,0));
-
-    //loop from slice 0 to last slice (skip 5 slides [speedup])
-    for(float i = 0.0f; i <= 1.0f; i+=  skipedSlices/(float)_data->getCTScale().x){
-        _data->setSelectedSlices(Vec3f(i,0.5f,0.5f));
-
-        drawSliceV3(_sliceShader, true,false, true);
-        drawSliceV3(_sliceShader, false,false);
-
-        //seperate shader to substract both volumes
-        _targetBinder->Bind(COMPOSITING);
-
-        glCullFace(GL_BACK);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE,GL_ONE);
-
-        _compositingVolumeSubstraction->Enable();
-        _compositingVolumeSubstraction->SetTexture2D("sliceImageCT",_rayCastColorCT->GetTextureHandle(),0);
-        _compositingVolumeSubstraction->SetTexture2D("sliceImageMR",_rayCastColorMR->GetTextureHandle(),1);
-
-        _renderPlane->paint();
-
-        _compositingVolumeSubstraction->Disable();
-    }
-
-    //read pixeldata!
-    _targetBinder->Bind(COMPOSITING);
-    glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-    glReadPixels(0, 0, windowSize.x, windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(_gradientDataBuffer[0]));
-
-    for(int x = 0; x < _gradientDataBuffer.size();++x){
-        volumeValue += _gradientDataBuffer[x].x;
-    }
-
-    return volumeValue;
-}
-
-
 void DICOMRenderer::drawSliceCompositing(){
   glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
 
@@ -1503,10 +1333,6 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
                 foundStart = true;
             }
         }
-
-        //if(foundData)
-        //    screenshot(counter++);
-
         if(foundData || !foundStart){
             //std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
             currentSlide.x += stepX*0.5f;

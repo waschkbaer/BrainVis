@@ -162,8 +162,6 @@ private:
         //utils
         void ClearBackground(Vec4f color);
         void updateTransferFunction();
-        float gradientDecentStep();
-        float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
         Core::Math::Mat4f calculateElectrodeMatices(Core::Math::Vec3f entry, Core::Math::Vec3f target);
         void checkForErrorCodes(std::string note);
 
@@ -257,7 +255,6 @@ private:
         //gradient decent testing
         std::shared_ptr<GLFBOTex>       COMPOSITING;
         bool                            _doesGradientDescent;
-        std::vector<Vec4f>              _gradientDataBuffer;
 
         Vec3f                           _ACMRWorldPosition;
         Vec3f                           _PCMRWorldPosition;
