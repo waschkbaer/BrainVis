@@ -22,8 +22,21 @@ public:
     virtual int32_t executeFusionStep() = 0;
 
 protected:
+    Core::Math::Mat4f createTranslationOffsetMatrix(Vec3f dir){
+        _dataset->setMROffset(_baseTranslation+dir);
+        return _dataset->getMRWorld().inverse();
+    }
+    Core::Math::Mat4f createRotationOffsetMatrix(Vec3f rot){
+        _dataset->setMRRotation(_baseRotation+rot);
+        return _dataset->getMRWorld().inverse();
+    }
+
+
+protected:
     double                          _lastSubstraction;
     std::shared_ptr<DataHandle>     _dataset;
+    Core::Math::Vec3f               _baseTranslation;
+    Core::Math::Vec3f               _baseRotation;
 };
 
 #endif //IFUSIONINTERFACE

@@ -217,15 +217,6 @@ std::vector<float> OpenGLFusion::doGD(){
     return values;
 }
 
-Core::Math::Mat4f OpenGLFusion::createTranslationOffsetMatrix(Vec3f dir){
-    _dataset->setMROffset(_baseTranslation+dir);
-    return _dataset->getMRWorld().inverse();
-}
-Core::Math::Mat4f OpenGLFusion::createRotationOffsetMatrix(Vec3f rot){
-    _dataset->setMRRotation(_baseRotation+rot);
-    return _dataset->getMRWorld().inverse();
-}
-
 
 bool OpenGLFusion::init(Core::Math::Vec2ui resolution){
     if(_subtractRayCastShader == nullptr || _frontFaceShader == nullptr){

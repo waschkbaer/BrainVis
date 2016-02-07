@@ -163,12 +163,7 @@ private:
         void ClearBackground(Vec4f color);
         void updateTransferFunction();
         float gradientDecentStep();
-        float gradientDecentStep2();
-        float gradientDecentStep3();
         float subVolumes(Vec2ui windowSize, float sliceSkip = 1.0f);
-        std::vector<float> subVolumesV2(std::vector<Mat4f> matrices);
-        void subVolumesV3CPUThreading(std::vector<Mat4f> matrices, std::shared_ptr<std::vector<float>> result);
-        void subVolumesV3CPU(std::vector<Mat4f> matrices, std::shared_ptr<std::vector<float>> result, double threadIndex);
         Core::Math::Mat4f calculateElectrodeMatices(Core::Math::Vec3f entry, Core::Math::Vec3f target);
         void checkForErrorCodes(std::string note);
 

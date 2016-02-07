@@ -35,16 +35,12 @@ public:
     bool init(Core::Math::Vec2ui resolution = Vec2ui(0,0));
 private:
     std::vector<float> doGD();
-    Core::Math::Mat4f createTranslationOffsetMatrix(Vec3f dir);
-    Core::Math::Mat4f createRotationOffsetMatrix(Vec3f rot);
 
 private:
     Vec2ui                          _windowSize;
     std::vector<Core::Math::Mat4f>  _matrices;
     uint32_t                        _ctHandle;
     uint32_t                        _mrHandle;
-    Core::Math::Vec3f               _baseTranslation;
-    Core::Math::Vec3f               _baseRotation;
 
     std::shared_ptr<GLProgram>      _subtractRayCastShader;
     std::shared_ptr<GLProgram>      _frontFaceShader;
