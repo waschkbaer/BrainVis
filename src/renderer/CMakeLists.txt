@@ -2,6 +2,7 @@ file(GLOB REND2_SOURCE   *.cpp
 			OpenGL/*.cpp
 			NetworkRenderer/*.cpp
 			DICOMRenderer/*.cpp
+			DICOMRenderer/Fusion/*.cpp
                         OpenGL/GLCore/*.cpp
                         OpenGL/GLVolume/*.cpp
                         Context/*.cpp
@@ -10,6 +11,7 @@ file(GLOB REND2_HEADER   *.h
                         OpenGL/*.h
 			NetworkRenderer/*.h
 			DICOMRenderer/*.h
+			DICOMRenderer/Fusion/*.h
                         OpenGL/GLCore/*.h
                         OpenGL/GLVolume/*.h
                         Context/*.h

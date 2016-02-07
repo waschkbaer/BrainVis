@@ -30,6 +30,8 @@
 #include <string>
 #include <vector>
 
+#include <renderer/DICOMRenderer/Fusion/iFusion.h>
+
 using namespace Tuvok::Renderer;
 using namespace Tuvok::Renderer::OpenGL;
 using namespace Tuvok::Renderer::OpenGL::GLCore;
@@ -270,6 +272,8 @@ private:
 
         //runparameters
         Vec3f                           _fokuslookat;
+
+        std::unique_ptr<iFusion>        _fusionMethod;
 };
 
 

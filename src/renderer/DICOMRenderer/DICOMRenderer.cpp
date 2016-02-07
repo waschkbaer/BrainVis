@@ -10,6 +10,8 @@
 #include <BrainVisIO/Data/MERElectrode.h>
 #include <BrainVisIO/Data/MERData.h>
 
+#include <renderer/DICOMRenderer/Fusion/OpenGLBasedFusion.h>
+
 #include <core/Time/Timer.h>
 
 using namespace std;
@@ -76,7 +78,8 @@ _displayCenterACPC(true),
 _displayThreeDCursor(true),
 _displayTwoDCursor(true),
 _currentElectrode(nullptr),
-_isTracking(true)
+_isTracking(true),
+_fusionMethod(nullptr)
 {
 }
 
@@ -289,13 +292,20 @@ void DICOMRenderer::Paint(){
     if(_doFrameDetection){
         findGFrame();
     }
-    //while(_doesGradientDescent){
-    if(_doesGradientDescent){
+    while(_doesGradientDescent){
+    //if(_doesGradientDescent){
         if(_gradientDataBuffer.size() != _windowSize.x*_windowSize.y){
             _gradientDataBuffer.resize(_windowSize.x*_windowSize.y);
         }
 
-        float done = gradientDecentStep3();
+        if(_fusionMethod == nullptr){
+            _fusionMethod = std::unique_ptr<iFusion>(new OpenGLFusion(_data,_windowSize,_GL_CTVolume->GetGLID(),_GL_MRVolume->GetGLID()));
+        }
+
+        _fusionMethod->init(_windowSize);
+
+        //float done = gradientDecentStep3();
+        float done = _fusionMethod->executeFusionStep();
 
         if(done < 0.0f){
             if(_data->getFTranslationStep() < 0.5f){
@@ -305,7 +315,6 @@ void DICOMRenderer::Paint(){
 
                  double d = timer.elapsed();
                  std::cout << "end gdc : " << d<<std::endl;
-
             }else{
                 _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
                 _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
@@ -1691,7 +1700,7 @@ std::vector<float> DICOMRenderer::subVolumesV2(std::vector<Mat4f> matrices){
 }
 
 void DICOMRenderer::subVolumesV3CPUThreading(std::vector<Mat4f> matrices, std::shared_ptr<std::vector<float>> result){
-    int N = 4;
+    int N = 8;
 std::cout << "starting threads"<<std::endl;
     std::vector<std::thread*> threads;
 
@@ -1703,12 +1712,16 @@ std::cout << "starting threads"<<std::endl;
     threads[1]->join();
     threads[2]->join();
     threads[3]->join();
+    threads[4]->join();
+    threads[5]->join();
+    threads[6]->join();
+    threads[7]->join();
 
     std::cout << " --- "<< std::endl;
 
-    for(int i = 0;i < result->size();++i){
+    /*for(int i = 0;i < result->size();++i){
         std::cout <<  (*result)[i] << std::endl;
-    }
+    }*/
 }
 
 std::mutex resultLock;
@@ -1724,8 +1737,8 @@ void DICOMRenderer::subVolumesV3CPU(std::vector<Mat4f> matrices, std::shared_ptr
     float ctMaxValue = _data->getCTHistogramm().size();
     float mrMaxValue = _data->getMRHistogramm().size();
 
-    double startx = threadIndex/4.0f;
-    double endx   = startx + 0.2499999999;
+    double startx = threadIndex/8.0f;
+    double endx   = startx + 0.124999999999f;
 
     std::cout << startx << " <->" << endx << std::endl;
 
