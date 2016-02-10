@@ -18,8 +18,12 @@ file(GLOB REND2_HEADER   *.h
 			Service/*.h)
 file(GLOB REND2_SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Shader/*.glsl)
 
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})  
+cuda_compile(CUDA_OBJECTS C:/Users/andre/Documents/BrainVis/src/renderer/DICOMRenderer/Fusion/CudaKernel.cu)  
+
+
 add_definitions(-DGLEW_STATIC)
-add_library (Renderer ${REND2_SOURCE} ${REND2_HEADER} ${REND2_SHADERS} $<TARGET_OBJECTS:mocca>)
+add_library (Renderer ${REND2_SOURCE} ${REND2_HEADER} ${REND2_SHADERS} $<TARGET_OBJECTS:mocca> ${CUDA_OBJECTS})
 
 target_include_directories (Renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_include_directories (Renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Shader)
@@ -28,6 +32,10 @@ target_link_libraries (Renderer LINK_PUBLIC Core)
 target_link_libraries (Renderer LINK_PUBLIC BRAINVISIO)
 target_link_libraries (Renderer LINK_PUBLIC glew)
 target_link_libraries (Renderer LINK_PUBLIC ghoul)
+target_link_libraries (Renderer  ${CUDA_LIBRARIES}) 
+
+CUDA_ADD_CUBLAS_TO_TARGET (Renderer)
+CUDA_ADD_CUFFT_TO_TARGET (Renderer)
 
 #MOCCA
 include_directories(

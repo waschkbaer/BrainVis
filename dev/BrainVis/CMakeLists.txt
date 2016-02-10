@@ -12,12 +12,11 @@ file(GLOB SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Shader/*.glsl)
 file(GLOB BUTTONS ${CMAKE_CURRENT_SOURCE_DIR}/Buttons/*.jpg)
 file(GLOB DEMOMER ${CMAKE_CURRENT_SOURCE_DIR}/MER/*.csv)
 
-#set (CMAKE_LIBRARY_PATH "C:\\Program Files (x86)\\Windows Kits\\8.0\\Lib\\win8\\um\\x64")
-#set (CMAKE_PREFIX_PATH "C:\\Qt5.5\\msvc2013_64")
-#set (CMAKE_PREFIX_PATH "/home/waschkbaer/Qt/5.5/gcc_64/lib/cmake/Qt5Widgets")
 set (CMAKE_PREFIX_PATH "C:\\Qt\\5.5\\msvc2013_64")
 
 project(BrainVis)
+set(CMAKE_AUTOMOC ON) 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)  
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -26,6 +25,7 @@ set(CMAKE_AUTOMOC ON)
 
 # Find the QtWidgets library
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5OpenGL REQUIRED)  
 
 QT5_WRAP_UI(UIS_HDRS mainwindow.ui)
 QT5_WRAP_UI(UIS_HDRS renderwidget.ui)
@@ -39,7 +39,8 @@ QT5_WRAP_UI(UIS_HDRS merwidgets/merimageentry.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/merelectrodeentry.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/meroptions.ui)
 
-add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc)
+
+add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc ${CUDA_OBJECTS})
 
 set_target_properties( BrainVis PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BRAINVIS_ROOT_DIR}/build/bin )
 
@@ -55,6 +56,8 @@ target_link_libraries(BrainVis LINK_PUBLIC ${OPENGL_LIBRARIES})
 target_link_libraries(BrainVis LINK_PUBLIC Core)
 target_link_libraries(BrainVis LINK_PUBLIC ghoul)
 target_link_libraries(BrainVis LINK_PUBLIC BRAINVISIO)
+
+qt5_use_modules(BrainVis  Widgets OpenGL)  
 
 #GHOUL
 include_directories(

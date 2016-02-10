@@ -85,12 +85,17 @@ bool DicomVolume::initData(const std::string& DICOMpath){
     uint16_t largestValue = 0;
 
     //find max value
+    unsigned int sum = 0;
     for(int i = 0; i < m_vData.size();++i){
         currentValue = m_vData[i];
+        //if(i < 100000)
+            sum+= currentValue;
+
         if(largestValue < currentValue) largestValue = currentValue;
     }
 
     std::cout <<"[DICOMVolume] largest found value: "<< largestValue << std::endl;
+    std::cout <<"[DICOMVolume] sum: "<< sum << std::endl;
 
     m_vHistogram.resize(largestValue+1);
     for(int i = 0; i < m_vData.size();++i){
@@ -184,14 +189,14 @@ uint16_t DicomVolume::getValue(Core::Math::Vec3f volumePosition){
   v1 = v1*(1.0f-weights.z) + v2*(weights.z);
   return v1;
 
-    /*
-  Core::Math::Vec3i arrayIndex = Core::Math::Vec3i(arrayPos.x+0.5f,arrayPos.y+0.5f,arrayPos.z+0.5f);
+
+  /*Core::Math::Vec3i arrayIndex = Core::Math::Vec3i(arrayPos.x+0.5f,arrayPos.y+0.5f,arrayPos.z+0.5f);
   int index = m_vDimensions.x*m_vDimensions.y*arrayIndex.z +
                 m_vDimensions.x * arrayIndex.y +
                 arrayIndex.x;
   uint16_t value = m_vData[index];
 
-  std::cout <<"[DICOMVolume] array index"<< index<<std::endl;
+   std::cout <<"[DICOMVolume] array index"<< index<<std::endl;
   std::cout <<"[DICOMVolume] array float"<< arrayPos<<std::endl;
   std::cout <<"[DICOMVolume] array int"<< arrayIndex<<std::endl;
   std::cout <<"[DICOMVolume] array weights"<< weights<<std::endl;

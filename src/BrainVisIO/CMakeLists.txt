@@ -19,6 +19,8 @@ target_include_directories (BRAINVISIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries (BRAINVISIO LINK_PUBLIC Core)
 target_link_libraries (BRAINVISIO LINK_PUBLIC jpeglib)
 
+cmake_policy(SET CMP0023 OLD)
+
 IF(FFTW_LIBRARIES)
 	target_link_libraries (BRAINVISIO ${FFTW_LIBRARIES})
 ELSE(FFTW_LIBRARIES)

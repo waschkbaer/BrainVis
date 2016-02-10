@@ -12,6 +12,7 @@
 
 #include <renderer/DICOMRenderer/Fusion/OpenGLBasedFusion.h>
 #include <renderer/DICOMRenderer/Fusion/CPUBasedFusion.h>
+#include <renderer/DICOMRenderer/Fusion/CudaFusion.h>
 
 #include <core/Time/Timer.h>
 
@@ -203,6 +204,7 @@ void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
     if(!LoadFFTColorTex()) cout << "error in ffttex"<< endl;
 
     sheduleRepaint();
+
 }
 
 void DICOMRenderer::ChangeSlide(int slidedelta){
