@@ -30,6 +30,7 @@ bool CudaFusion::init(Core::Math::Vec2ui resolution){
 
 
     executeLoop();
+    //executeFusionStep();
 
     return true;
 }
@@ -38,7 +39,9 @@ void CudaFusion::executeLoop(){
     Timer t;
 
     bool cont = true;
+    std::cout << "start cudafusion"<< std::endl;
     t.start();
+
     while(cont){
         if(executeFusionStep() < 0){
             if(_dataset->getFTranslationStep() < 0.5f){
@@ -48,9 +51,9 @@ void CudaFusion::executeLoop(){
             }else{
                 _dataset->setFTranslationStep(_dataset->getFTranslationStep()*_dataset->getFTranslationStepScale());
                 _dataset->setFRotationStep(_dataset->getFRotationStep()*_dataset->getFRotationStepScale());
-                std::cout << _dataset->getMROffset() << std::endl;
-                std::cout << _dataset->getMRRotation() << std::endl;
-                std::cout << "decrese step size now"<<std::endl;
+                //std::cout << _dataset->getMROffset() << std::endl;
+                //std::cout << _dataset->getMRRotation() << std::endl;
+                //std::cout << "decrese step size now"<<std::endl;
 
             }
         }
@@ -71,7 +74,8 @@ int32_t CudaFusion::executeFusionStep(){
         float rotationStep = _dataset->getFRotationStep();
 
         std::vector<Core::Math::Mat4f>  __stepMatrices;
-        std::vector<double> subValues;
+        std::vector<float> subValues;
+
 
         __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
 
@@ -104,9 +108,11 @@ int32_t CudaFusion::executeFusionStep(){
         _dataset->setMRRotation(baseRotation);
 
         //ONE VOLUME SUB START
-        setEmptyResultVector(__stepMatrices.size());
         setMatrixVector(&(__stepMatrices[0])[0],
                           __stepMatrices.size());
+
+        float sizefaktor = std::max(2.0f,std::min(translationStep*2.0f,12.0f));
+        setSizeFaktor(sizefaktor);
 
         subValues = subtractVolume(_dataset->getCTDimensions().x,
                                                        _dataset->getCTDimensions().y,

@@ -7,37 +7,25 @@
 
 #include "CudaKernel.h"
 
+//GLOBAL Varaibles , jeah there is no class here deal with it right now :(
+texture<float, 3,cudaReadModeElementType>       CTtex;
+cudaArray                                       *d_volumeArray = 0;
+float                                           CTmaxValue = 0;
 
-#define cudaCheckErrors(msg) \
-    do { \
-        cudaError_t __err = cudaGetLastError(); \
-        if (__err != cudaSuccess) { \
-            fprintf(stderr, "Fatal error: %s (%s at %s:%d)\n", \
-                msg, cudaGetErrorString(__err), \
-                __FILE__, __LINE__); \
-            fprintf(stderr, "*** FAILED - ABORTING\n"); \
-        } \
-    } while (0)
+texture<float, 3,cudaReadModeElementType>       MRtex;
+cudaArray                                       *d_volumeArrayMR = 0;
+float                                           MRmaxValue = 0;
+float*                                          device_matrix_ptr = 0;
+int                                             device_matrix_count = 0;
 
-texture<float, 3,cudaReadModeElementType>      CTtex;
-cudaArray                       *d_volumeArray = 0;
-texture<float, 3,cudaReadModeElementType>      MRtex;
-cudaArray                       *d_volumeArrayMR = 0;
-float*                          device_matrix_ptr = 0;
-int                             device_matrix_count = 0;
-float*                          device_result = 0;
-std::vector<float>              host_result;
+float*                                          host_result = NULL;
+float*                                          device_result = NULL;
+
+static float                                    sizefaktor = 2.0f;
 
 void initCuda(){
     cudaFree(0);
 }
-
-struct vec{
-    float x;
-    float y;
-    float z;
-    float w;
-};
 
 void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT){
     const cudaExtent extend = make_cudaExtent(x, y, z);
@@ -45,13 +33,24 @@ void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT)
     cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
 
     std::vector<float> dataasFloat;
+    float max = 0;
     for(int i = 0; i < x*y*z;++i){
         dataasFloat.push_back((float)hostdata[i]);
+        if(max < dataasFloat[i]){
+            max = dataasFloat[i];
+        }
     }
 
     if(CT){
+        for(int i = 0; i < x*y*z;++i){
+            dataasFloat[i] = dataasFloat[i]/max;
+            if(dataasFloat[i] > 0.5f){
+                dataasFloat[i] = 0;
+            }
+        }
+
+
         cudaMalloc3DArray(&d_volumeArray, &channelDesc, extend);
-        cudaCheckErrors("cudaMalloc3D error");
 
         cudaMemcpy3DParms copyParams = {0};
         copyParams.srcPtr   = make_cudaPitchedPtr((void*)&(dataasFloat[0]), extend.width*sizeof(float), extend.width, extend.height);
@@ -59,20 +58,22 @@ void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT)
         copyParams.extent   = extend;
         copyParams.kind     = cudaMemcpyHostToDevice;
         cudaMemcpy3D(&copyParams);
-        cudaCheckErrors("cudaMemcpy3D fail");
 
         CTtex.normalized = false;
-        CTtex.filterMode = cudaFilterModeLinear;
+        CTtex.filterMode = cudaFilterModePoint;
         CTtex.addressMode[0] = cudaAddressModeClamp;
         CTtex.addressMode[1] = cudaAddressModeClamp;
         CTtex.addressMode[2] = cudaAddressModeClamp;
         CTtex.normalized = true;
 
         cudaBindTextureToArray(CTtex, d_volumeArray, channelDesc);
-        cudaCheckErrors("bind fail");
+        CTmaxValue = max;
     }else{
+        for(int i = 0; i < x*y*z;++i){
+            dataasFloat[i] = dataasFloat[i]/max;
+        }
+
         cudaMalloc3DArray(&d_volumeArrayMR, &channelDesc, extend);
-        cudaCheckErrors("cudaMalloc3D error");
 
         cudaMemcpy3DParms copyParams = {0};
         copyParams.srcPtr   = make_cudaPitchedPtr((void*)&(dataasFloat[0]), extend.width*sizeof(float), extend.width, extend.height);
@@ -80,17 +81,16 @@ void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT)
         copyParams.extent   = extend;
         copyParams.kind     = cudaMemcpyHostToDevice;
         cudaMemcpy3D(&copyParams);
-        cudaCheckErrors("cudaMemcpy3D fail");
 
         MRtex.normalized = false;
-        MRtex.filterMode = cudaFilterModeLinear;
+        MRtex.filterMode = cudaFilterModePoint;
         MRtex.addressMode[0] = cudaAddressModeClamp;
         MRtex.addressMode[1] = cudaAddressModeClamp;
         MRtex.addressMode[2] = cudaAddressModeClamp;
         MRtex.normalized = true;
 
         cudaBindTextureToArray(MRtex, d_volumeArrayMR, channelDesc);
-        cudaCheckErrors("bind fail");
+        MRmaxValue = max;
     }
 }
 
@@ -103,17 +103,18 @@ inline __device__ float3 mul(float3* p, float* m){
 }
 
 
-__global__ void test(float* result, float* matrixptr){
+__global__ void subVolumes(float* result,
+                           float* matrixptr,
+                           float sizefaktor,
+                           float xVolDim,
+                           float yVolDim,
+                           float zVolDim){
     float3 ctPos;
-    ctPos.x = (float)blockIdx.x/511.0f*2.0f;
-    ctPos.y = (float)threadIdx.x/511.0f*2.0f;
-    ctPos.z = (float)blockIdx.z/167.0f*2.0f;
+    ctPos.x = (float)blockIdx.x/(xVolDim-1.0f)*sizefaktor;
+    ctPos.y = (float)threadIdx.x/(yVolDim-1.0f)*sizefaktor;
+    ctPos.z = (float)blockIdx.z/(zVolDim-1.0f)*sizefaktor;
 
     float valueCT = tex3D(CTtex,ctPos.x,ctPos.y,ctPos.z);
-    valueCT= valueCT/4095.0f;
-    if(valueCT >= 0.6f){
-       valueCT = 0;
-    }
     float valueMR = 0;
 
     ctPos.x -= 0.5f;
@@ -125,14 +126,13 @@ __global__ void test(float* result, float* matrixptr){
        mrPos.y >= 0.0f && mrPos.y <= 1.0f &&
        mrPos.z >= 0.0f && mrPos.z <= 1.0f){
        valueMR = tex3D(MRtex,mrPos.x,mrPos.y,mrPos.z);
-       valueMR = valueMR/1019.0f;
     }
 
-    float dif = ((valueCT-valueMR)*(valueCT-valueMR));
-    int index = blockIdx.x + 512*blockIdx.y;
+    float dif = (valueCT-valueMR);
+    dif = dif*dif;
+    int index = blockIdx.x + xVolDim*yVolDim*blockIdx.y + threadIdx.x*xVolDim;
     atomicAdd(&result[index],dif);
 }
-
 
 void setMatrixVector(float* matrix, int matrixcount){
     if(device_matrix_ptr == 0 || device_matrix_count != matrixcount){
@@ -143,43 +143,35 @@ void setMatrixVector(float* matrix, int matrixcount){
     device_matrix_count = matrixcount;
 }
 
-void setEmptyResultVector(int size){
-    if(device_result == 0 || size != host_result.size())
-        cudaMalloc((void**) &device_result, sizeof(float)*size);
-
-    host_result.clear();
-    host_result.resize(size);
-
-    cudaMemcpy(device_result, &host_result[0], sizeof(float)*size, cudaMemcpyHostToDevice);
+void setSizeFaktor(float sf){
+    sizefaktor = sf;
 }
 
-const std::vector<double>  subtractVolume(int x, int y, int z){
-    dim3 grid(x/2,device_matrix_count,z/2);
-    dim3 threadBlock(y/2,1,1);
+const std::vector<float>&  subtractVolume(int x, int y, int z){
+    dim3 grid(x/sizefaktor,device_matrix_count,z*sizefaktor);
+    dim3 threadBlock(y/sizefaktor,1,1);
 
-    float* host_sumresult = new float[x*device_matrix_count];
-    float* device_sumresult;
-    memset(host_sumresult,0,sizeof(float)*x*device_matrix_count);
-    cudaMalloc((void**) &device_sumresult, sizeof(float)*x*device_matrix_count);
-    cudaMemcpy(device_sumresult,host_sumresult,sizeof(float)*x*device_matrix_count, cudaMemcpyHostToDevice);
+    if(host_result == NULL)
+        host_result = new float[x*y*device_matrix_count];
 
-    test<<<grid,threadBlock>>>(device_sumresult,device_matrix_ptr);
+    if(device_result == NULL)
+        cudaMalloc((void**) &device_result, sizeof(float)*x*y*device_matrix_count);
+
+    memset(host_result,0,sizeof(float)*x*y*device_matrix_count);
+    cudaMemcpy(device_result,host_result,sizeof(float)*x*y*device_matrix_count, cudaMemcpyHostToDevice);
+
+    subVolumes<<<grid,threadBlock>>>(device_result,device_matrix_ptr,sizefaktor,(float)x,(float)y,(float)z);
     cudaDeviceSynchronize();
-    cudaCheckErrors("kernel fail");
 
-    cudaMemcpy(host_sumresult, device_sumresult, sizeof(float)*x*device_matrix_count, cudaMemcpyDeviceToHost);
+    cudaMemcpy(host_result, device_result, sizeof(float)*x*y*device_matrix_count, cudaMemcpyDeviceToHost);
 
-    host_result.clear();
-
-    std::vector<double> maxValues;
+    std::vector<float> maxValues;
     maxValues.resize(device_matrix_count);
-    for(int i = 0; i < x*device_matrix_count;++i){
-        maxValues[i/x] += host_sumresult[i];
+    int matsel = 0;
+    for(int i = 0; i < x*y*device_matrix_count;++i){
+        matsel = i/(x*y);
+        maxValues[matsel] += host_result[i];
     }
-
-   /* for(double d : maxValues){
-        std::cout << " val : "<< d << std::endl;
-    }*/
 
     return maxValues;
 }
