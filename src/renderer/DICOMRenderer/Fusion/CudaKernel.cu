@@ -146,7 +146,7 @@ __global__ void subVolumes(float* result,
 
     float valueCT = tex3D(CTtex,ctPos.x,ctPos.y,ctPos.z);
     valueCT = valueCT/ctMax;
-    if(valueCT > 0.5f){
+    if(valueCT > 0.4f){
         valueCT = 0;
     }
     float valueMR = 0;
@@ -183,7 +183,7 @@ void setSizeFaktor(float sf){
 }
 
 const std::vector<float>&  subtractVolume(int x, int y, int z){
-    dim3 grid(x/sizefaktor,device_matrix_count,z/sizefaktor);
+    dim3 grid(x/sizefaktor,device_matrix_count,z/2.0f);
     dim3 threadBlock(y/sizefaktor,1,1);
 
     if(host_result == NULL)

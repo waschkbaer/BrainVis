@@ -108,8 +108,8 @@ int32_t CudaFusion::executeFusionStep(){
         setMatrixVector(&(__stepMatrices[0])[0],
                           __stepMatrices.size());
 
-        float sizefaktor = std::max(2.0f,std::min(translationStep*2.0f,8.0f));
-        setSizeFaktor(2.0f);
+        float sizefaktor = std::max(2.0f,std::min(translationStep,3.0f));
+        setSizeFaktor(sizefaktor);
 
         std::vector<float> _subValues = subtractVolume(_dataset->getCTDimensions().x,
                                                        _dataset->getCTDimensions().y,
