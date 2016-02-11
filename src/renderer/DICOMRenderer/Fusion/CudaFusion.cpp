@@ -29,6 +29,7 @@ bool CudaFusion::init(Core::Math::Vec2ui resolution){
     generateCudaTexture(ctPtr,_dataset->getCTDimensions().x,_dataset->getCTDimensions().y,_dataset->getCTDimensions().z,true);
 
 
+    __stepMatrices.resize(13);
     executeLoop();
     //executeFusionStep();
 
@@ -73,62 +74,57 @@ int32_t CudaFusion::executeFusionStep(){
         float translationStep = _dataset->getFTranslationStep();
         float rotationStep = _dataset->getFRotationStep();
 
-        std::vector<Core::Math::Mat4f>  __stepMatrices;
-        std::vector<float> subValues;
-
-
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[0] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
 
         _dataset->setMROffset(baseOffset+Vec3f(translationStep,0,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[1] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMROffset(baseOffset+Vec3f(-translationStep,0,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[2] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMROffset(baseOffset+Vec3f(0.0f,translationStep,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[3] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMROffset(baseOffset+Vec3f(0.0f,-translationStep,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[4] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMROffset(baseOffset+Vec3f(0,0,translationStep));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[5] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMROffset(baseOffset+Vec3f(0,0,-translationStep));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[6] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMROffset(baseOffset);
 
         _dataset->setMRRotation(baseRotation+Vec3f(rotationStep,0,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[7] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMRRotation(baseRotation+Vec3f(-rotationStep,0,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[8] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMRRotation(baseRotation+Vec3f(0,rotationStep,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[9] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMRRotation(baseRotation+Vec3f(0,-rotationStep,0));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[10] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMRRotation(baseRotation+Vec3f(0,0,rotationStep));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[11] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMRRotation(baseRotation+Vec3f(0,0,-rotationStep));
-        __stepMatrices.push_back(_dataset->getCTWorld()*_dataset->getMRWorld().inverse());
+        __stepMatrices[12] =_dataset->getCTWorld()*_dataset->getMRWorld().inverse();
         _dataset->setMRRotation(baseRotation);
 
         //ONE VOLUME SUB START
         setMatrixVector(&(__stepMatrices[0])[0],
                           __stepMatrices.size());
 
-        float sizefaktor = std::max(2.0f,std::min(translationStep*2.0f,12.0f));
-        setSizeFaktor(sizefaktor);
+        float sizefaktor = std::max(2.0f,std::min(translationStep*2.0f,8.0f));
+        setSizeFaktor(2.0f);
 
-        subValues = subtractVolume(_dataset->getCTDimensions().x,
+        std::vector<float> _subValues = subtractVolume(_dataset->getCTDimensions().x,
                                                        _dataset->getCTDimensions().y,
                                                        _dataset->getCTDimensions().z);
-        __stepMatrices.clear();
+
         //ONE VOLUME SUB END
 
-
-       float _lastSubstraction = subValues[0];
+       float _lastSubstraction = _subValues[0];
 
         //iterate over the vector to find the smalles substraction value
-        float minSubstraction = std::abs(subValues[1]);
+        float minSubstraction = std::abs(_subValues[1]);
         int bestIndex = 1;
-        for(int i = 2; i < subValues.size();++i){
-            if(minSubstraction > std::abs(subValues[i])){
-                minSubstraction = std::abs(subValues[i]);
+        for(int i = 2; i < _subValues.size();++i){
+            if(minSubstraction > std::abs(_subValues[i])){
+                minSubstraction = std::abs(_subValues[i]);
                 bestIndex = i;
             }
         }

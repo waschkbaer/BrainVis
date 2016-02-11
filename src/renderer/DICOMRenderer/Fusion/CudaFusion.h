@@ -15,9 +15,10 @@ public:
 
 protected:
 private:
-    unsigned short*         _CTVolumePtr;
-    unsigned short*         _MRVolumePtr;
-    std::vector<float*>     _matricesPtr;
+    unsigned short*                         _CTVolumePtr;
+    unsigned short*                         _MRVolumePtr;
+    std::vector<float*>                     _matricesPtr;
+    std::vector<Core::Math::Mat4f>          __stepMatrices;
 
 };
 
