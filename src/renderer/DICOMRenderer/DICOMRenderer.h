@@ -148,7 +148,7 @@ private:
         //slicer---------(slice renderer based on raycaster!)-----------------------
         void SliceRendering();
         void drawSliceCompositing();
-        void drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT = true,bool full = true, bool noCTBones = false);
+        void drawSlice(std::shared_ptr<GLProgram> shader, bool isCT = true,bool full = true, bool noCTBones = false);
 
         //G-Frame-------------------------------------------------------------------
         std::vector<Vec3f> findFrame(float startX = 0.0f, float stepX = 1.0f, Vec2f range = Vec2f(0.45f,0.6f), Vec3f minBox = Vec3f(0,0,0), Vec3f maxBox = Vec3f(1,1,1));

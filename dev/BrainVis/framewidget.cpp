@@ -32,12 +32,16 @@ FrameWidget::~FrameWidget()
 
 void FrameWidget::on_leftActive_clicked()
 {
-setSliders();
+    setSliders();
+    ui->settingsposition->setTitle("Box Position : Left");
+    ui->settingssize->setTitle("Box Size : Left");
 }
 
 void FrameWidget::on_rightActive_clicked()
 {
-setSliders();
+    setSliders();
+    ui->settingsposition->setTitle("Box Position : Right");
+    ui->settingssize->setTitle("Box Size : Right");
 }
 
 void FrameWidget::on_mLR_sliderMoved(int position)

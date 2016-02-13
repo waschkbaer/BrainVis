@@ -239,13 +239,13 @@ void DICOMRenderer::ZoomTwoD(int zoomDelta){
                                 _view = _camera->buildLookAt();
                                 break;
         case RenderMode::ZAxis :
-                                _vZoom.z += z;
+                                _vZoom.z += z*0.1f;
                                 break;
         case RenderMode::YAxis :
-                               _vZoom.y += z;
+                               _vZoom.y += z*0.1f;
                                  break;
         case RenderMode::XAxis :
-                                _vZoom.x += z;
+                                _vZoom.x += z*0.1f;
                                 break;
     }
     sheduleRepaint();
@@ -1116,11 +1116,11 @@ void DICOMRenderer::drawCompositing(){
 void DICOMRenderer::SliceRendering(){
 
     if(_GL_CTVolume != nullptr){
-        drawSliceV3(_sliceShader,true,true,false);
+        drawSlice(_sliceShader,true,true,false);
 
     }
     if(_GL_MRVolume != nullptr){   
-        drawSliceV3(_sliceShader,false,false);
+        drawSlice(_sliceShader,false,false);
     }
 
 
@@ -1129,7 +1129,7 @@ void DICOMRenderer::SliceRendering(){
     drawSliceCompositing();
 }
 
-void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,bool full, bool noCTBones){
+void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool full, bool noCTBones){
     Mat4f oldProjectionMatrix = _projection;
     Mat4f oldViewMatrix = _view;
     DICOMClipMode oldClipMode = _clipMode;
@@ -1143,7 +1143,7 @@ void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,boo
     switch(_activeRenderMode){
     case RenderMode::XAxis :
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
-        _view.BuildLookAt(Vec3f(300,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
+        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(300,0,0),_data->getSelectedWorldSpacePositon(),Vec3f(0,0,1));
 
         stepsize = _data->getCTScale().x*2;
 
@@ -1152,7 +1152,7 @@ void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,boo
 
     case RenderMode::YAxis :
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.y,(int32_t)_windowSize.x/2*_vZoom.y,-(int32_t)_windowSize.y/2*_vZoom.y,(int32_t)_windowSize.y/2*_vZoom.y,-5000.0f,5000.0f);
-        _view.BuildLookAt(Vec3f(0,-300,0),Vec3f(0,0,0),Vec3f(0,0,1));
+        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,-300,0),_data->getSelectedWorldSpacePositon(),Vec3f(0,0,1));
 
         stepsize = _data->getCTScale().y*2;
 
@@ -1161,7 +1161,7 @@ void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,boo
 
     case RenderMode::ZAxis :
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.z,(int32_t)_windowSize.x/2*_vZoom.z,-(int32_t)_windowSize.y/2*_vZoom.z,(int32_t)_windowSize.y/2*_vZoom.z,-5000.0f,5000.0f);
-        _view.BuildLookAt(Vec3f(0,0,300),Vec3f(0,0,0),Vec3f(0,1,0));
+        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,0,300),_data->getSelectedWorldSpacePositon(),Vec3f(0,1,0));
 
         stepsize = _data->getCTScale().z*2;
 
@@ -1208,8 +1208,10 @@ void DICOMRenderer::drawSliceV3(std::shared_ptr<GLProgram> shader, bool isCT,boo
     if(full){
         _targetBinder->Bind(_boundingBoxVolumeBuffer);
         ClearBackground(Vec4f(0,0,0,-800.0f));
+        drawLineBoxes(_boundingBoxVolumeBuffer);
         drawElectrodeCylinder(_boundingBoxVolumeBuffer);
         drawElectrodeSpheres(_boundingBoxVolumeBuffer);
+
     }
 
     _projection = oldProjectionMatrix;

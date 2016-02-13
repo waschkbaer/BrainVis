@@ -7,29 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>441</width>
-    <height>311</height>
+    <height>370</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DockWidget</string>
+   <string>Frame Detection</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QFrame" name="frame">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>40</height>
-       </size>
+     <widget class="QGroupBox" name="sidebox">
+      <property name="title">
+       <string>Settings Side</string>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QRadioButton" name="leftActive">
          <property name="text">
@@ -51,44 +42,20 @@
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame_2">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+     <widget class="QGroupBox" name="settingsposition">
+      <property name="title">
+       <string>Box Position : Left</string>
       </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Scale Up/Down</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Scale Left/Right</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Move Front/Back</string>
-         </property>
-        </widget>
-       </item>
+      <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Move Left/Right</string>
+          <string>Position X:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QSlider" name="mFB">
+       <item row="0" column="1">
+        <widget class="QSlider" name="mLR">
          <property name="maximum">
           <number>1000</number>
          </property>
@@ -97,45 +64,15 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="2">
-        <widget class="QSlider" name="sUD">
-         <property name="maximum">
-          <number>500</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_4">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Scale Front/Back</string>
+          <string>Position Y:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
-        <widget class="QSlider" name="sLR">
-         <property name="maximum">
-          <number>500</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QSlider" name="sFB">
-         <property name="maximum">
-          <number>500</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QSlider" name="mLR">
+       <item row="1" column="1">
+        <widget class="QSlider" name="mFB">
          <property name="maximum">
           <number>1000</number>
          </property>
@@ -147,14 +84,74 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Move Up/Down</string>
+          <string>Position Z:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
+       <item row="2" column="1">
         <widget class="QSlider" name="mUD">
          <property name="maximum">
           <number>1000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="settingssize">
+      <property name="title">
+       <string>Box Size : Left</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Size Y:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QSlider" name="sFB">
+         <property name="maximum">
+          <number>500</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Size X:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QSlider" name="sLR">
+         <property name="maximum">
+          <number>500</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Size Z:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QSlider" name="sUD">
+         <property name="maximum">
+          <number>500</number>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -182,7 +179,7 @@
        <item>
         <widget class="QPushButton" name="pushButton">
          <property name="text">
-          <string>Detect</string>
+          <string>Detect both sides</string>
          </property>
         </widget>
        </item>
