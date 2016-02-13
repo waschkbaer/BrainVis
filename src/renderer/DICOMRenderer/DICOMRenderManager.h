@@ -21,14 +21,47 @@ public:
     void setTrackMode(bool mode);
     void deleteRenderer(uint16_t id);
 
+    float getBlendValue() const;
+    void setBlendValue(float blendValue);
+
+    float getPerformanceValue() const;
+    void setPerformanceValue(float performanceValue);
+
+    bool getDisplayFrameShapes() const;
+    void setDisplayFrameShapes(bool displayFrameShapes);
+
+    bool getDisplayFrameDetectionBox() const;
+    void setDisplayFrameDetectionBox(bool displayFrameDetectionBox);
+
+    bool getDisplayBoundingBox() const;
+    void setDisplayBoundingBox(bool displayBoundingBox);
+
+    bool getDisplayElectrodes() const;
+    void setDisplayElectrodes(bool displayElectrodes);
+
 protected:
 
 private:
     std::map<uint16_t,std::shared_ptr<DICOMRenderer>> _rendererMap;
     uint16_t                                          _nextRenderID;
 
+private:
+    //global rendererstates
+    float           _blendValue;
+    float           _performanceValue;
+    bool            _displayFrameShapes;
+    bool            _displayFrameDetectionBox;
+    bool            _displayBoundingBox;
+    bool            _displayElectrodes;
+
     DicomRenderManager():
-    _nextRenderID(0){}
+    _nextRenderID(0),
+    _blendValue(0.5f),
+    _performanceValue(1.0f),
+    _displayFrameShapes(true),
+    _displayFrameDetectionBox(true),
+    _displayBoundingBox(true),
+    _displayElectrodes(true){}
     ~DicomRenderManager(){}
 };
 

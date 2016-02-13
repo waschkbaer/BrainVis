@@ -14,9 +14,6 @@
 #include <ActivityManager.h>
 #include <BrainVisIO/DataHandleManager.h>
 
-#include <renderer/DICOMRenderer/Fusion/CudaFusion.h>
-#include <renderer/DICOMRenderer/Fusion/CPUBasedFusion.h>
-
 using namespace BrainVis;
 
 PlaningWidget::PlaningWidget(QWidget *parent) :
@@ -89,12 +86,9 @@ void PlaningWidget::on_Start_clicked()
     w->setDataHandle(dataHandle);
 
 
-
-    CudaFusion* c = new CudaFusion(dataHandle);
-
-   /* w->createNewRenderWidger(RenderMode::XAxis, Core::Math::Vec2ui(390,80));
+    w->createNewRenderWidger(RenderMode::XAxis, Core::Math::Vec2ui(390,80));
     w->createNewRenderWidger(RenderMode::YAxis, Core::Math::Vec2ui(0,540));
-    w->createNewRenderWidger(RenderMode::ZAxis, Core::Math::Vec2ui(390,540));*/
+    w->createNewRenderWidger(RenderMode::ZAxis, Core::Math::Vec2ui(390,540));
     w->createNewRenderWidger(RenderMode::ThreeDMode, Core::Math::Vec2ui(0,80));
     this->close();
 }

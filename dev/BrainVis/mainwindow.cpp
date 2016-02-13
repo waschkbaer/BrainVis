@@ -21,6 +21,8 @@
 #include "ActivityManager.h"
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
+#include "rendersettings.h"
+
 using namespace BrainVis;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -38,6 +40,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->actionMove->setChecked(false);
     ui->actionRotate->setChecked(true);
+
+    RenderSettings* r = new RenderSettings(this);
+    r->show();
 }
 
 MainWindow::~MainWindow()

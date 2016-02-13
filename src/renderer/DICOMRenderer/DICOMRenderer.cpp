@@ -10,6 +10,8 @@
 #include <BrainVisIO/Data/MERElectrode.h>
 #include <BrainVisIO/Data/MERData.h>
 
+#include "DICOMRenderManager.h"
+
 #include <renderer/DICOMRenderer/Fusion/OpenGLBasedFusion.h>
 #include <renderer/DICOMRenderer/Fusion/CPUBasedFusion.h>
 #include <renderer/DICOMRenderer/Fusion/CudaFusion.h>
@@ -319,7 +321,7 @@ void DICOMRenderer::Paint(){
                 _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
             }
         }
-        _data->setMRCTBlend( 0.5f);
+        DicomRenderManager::getInstance().setBlendValue(0.5f);
     }
 
 
@@ -561,7 +563,7 @@ void DICOMRenderer::RayCast(){
     //get the default framebuffer (QT Sucks hard!)
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
 
-    if(_GL_CTVolume != nullptr && _data->getMRCTBlend() > 0.0f){
+    if(_GL_CTVolume != nullptr && DicomRenderManager::getInstance().getBlendValue() > 0.0f){
         drawCubeEntry(_rayEntryCT,_data->getCTWorld());
 
         drawVolumeRayCast(  _rayCastColorCT,
@@ -574,7 +576,7 @@ void DICOMRenderer::RayCast(){
                             _data->getCTTransferScaling());
     }
 
-    if(_GL_MRVolume != nullptr && _data->getMRCTBlend() < 1.0f){
+    if(_GL_MRVolume != nullptr && DicomRenderManager::getInstance().getBlendValue() < 1.0f){
         drawCubeEntry(_rayEntryMR,_data->getMRWorld());
 
         drawVolumeRayCast(  _rayCastColorMR,
@@ -757,7 +759,7 @@ void DICOMRenderer::drawLineBoxes(std::shared_ptr<GLFBOTex> target){
     ClearBackground(Vec4f(0,0,0,-800.0f));
     _lineShader->Enable();
 
-    if(_displayBoundingBox){
+    if(DicomRenderManager::getInstance().getDisplayBoundingBox()){
 
         _lineShader->Set("projectionMatrix",_projection);
         _lineShader->Set("viewMatrix",_view);
@@ -806,9 +808,10 @@ void DICOMRenderer::drawPlaning(){
 
     drawCenterCube(_boundingBoxVolumeBuffer);
 
-    drawElectrodeCylinder(_boundingBoxVolumeBuffer);
-
-    drawElectrodeSpheres(_boundingBoxVolumeBuffer);
+    if(DicomRenderManager::getInstance().getDisplayElectrodes()){
+        drawElectrodeCylinder(_boundingBoxVolumeBuffer);
+        drawElectrodeSpheres(_boundingBoxVolumeBuffer);
+    }
 }
 
 
@@ -878,7 +881,7 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
     glDisable(GL_BLEND);
     _lineShader->Enable();
 
-    if(_displayFrame){
+    if(DicomRenderManager::getInstance().getDisplayFrameShapes()){
 
     //check if we found the G Frame and draws it if found-------------
 
@@ -905,7 +908,7 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
         }
     }
 
-    if(_displayFrameBoundingBox){
+    if(DicomRenderManager::getInstance().getDisplayFrameDetectionBox()){
         if(_cubeLeftN != nullptr){
 
             _lineShader->Set("projectionMatrix",_projection);
@@ -1100,7 +1103,7 @@ void DICOMRenderer::drawCompositing(){
     glDisable(GL_BLEND);
     ClearBackground(Vec4f(0,1,1,0));
     _compositingThreeDShader->Enable();
-    _compositingThreeDShader->Set("mrctblend",_data->getMRCTBlend());
+    _compositingThreeDShader->Set("mrctblend",DicomRenderManager::getInstance().getBlendValue());
     _compositingThreeDShader->SetTexture2D("raycastCT",_rayCastColorCT->GetTextureHandle(),0);
     _compositingThreeDShader->SetTexture2D("raycastMR",_rayCastColorMR->GetTextureHandle(),1);
     _compositingThreeDShader->SetTexture2D("boundingBox",_boundingBoxVolumeBuffer->GetTextureHandle(),2);
@@ -1122,9 +1125,6 @@ void DICOMRenderer::SliceRendering(){
     if(_GL_MRVolume != nullptr){   
         drawSlice(_sliceShader,false,false);
     }
-
-
-
 
     drawSliceCompositing();
 }
@@ -1232,7 +1232,7 @@ void DICOMRenderer::drawSliceCompositing(){
   _compositingTwoDShader->SetTexture2D("electrodeImage",_boundingBoxVolumeBuffer->GetTextureHandle(),2);
   _compositingTwoDShader->SetTexture2D("CTPosition",_TwoDCTPositionVolumeFBO->GetTextureHandle(),3);
   _compositingTwoDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),4);
-  _compositingTwoDShader->Set("mrctblend", _data->getMRCTBlend());
+  _compositingTwoDShader->Set("mrctblend", DicomRenderManager::getInstance().getBlendValue());
 
   _renderPlane->paint();
 

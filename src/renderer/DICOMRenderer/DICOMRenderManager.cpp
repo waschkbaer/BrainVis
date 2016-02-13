@@ -50,3 +50,63 @@ void DicomRenderManager::deleteRenderer(uint16_t id){
         _rendererMap.erase(id);
     }
 }
+float DicomRenderManager::getBlendValue() const
+{
+    return _blendValue;
+}
+
+void DicomRenderManager::setBlendValue(float blendValue)
+{
+    _blendValue = blendValue;
+}
+float DicomRenderManager::getPerformanceValue() const
+{
+    return _performanceValue;
+}
+
+void DicomRenderManager::setPerformanceValue(float performanceValue)
+{
+    _performanceValue = performanceValue;
+}
+bool DicomRenderManager::getDisplayFrameShapes() const
+{
+    return _displayFrameShapes;
+}
+
+void DicomRenderManager::setDisplayFrameShapes(bool displayFrameShapes)
+{
+    _displayFrameShapes = displayFrameShapes;
+}
+bool DicomRenderManager::getDisplayFrameDetectionBox() const
+{
+    return _displayFrameDetectionBox;
+}
+
+void DicomRenderManager::setDisplayFrameDetectionBox(bool displayFrameDetectionBox)
+{
+    _displayFrameDetectionBox = displayFrameDetectionBox;
+}
+bool DicomRenderManager::getDisplayBoundingBox() const
+{
+    return _displayBoundingBox;
+}
+
+void DicomRenderManager::setDisplayBoundingBox(bool displayBoundingBox)
+{
+    _displayBoundingBox = displayBoundingBox;
+}
+bool DicomRenderManager::getDisplayElectrodes() const
+{
+    return _displayElectrodes;
+}
+
+void DicomRenderManager::setDisplayElectrodes(bool displayElectrodes)
+{
+    _displayElectrodes = displayElectrodes;
+}
+
+
+
+
+
+

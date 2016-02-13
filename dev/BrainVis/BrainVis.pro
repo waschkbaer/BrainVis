@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     mertool.cpp \
     merwidgets/merimageentry.cpp \
     merwidgets/merelectrodeentry.cpp \
-    merwidgets/meroptions.cpp
+    merwidgets/meroptions.cpp \
+    rendersettings.cpp
 
 HEADERS  += mainwindow.h \
     renderwidget.h \
@@ -44,7 +45,8 @@ HEADERS  += mainwindow.h \
     mertool.h \
     merwidgets/merimageentry.h \
     merwidgets/merelectrodeentry.h \
-    merwidgets/meroptions.h
+    merwidgets/meroptions.h \
+    rendersettings.h
 
 FORMS    += mainwindow.ui \
     renderwidget.ui \
@@ -58,4 +60,5 @@ FORMS    += mainwindow.ui \
     mertool.ui \
     merwidgets/merimageentry.ui \
     merwidgets/merelectrodeentry.ui \
-    merwidgets/meroptions.ui
+    merwidgets/meroptions.ui \
+    rendersettings.ui
