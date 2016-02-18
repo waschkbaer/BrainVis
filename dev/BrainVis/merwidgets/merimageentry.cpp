@@ -59,7 +59,7 @@ void MERimageentry::createSpectralImage(const std::vector<double>& data){
     if(_image == nullptr ||
        _image->width() != ui->imgLabel->width() ||
        _image->height() != ui->imgLabel->height() ){
-       _image = std::unique_ptr<QImage>(new QImage(ui->imgLabel->width(),ui->imgLabel->height(),QImage::Format_RGB888));
+       _image = std::unique_ptr<QImage>(new QImage(160,ui->imgLabel->height(),QImage::Format_RGB888));
     }
     if(data.size() <= 0) return;
 

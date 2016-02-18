@@ -69,6 +69,7 @@ _GL_CTVolume(nullptr),
 _GL_MRVolume(nullptr),
 _camera(new Camera(Vec3f(0,-400,0),Vec3f(0,0,0),Vec3f(0,0,1))),
 _datasetStatus(0),
+_electrodeStatus(0),
 _clipMode(DICOMClipMode::none),
 _electrodeGeometry(nullptr),
 _vZoom(1,1,1),
@@ -242,12 +243,15 @@ void DICOMRenderer::ZoomTwoD(int zoomDelta){
                                 break;
         case RenderMode::ZAxis :
                                 _vZoom.z += z*0.1f;
+                                _vZoom.z = std::max(0.1f,_vZoom.z);
                                 break;
         case RenderMode::YAxis :
                                _vZoom.y += z*0.1f;
+                               _vZoom.y = std::max(0.1f,_vZoom.y);
                                  break;
         case RenderMode::XAxis :
                                 _vZoom.x += z*0.1f;
+                                _vZoom.x = std::max(0.1f,_vZoom.x);
                                 break;
     }
     sheduleRepaint();
@@ -289,10 +293,18 @@ void DICOMRenderer::checkDatasetStatus(){
     }
 }
 
+void DICOMRenderer::checkElectrodeStatus(){
+    if(_electrodeStatus < BrainVisIO::MERData::MERBundleManager::getInstance().getBundleStatus()){
+        sheduleRepaint();
+        _electrodeStatus = BrainVisIO::MERData::MERBundleManager::getInstance().getBundleStatus();
+    }
+}
+
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
 
     checkDatasetStatus();
+    checkElectrodeStatus();
 
     if(_doFrameDetection){
         findGFrame();
@@ -779,19 +791,19 @@ void DICOMRenderer::drawLineBoxes(std::shared_ptr<GLFBOTex> target){
         translation.Translation(currentSlices.x-0.5f,0,0);
         sliceWorld = translation*_data->getCTWorld();
         _lineShader->Set("worldMatrix",sliceWorld);
-        _lineShader->Set("color",Vec3f(1,0,0));
+        _lineShader->Set("color",Vec3f(1,1,1));
         _XAxisSlice->paint(GL_LINES);
 
         translation.Translation(0,currentSlices.y-0.5f,0);
         sliceWorld = translation*_data->getCTWorld();
         _lineShader->Set("worldMatrix",sliceWorld);
-        _lineShader->Set("color",Vec3f(0,1,0));
+        _lineShader->Set("color",Vec3f(1,1,1));
         _YAxisSlice->paint(GL_LINES);
 
         translation.Translation(0,0,currentSlices.z-0.5f);
         sliceWorld = translation*_data->getCTWorld();
         _lineShader->Set("worldMatrix",sliceWorld);
-        _lineShader->Set("color",Vec3f(0,0,1));
+        _lineShader->Set("color",Vec3f(1,1,1));
         _ZAxisSlice->paint(GL_LINES);
     }
     _lineShader->Disable();
@@ -987,7 +999,7 @@ void DICOMRenderer::drawElectrodeCylinder(std::shared_ptr<GLFBOTex> target){
             case 1: currentElectrode = bundle->getElectrode("ant");break;
             case 2: currentElectrode = bundle->getElectrode("cen");break;
         }
-        if(currentElectrode != nullptr){
+        if(currentElectrode != nullptr && currentElectrode->getElectrodeVisible()){
             currentData = currentElectrode->getMERData(-10);
             if(currentData != nullptr){
                 Vec3f p = currentData->getPosition();
@@ -1057,32 +1069,38 @@ void DICOMRenderer::drawElectrodeSpheres(std::shared_ptr<GLFBOTex> target){
     for(int i = -10; i <= 5;++i){
 		if (cen->getMERData(i) == nullptr) continue;
 
-        position = cen->getMERData(i)->getPosition();
-        transT.Translation(position);
-        transT = scaleT*transT;
-        _sphereFFTShader->Set("fftValue",(float)cen->getMERData(i)->getSpectralAverageNormalized());
-        _sphereFFTShader->Set("worldMatrix",transT);
-        _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+        if(cen->getElectrodeVisible()){
+            position = cen->getMERData(i)->getPosition();
+            transT.Translation(position);
+            transT = scaleT*transT;
+            _sphereFFTShader->Set("fftValue",(float)cen->getMERData(i)->getSpectralAverageNormalized());
+            _sphereFFTShader->Set("worldMatrix",transT);
+            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
-        _sphere->paint();
+            _sphere->paint();
+        }
 
-        position = lat->getMERData(i)->getPosition();
-        transT.Translation(position);
-        transT = scaleT*transT;
-        _sphereFFTShader->Set("fftValue",(float)lat->getMERData(i)->getSpectralAverageNormalized());
-        _sphereFFTShader->Set("worldMatrix",transT);
-        _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+        if(lat->getElectrodeVisible()){
+            position = lat->getMERData(i)->getPosition();
+            transT.Translation(position);
+            transT = scaleT*transT;
+            _sphereFFTShader->Set("fftValue",(float)lat->getMERData(i)->getSpectralAverageNormalized());
+            _sphereFFTShader->Set("worldMatrix",transT);
+            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
-        _sphere->paint();
+            _sphere->paint();
+        }
 
-        position = ant->getMERData(i)->getPosition();
-        transT.Translation(position);
-        transT = scaleT*transT;
-        _sphereFFTShader->Set("fftValue",(float)ant->getMERData(i)->getSpectralAverageNormalized());
-        _sphereFFTShader->Set("worldMatrix",transT);
-        _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
+        if(ant->getElectrodeVisible()){
+            position = ant->getMERData(i)->getPosition();
+            transT.Translation(position);
+            transT = scaleT*transT;
+            _sphereFFTShader->Set("fftValue",(float)ant->getMERData(i)->getSpectralAverageNormalized());
+            _sphereFFTShader->Set("worldMatrix",transT);
+            _sphereFFTShader->Set("fftRange",Vec2f(0.0f,1.0f));
 
-        _sphere->paint();
+            _sphere->paint();
+        }
     }
 
 
@@ -1152,7 +1170,7 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
 
     case RenderMode::YAxis :
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.y,(int32_t)_windowSize.x/2*_vZoom.y,-(int32_t)_windowSize.y/2*_vZoom.y,(int32_t)_windowSize.y/2*_vZoom.y,-5000.0f,5000.0f);
-        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,-300,0),_data->getSelectedWorldSpacePositon(),Vec3f(0,0,1));
+        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,300,0),_data->getSelectedWorldSpacePositon(),Vec3f(0,0,1));
 
         stepsize = _data->getCTScale().y*2;
 
@@ -1161,7 +1179,7 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
 
     case RenderMode::ZAxis :
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.z,(int32_t)_windowSize.x/2*_vZoom.z,-(int32_t)_windowSize.y/2*_vZoom.z,(int32_t)_windowSize.y/2*_vZoom.z,-5000.0f,5000.0f);
-        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,0,300),_data->getSelectedWorldSpacePositon(),Vec3f(0,1,0));
+        _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,0,-300),_data->getSelectedWorldSpacePositon(),Vec3f(0,-1,0));
 
         stepsize = _data->getCTScale().z*2;
 

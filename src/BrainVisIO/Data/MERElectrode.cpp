@@ -9,7 +9,8 @@ MERElectrode::MERElectrode(Core::Math::Vec3f targetPosition,
                            int startDepth):
     _currentDepth(startDepth),
     _targetPosition(targetPosition),
-    _elctrodeDirection(Core::Math::Vec3f(0,1,0))
+    _elctrodeDirection(Core::Math::Vec3f(0,1,0)),
+    _electrodeVisible(true)
 {
     _data.insert(std::pair<int,std::shared_ptr<MERData>>
                         (
@@ -75,6 +76,16 @@ void MERElectrode::loadRecordings(const std::vector<std::string>& filelist){
     }
     _currentDepth--;
 }
+bool MERElectrode::getElectrodeVisible() const
+{
+    return _electrodeVisible;
+}
+
+void MERElectrode::setElectrodeVisible(bool electrodeVisible)
+{
+    _electrodeVisible = electrodeVisible;
+}
+
 Core::Math::Vec3f MERElectrode::getElctrodeDirection() const
 {
     return _elctrodeDirection;

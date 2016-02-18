@@ -30,6 +30,9 @@ public:
     Core::Math::Vec3f getElctrodeDirection() const;
     void setElctrodeDirection(const Core::Math::Vec3f &elctrodeDirection);
 
+    bool getElectrodeVisible() const;
+    void setElectrodeVisible(bool electrodeVisible);
+
 protected:
 
 private:
@@ -39,6 +42,7 @@ private:
     std::map<int,std::shared_ptr<MERData>>  _data;
     Core::Math::Vec3f                       _targetPosition;
     Core::Math::Vec3f                       _elctrodeDirection;
+    bool                                    _electrodeVisible;
 
 };
 

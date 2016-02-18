@@ -48,4 +48,12 @@ std::string MERBundleManager::getActiveBundleName() const
 {
     return _activeBundleName;
 }
+uint64_t MERBundleManager::getBundleStatus() const
+{
+    return _bundleStatus;
+}
+
+void MERBundleManager::incrementBundleStatus(){
+    _bundleStatus++;
+}
 

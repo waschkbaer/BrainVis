@@ -30,13 +30,18 @@ public:
 
     std::string getActiveBundleName() const;
 
+    void incrementBundleStatus();
+
+    uint64_t getBundleStatus() const;
+
 protected:
 
 private:
     std::map<std::string,std::shared_ptr<MERBundle>> _bundles;
     std::string                                      _activeBundleName;
+    uint64_t                                         _bundleStatus;
 
-    MERBundleManager():_activeBundleName("none"){}
+    MERBundleManager():_activeBundleName("none"),_bundleStatus(0){}
     ~MERBundleManager(){}
 };
 

@@ -22,11 +22,15 @@ public:
     void createElectrodeEntries(std::shared_ptr<BrainVisIO::MERData::MERElectrode> electrode, MERDisplayMode mode = MERDisplayMode::fft);
     void clean();
 
+private slots:
+    void on_displayElectrode_clicked(bool checked);
+
 private:
     Ui::merelectrodeentry *ui;
 
     std::vector<QWidget*>   _widgets;
     std::string             _electrodeName;
+    std::shared_ptr<BrainVisIO::MERData::MERElectrode> _electrode;
 };
 
 #endif // MERELECTRODEENTRY_H

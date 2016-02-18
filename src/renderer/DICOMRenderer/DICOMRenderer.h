@@ -144,6 +144,7 @@ private:
         void drawCompositing();
 
         void checkDatasetStatus();
+        void checkElectrodeStatus();
 
         //slicer---------(slice renderer based on raycaster!)-----------------------
         void SliceRendering();
@@ -240,6 +241,7 @@ private:
 
         bool                            _needsUpdate;
         uint64_t                        _datasetStatus;
+        uint64_t                        _electrodeStatus;
 
         DICOMClipMode                   _clipMode;
 

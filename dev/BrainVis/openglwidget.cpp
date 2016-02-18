@@ -22,7 +22,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       _leftMouseDown(false),
       _rightMouseDown(false),
       _windowSize(0,0),
-      _scrollMode(true),
+      _scrollMode(false),
       _rendererID(-1),
       _renderer(nullptr)
 {

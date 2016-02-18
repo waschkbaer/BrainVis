@@ -6,12 +6,15 @@
 #include <BrainVisIO/Data/MERElectrode.h>
 #include <BrainVisIO/Data/MERFileManager.h>
 #include <BrainVisIO/Data/MERBundle.h>
+#include <BrainVisIO/Data/MERBundleManager.h>
+#include <BrainVisIO/DataHandleManager.h>
 
 #include "merimageentry.h"
 
 merelectrodeentry::merelectrodeentry(const std::string& electrodeName, QWidget *parent) :
     QWidget(parent),
     _electrodeName(electrodeName),
+    _electrode(nullptr),
     ui(new Ui::merelectrodeentry)
 {
     ui->setupUi(this);
@@ -28,6 +31,7 @@ merelectrodeentry::~merelectrodeentry()
 void merelectrodeentry::createElectrodeEntries(std::shared_ptr<BrainVisIO::MERData::MERElectrode> electrode, MERDisplayMode mode){
 
     MERimageentry* imgentry = NULL;
+    _electrode = electrode;
 
     for(int i = -10; i <= 5; ++i){
         std::shared_ptr<BrainVisIO::MERData::MERData> data = electrode->getMERData(i);
@@ -50,4 +54,12 @@ void merelectrodeentry::clean(){
     }
     _widgets.clear();
 
+}
+
+void merelectrodeentry::on_displayElectrode_clicked(bool checked)
+{
+    if(_electrode != nullptr){
+        _electrode->setElectrodeVisible(checked);
+        BrainVisIO::MERData::MERBundleManager::getInstance().incrementBundleStatus();
+    }
 }
