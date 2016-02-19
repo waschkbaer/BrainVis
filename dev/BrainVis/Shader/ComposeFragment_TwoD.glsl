@@ -32,6 +32,14 @@ void main(void)
 
   if(electrode.w > sliceCT.w){
     outputColor = electrode;
+  }else{
+    outputColor = outputColor+0.1f*electrode;
+  }
+
+  if(electrode.x >= 0.9f &&
+  electrode.y >= 0.9f &&
+  electrode.z >= 0.9f){
+    outputColor = +electrode*0.5f;
   }
 
   //if(abs(electrode.w-sliceCT.w) < 3){

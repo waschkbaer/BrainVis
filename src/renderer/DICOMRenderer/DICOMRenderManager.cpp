@@ -104,6 +104,16 @@ void DicomRenderManager::setDisplayElectrodes(bool displayElectrodes)
 {
     _displayElectrodes = displayElectrodes;
 }
+bool DicomRenderManager::getOrthonormalThreeD() const
+{
+    return _orthonormalThreeD;
+}
+
+void DicomRenderManager::setOrthonormalThreeD(bool orthonormalThreeD)
+{
+    _orthonormalThreeD = orthonormalThreeD;
+}
+
 
 
 

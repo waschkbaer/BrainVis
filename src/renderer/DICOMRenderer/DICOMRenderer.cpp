@@ -101,11 +101,11 @@ void DICOMRenderer::Initialize(){
     _targetBinder = std::unique_ptr<GLTargetBinder>(new GLTargetBinder());
 
     //starting with some fix projection / view / viwport
-    _projection.Perspective(45, 512.0f/512.0f,0.01f, 1000.0f);
+    //_projection.Perspective(45, 512.0f/512.0f,0.01f, 1000.0f);
     //_projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
     _view = _camera->buildLookAt();
 
-    glViewport(0,0,512,512);
+    //glViewport(0,0,512,512);
     sheduleRepaint();
 
 }
@@ -146,8 +146,6 @@ void DICOMRenderer::SetWindowSize(uint32_t width, uint32_t height){
         _windowSize.y = height;
 
         //update projection and viewport
-        _projection.Perspective(45, (float)width/(float)height,0.01f, 1000.0f);
-        //_projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
         glViewport(0,0,width,height);
 
         //recreate the framebuffers
@@ -339,17 +337,21 @@ void DICOMRenderer::Paint(){
 
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
+        if(!DicomRenderManager::getInstance().getOrthonormalThreeD()){
+            _projection.Perspective(45, (float)_windowSize.x/(float)_windowSize.y,0.01f, 1000.0f);
+        }else{
+            _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
+        }
 
         if(_isTracking)
             setCameraLookAt(_data->getSelectedWorldSpacePositon());
 
-        generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
-        generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
-
+        if(DicomRenderManager::getInstance().getDisplayFrameDetectionBox()){
+            generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
+            generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
+        }
         updateTransferFunction();
-
         if(_activeRenderMode == ThreeDMode){
-            //subVolumesV2();
             RayCast();
         }else{
             SliceRendering();
@@ -512,15 +514,7 @@ bool DICOMRenderer::LoadFrameBuffer(){
      _rayEntryMR                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _rayCastColorMR                = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _rayCastPositionMR             = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDCTVolumeFBO               = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDCTPositionVolumeFBO       = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDMRVolumeFBO               = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDMRPositionVolumeFBO       = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDElectrodeFBO              = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDFontFBO                   = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     _TwoDTopFBO                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
      _boundingBoxVolumeBuffer       = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
-     COMPOSITING                    = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
 
      //fontbuffer
      _FontTexture                   = std::make_shared<GLTexture2D>(_windowSize.x, _windowSize.y, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
@@ -585,7 +579,9 @@ void DICOMRenderer::RayCast(){
                             _rayEntryCT->GetTextureHandle(),
                             _GL_CTVolume->GetGLID(),
                             _transferFunctionTex->GetGLID(),
-                            _data->getCTTransferScaling());
+                            _data->getCTTransferScaling(),
+                            true,
+                            DicomRenderManager::getInstance().getPerformanceValue());
     }
 
     if(_GL_MRVolume != nullptr && DicomRenderManager::getInstance().getBlendValue() < 1.0f){
@@ -599,7 +595,8 @@ void DICOMRenderer::RayCast(){
                             _GL_MRVolume->GetGLID(),
                             _transferFunctionTex->GetGLID(),
                             _data->getMRTransferScaling(),
-                            false);
+                            false,
+                            DicomRenderManager::getInstance().getPerformanceValue());
     }
 
     drawLineBoxes(_boundingBoxVolumeBuffer);
@@ -1156,14 +1153,14 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
     Vec3f MRScaleOld = _data->getMRScale();
 
 
-    float stepsize = 0;
+    float stepsize = 1;
 
     switch(_activeRenderMode){
     case RenderMode::XAxis :
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
         _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(300,0,0),_data->getSelectedWorldSpacePositon(),Vec3f(0,0,1));
 
-        stepsize = _data->getCTScale().x*2;
+        //stepsize = _data->getCTScale().x*2;
 
         _clipMode = DICOMClipMode::PlaneX;
         break;
@@ -1172,7 +1169,7 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.y,(int32_t)_windowSize.x/2*_vZoom.y,-(int32_t)_windowSize.y/2*_vZoom.y,(int32_t)_windowSize.y/2*_vZoom.y,-5000.0f,5000.0f);
         _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,300,0),_data->getSelectedWorldSpacePositon(),Vec3f(0,0,1));
 
-        stepsize = _data->getCTScale().y*2;
+        //stepsize = _data->getCTScale().y*2;
 
         _clipMode = DICOMClipMode::PlaneY;
         break;
@@ -1181,7 +1178,7 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
         _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.z,(int32_t)_windowSize.x/2*_vZoom.z,-(int32_t)_windowSize.y/2*_vZoom.z,(int32_t)_windowSize.y/2*_vZoom.z,-5000.0f,5000.0f);
         _view.BuildLookAt(_data->getSelectedWorldSpacePositon()+Vec3f(0,0,-300),_data->getSelectedWorldSpacePositon(),Vec3f(0,-1,0));
 
-        stepsize = _data->getCTScale().z*2;
+        //stepsize = _data->getCTScale().z*2;
 
         _clipMode = DICOMClipMode::PlaneZ;
         break;
@@ -1205,7 +1202,7 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
                             _transferFunctionTex->GetGLID(),
                             _data->getCTTransferScaling(),
                             isCT,
-                            stepsize);
+                            0.75);
 
 
     }else{
@@ -1220,7 +1217,7 @@ void DICOMRenderer::drawSlice(std::shared_ptr<GLProgram> shader, bool isCT,bool 
                             _transferFunctionTex->GetGLID(),
                             _data->getMRTransferScaling(),
                             false,
-                            stepsize);
+                            0.75);
     }
 
     if(full){
@@ -1248,7 +1245,7 @@ void DICOMRenderer::drawSliceCompositing(){
   _compositingTwoDShader->SetTexture2D("sliceImageCT",_rayCastColorCT->GetTextureHandle(),0);
   _compositingTwoDShader->SetTexture2D("sliceImageMR",_rayCastColorMR->GetTextureHandle(),1);
   _compositingTwoDShader->SetTexture2D("electrodeImage",_boundingBoxVolumeBuffer->GetTextureHandle(),2);
-  _compositingTwoDShader->SetTexture2D("CTPosition",_TwoDCTPositionVolumeFBO->GetTextureHandle(),3);
+  _compositingTwoDShader->SetTexture2D("CTPosition",_rayCastPositionCT->GetTextureHandle(),3);
   _compositingTwoDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),4);
   _compositingTwoDShader->Set("mrctblend", DicomRenderManager::getInstance().getBlendValue());
 
@@ -1274,42 +1271,32 @@ void DICOMRenderer::updateTransferFunction(){
 
 
 void DICOMRenderer::PickPixel(Vec2ui coord){
+    std::cout << "picking << "<<coord<<std::endl;
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
     Vec4ui8 data(255,255,255,255);
     Vec4f VolumePos;
 
-    if(_activeRenderMode == RenderMode::ThreeDMode){
-        _targetBinder->Bind(_rayCastPositionCT);
-        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-        glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&data);
+    _targetBinder->Unbind();
 
-        if(data.x != 0 && data.y != 0 && data.z != 0)
-            VolumePos = Vec4f((float)data.x/255.0f,(float)data.y/255.0f,(float)data.z/255.0f,(float)data.w/255.0f);
+    _targetBinder->Bind(_rayCastPositionCT);
+    glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+
+    screenshot(0);
+
+    glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGB32F, GL_FLOAT, (GLvoid*)&VolumePos);
 
 
 
-        _data->setSelectedSlices(Vec3f(VolumePos.x,VolumePos.y,VolumePos.z));
+    //if(data.x != 0 && data.y != 0 && data.z != 0){
+        //VolumePos = Vec4f((float)data.x/255.0f,(float)data.y/255.0f,(float)data.z/255.0f,(float)data.w/255.0f);
+        std::cout << VolumePos << std::endl;
 
-        _targetBinder->Unbind();
-    }else{
-        _targetBinder->Bind(_TwoDMRPositionVolumeFBO);
-        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-        glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&data);
+    //}
 
-        if(data.x != 0 && data.y != 0 && data.z != 0){
-            VolumePos = Vec4f((float)data.x/255.0f,(float)data.y/255.0f,(float)data.z/255.0f,(float)data.w/255.0f);
-            std::cout << VolumePos << "    -    "   << _data->getSelectedSlices() << std::endl;
-            /*if(_activeRenderMode == RenderMode::XAxis && VolumePos.x == _data->getSelectedSlices().x){
-                _data->setSelectedSlices(VolumePos.xyz());
-            }else if(_activeRenderMode == RenderMode::YAxis && VolumePos.y == _data->getSelectedSlices().y){
-                _data->setSelectedSlices(VolumePos.xyz());
-            }else if(_activeRenderMode == RenderMode::ZAxis && VolumePos.z == _data->getSelectedSlices().z){
-                _data->setSelectedSlices(VolumePos.xyz());
-            }*/
-        }
-        _targetBinder->Unbind();
-    }
-Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
+
+    //_data->setSelectedSlices(Vec3f(VolumePos.x,VolumePos.y,VolumePos.z));
+
+    Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
 std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range, Vec3f minBox, Vec3f maxBox){

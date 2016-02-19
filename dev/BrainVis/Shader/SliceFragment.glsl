@@ -26,19 +26,25 @@ layout(location=1) out vec4 outputPosition;
 
 bool isTwoDCut(vec3 curPos, vec3 focusPos, vec3 axis){
   if(axis.x == 1.0 || axis.x == -1.0){
-      if(abs(focusPos.x - curPos.x) < 0.7){
+      if(abs(focusPos.x - curPos.x) < 0.75){
         return false;
       }
   }else if(axis.y == 1.0 || axis.y == -1.0){
-      if(abs(focusPos.y - curPos.y) < 0.7){
+      if(abs(focusPos.y - curPos.y) < 0.75){
         return false;
       }
   }else if(axis.z == 1.0 || axis.z == -1.0){
-      if(abs(focusPos.z - curPos.z) < 0.7){
+      if(abs(focusPos.z - curPos.z) < 0.75){
         return false;
       }
   }
   return true;
+}
+
+float calcR(vec3 X, vec3 d, vec3 A){
+  float r = X.x*A.x*d.x + X.y*A.y*d.y + X.z*A.z*d.z;
+  r = -r / (pow(d.x,2) + pow(d.y,2) + pow(d.z,2));
+  return r;
 }
 
 // Pixel Shader
@@ -60,6 +66,8 @@ void main(void)
   float value = 0;
   vec4 viewPos = vec4(0,0,0,0);
   bool isCut = false;
+
+  float stepper = 1.0f/1536.0f*stepSize;
   
   for(int i = 0; i < 4000;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
@@ -85,13 +93,12 @@ void main(void)
           if(isCTImage > 0.5f && value > 0.4f){
             outputColor = vec4(0,0,0,viewPos.z);
           }
-            
           outputPosition = vec4(texturePos,viewPos.z);
 
           i = 4000;
           break;
     }
-    texturePos += rayDir/stepSize;
+    texturePos += rayDir * stepper;
 
     //early ray termination
     if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||
@@ -100,5 +107,4 @@ void main(void)
       break;
     }
   }
-  
 }

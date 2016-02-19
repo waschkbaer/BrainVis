@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>194</width>
-    <height>300</height>
+    <height>323</height>
    </rect>
   </property>
   <property name="allowedAreas">
@@ -21,9 +21,19 @@
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>Display Settings</string>
+       <string>Basic Settings</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="displaydetectionbox">
+         <property name="text">
+          <string>display Frame-detectionbox</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
         <widget class="QCheckBox" name="displayboundingbox">
          <property name="text">
@@ -44,16 +54,6 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="displaydetectionbox">
-         <property name="text">
-          <string>display Frame-detectionbox</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="0">
         <widget class="QCheckBox" name="displayelectrodes">
          <property name="text">
@@ -61,6 +61,13 @@
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="orthonormalThreeD">
+         <property name="text">
+          <string>orthonormall 3D-Projection</string>
          </property>
         </widget>
        </item>
@@ -112,7 +119,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>CT</string>
+          <string>MR</string>
          </property>
         </widget>
        </item>
@@ -139,7 +146,7 @@
        <item row="1" column="2">
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>MR</string>
+          <string>CT</string>
          </property>
         </widget>
        </item>

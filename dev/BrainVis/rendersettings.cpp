@@ -15,6 +15,9 @@ RenderSettings::RenderSettings(QWidget *parent) :
     DicomRenderManager::getInstance().setDisplayElectrodes(ui->displayelectrodes->isChecked());
     DicomRenderManager::getInstance().setPerformanceValue((float) ui->performanceslider->value() /1000.0f);
     DicomRenderManager::getInstance().setBlendValue((float)ui->blendingslider->value()/10000.0f);
+
+    setFloating(true);
+    show();
 }
 
 RenderSettings::~RenderSettings()
@@ -44,10 +47,15 @@ void RenderSettings::on_displayelectrodes_clicked()
 
 void RenderSettings::on_performanceslider_valueChanged(int value)
 {
-    DicomRenderManager::getInstance().setPerformanceValue((float)value/1000.0f);
+    DicomRenderManager::getInstance().setPerformanceValue( 1.0f/((float)value/1000.0f)  );
 }
 
 void RenderSettings::on_blendingslider_valueChanged(int value)
 {
     DicomRenderManager::getInstance().setBlendValue((float)value/10000.0f);
+}
+
+void RenderSettings::on_orthonormalThreeD_clicked(bool checked)
+{
+    DicomRenderManager::getInstance().setOrthonormalThreeD(checked);
 }

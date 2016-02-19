@@ -132,7 +132,7 @@ private:
                            GLuint tfHandle,
                            float tfScaling,
                            bool isCT = true,
-                           float rayStepPara = 1000.0f);
+                           float rayStepPara = 1.0f);
         void drawLineBoxes(std::shared_ptr<GLFBOTex> target);
 
         void drawPlaning();
@@ -221,14 +221,6 @@ private:
         std::shared_ptr<GLFBOTex>       _rayCastColorMR;
         std::shared_ptr<GLFBOTex>       _rayCastPositionMR;
 
-        //2D view
-        std::shared_ptr<GLFBOTex>       _TwoDCTVolumeFBO;
-        std::shared_ptr<GLFBOTex>       _TwoDCTPositionVolumeFBO;
-        std::shared_ptr<GLFBOTex>       _TwoDMRVolumeFBO;
-        std::shared_ptr<GLFBOTex>       _TwoDMRPositionVolumeFBO;
-        std::shared_ptr<GLFBOTex>       _TwoDElectrodeFBO;
-        std::shared_ptr<GLFBOTex>       _TwoDFontFBO;
-        std::shared_ptr<GLFBOTex>       _TwoDTopFBO;
         std::shared_ptr<GLFBOTex>       _boundingBoxVolumeBuffer;
 
         //projection/view matrices

@@ -28,6 +28,8 @@ private slots:
 
     void on_blendingslider_valueChanged(int value);
 
+    void on_orthonormalThreeD_clicked(bool checked);
+
 private:
     Ui::RenderSettings *ui;
 };

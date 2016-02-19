@@ -153,6 +153,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
 
         //volume picking active
         }else if(ModiSingleton::getInstance().getActiveModeRightClick() == Mode::VolumePicking){
+            std::cout << "renderer: " << rendererID() <<std::endl;
             _renderer->PickPixel(Vec2ui(event->pos().x(),event->pos().y()));
         }
         oldPos.x = event->pos().x();

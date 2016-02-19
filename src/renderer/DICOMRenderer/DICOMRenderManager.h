@@ -39,6 +39,9 @@ public:
     bool getDisplayElectrodes() const;
     void setDisplayElectrodes(bool displayElectrodes);
 
+    bool getOrthonormalThreeD() const;
+    void setOrthonormalThreeD(bool orthonormalThreeD);
+
 protected:
 
 private:
@@ -53,6 +56,7 @@ private:
     bool            _displayFrameDetectionBox;
     bool            _displayBoundingBox;
     bool            _displayElectrodes;
+    bool            _orthonormalThreeD;
 
     DicomRenderManager():
     _nextRenderID(0),
@@ -61,7 +65,8 @@ private:
     _displayFrameShapes(true),
     _displayFrameDetectionBox(true),
     _displayBoundingBox(true),
-    _displayElectrodes(true){}
+    _displayElectrodes(true),
+    _orthonormalThreeD(false){}
     ~DicomRenderManager(){}
 };
 

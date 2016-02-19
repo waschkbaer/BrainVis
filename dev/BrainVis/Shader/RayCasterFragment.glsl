@@ -12,7 +12,7 @@ uniform vec3    focusWorldPos = vec3(7.97907,18.9604,-24.2198);
 uniform vec3    cutPlaneNormal = vec3(1,0,0);
 uniform int     cutMode = 1;
 
-uniform float   stepSize = 2500.0f;
+uniform float   stepSize = 1.0f;
 uniform float   isCTImage = 0.0f;
 
 uniform float   MRIValue = 0.0f;
@@ -89,7 +89,7 @@ void main(void)
   vec4 targetPos = worldFragmentMatrix*vec4(MRIPosition-vec3(0.5,0.5,0.5),1);
   
 
-  float stepper = 1.0f/1536.0f;
+  float stepper = 1.0f/1536.0f*stepSize;
 
   for(int i = 0; i < 4096;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
