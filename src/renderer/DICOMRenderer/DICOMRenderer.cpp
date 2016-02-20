@@ -682,8 +682,7 @@ void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
     case DICOMClipMode::CubicCut :  shader->Set("cutMode",1); break;
 
     case DICOMClipMode::PlaneX :
-                                    //_rayCastShader->Set("cutPlaneNormal",_data->getCTeX());
-                                    shader->Set("cutPlaneNormal",Vec3f(1,0,0));
+                                    shader->Set("cutPlaneNormal",_data->getCTeX());
 
                                     if(_activeRenderMode == RenderMode::XAxis){
                                         shader->Set("cutMode",3);
@@ -694,7 +693,7 @@ void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
                                     break;
 
     case DICOMClipMode::PlaneY :
-                                    shader->Set("cutPlaneNormal",Vec3f(0,-1,0));
+                                    shader->Set("cutPlaneNormal",_data->getCTeY());
 
                                     if(_activeRenderMode == RenderMode::YAxis){
                                         shader->Set("cutMode",3);
@@ -705,7 +704,7 @@ void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
                                     break;
 
     case DICOMClipMode::PlaneZ :
-                                    shader->Set("cutPlaneNormal",Vec3f(0,0,1));
+                                    shader->Set("cutPlaneNormal",_data->getCTeZ());
 
                                     if(_activeRenderMode == RenderMode::ZAxis){
                                         shader->Set("cutMode",3);
@@ -739,7 +738,7 @@ void DICOMRenderer::drawVolumeRayCast(  std::shared_ptr<GLFBOTex> colorTarget,
     case DICOMClipMode::PlaneZn :
                                     shader->Set("cutPlaneNormal",-_data->getCTeZ());
 
-                                    if(_activeRenderMode == RenderMode::XAxis){
+                                    if(_activeRenderMode == RenderMode::ZAxis){
                                         shader->Set("cutMode",3);
                                     }else{
                                         shader->Set("cutMode",2);
