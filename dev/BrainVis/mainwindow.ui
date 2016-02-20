@@ -119,11 +119,22 @@
    <addaction name="actionPicking"/>
    <addaction name="actionZoom"/>
    <addaction name="separator"/>
-   <addaction name="actionRegistration"/>
    <addaction name="actionNewRenderer"/>
-   <addaction name="actionDrive_Tool"/>
-   <addaction name="actionHistogramm"/>
+   <addaction name="actionRegistration"/>
    <addaction name="actionFrame_Detection"/>
+   <addaction name="actionHistogramm"/>
+   <addaction name="actionRenderSettings"/>
+   <addaction name="actionSolidBlend"/>
+   <addaction name="separator"/>
+   <addaction name="actionDrive_Tool"/>
+   <addaction name="separator"/>
+   <addaction name="actionClipping_X"/>
+   <addaction name="actionClipping_X_minus"/>
+   <addaction name="actionClipping_Y"/>
+   <addaction name="actionClipping_Y_minus"/>
+   <addaction name="actionClipping_Z"/>
+   <addaction name="actionClipping_Z_minus"/>
+   <addaction name="actionCubicCut"/>
   </widget>
   <action name="actionAdd_RenderWidget">
    <property name="text">
@@ -339,6 +350,111 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+F</string>
+   </property>
+  </action>
+  <action name="actionClipping_X">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/xp.png</normaloff>Buttons/xp.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clipping X</string>
+   </property>
+   <property name="toolTip">
+    <string>clips the X axis</string>
+   </property>
+  </action>
+  <action name="actionClipping_X_minus">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/xm.png</normaloff>Buttons/xm.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clipping -X</string>
+   </property>
+   <property name="toolTip">
+    <string>clips the negative X axis</string>
+   </property>
+  </action>
+  <action name="actionClipping_Y">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/yp.png</normaloff>Buttons/yp.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clipping Y</string>
+   </property>
+   <property name="toolTip">
+    <string>clips the Y axis</string>
+   </property>
+  </action>
+  <action name="actionClipping_Y_minus">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/ym.png</normaloff>Buttons/ym.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clipping -Y</string>
+   </property>
+   <property name="toolTip">
+    <string>clips the negative Y axis</string>
+   </property>
+  </action>
+  <action name="actionClipping_Z">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/zp.png</normaloff>Buttons/zp.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clipping Z</string>
+   </property>
+   <property name="toolTip">
+    <string>clips the Z axis</string>
+   </property>
+  </action>
+  <action name="actionClipping_Z_minus">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/zm.png</normaloff>Buttons/zm.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clipping -Z</string>
+   </property>
+   <property name="toolTip">
+    <string>clips the negative Z axis</string>
+   </property>
+  </action>
+  <action name="actionCubicCut">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/cubic.png</normaloff>Buttons/cubic.png</iconset>
+   </property>
+   <property name="text">
+    <string>CubicCut</string>
+   </property>
+   <property name="toolTip">
+    <string>uses the cubic cut technique</string>
+   </property>
+  </action>
+  <action name="actionRenderSettings">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/settings.png</normaloff>Buttons/settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>change some renderingoptions</string>
+   </property>
+  </action>
+  <action name="actionSolidBlend">
+   <property name="icon">
+    <iconset>
+     <normaloff>Buttons/solid.png</normaloff>Buttons/solid.png</iconset>
+   </property>
+   <property name="text">
+    <string>SolidBlend</string>
    </property>
   </action>
  </widget>

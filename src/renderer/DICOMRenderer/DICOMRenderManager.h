@@ -42,6 +42,9 @@ public:
     bool getOrthonormalThreeD() const;
     void setOrthonormalThreeD(bool orthonormalThreeD);
 
+    int getBlendoption() const;
+    void setBlendoption(int blendoption);
+
 protected:
 
 private:
@@ -57,6 +60,7 @@ private:
     bool            _displayBoundingBox;
     bool            _displayElectrodes;
     bool            _orthonormalThreeD;
+    int             _blendoption;
 
     DicomRenderManager():
     _nextRenderID(0),
@@ -66,7 +70,8 @@ private:
     _displayFrameDetectionBox(true),
     _displayBoundingBox(true),
     _displayElectrodes(true),
-    _orthonormalThreeD(false){}
+    _orthonormalThreeD(false),
+    _blendoption(0){}
     ~DicomRenderManager(){}
 };
 

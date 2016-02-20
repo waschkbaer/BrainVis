@@ -40,9 +40,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->actionMove->setChecked(false);
     ui->actionRotate->setChecked(true);
-
-    RenderSettings* r = new RenderSettings(this);
-    r->show();
 }
 
 MainWindow::~MainWindow()
@@ -247,5 +244,55 @@ void MainWindow::on_actionFrame_Detection_triggered()
 {
     if(_data != nullptr && _frame == nullptr){
         _frame = std::make_shared<FrameWidget>(this,_data);
+    }
+}
+
+void MainWindow::on_actionClipping_X_triggered()
+{
+    on_actionClip_Plane_X_Axis_triggered();
+}
+
+void MainWindow::on_actionClipping_X_minus_triggered()
+{
+    on_actionClip_Plane_X_Axis_2_triggered();
+}
+
+void MainWindow::on_actionClipping_Y_triggered()
+{
+    on_actionClip_Plane_Y_Axis_triggered();
+}
+
+void MainWindow::on_actionClipping_Y_minus_triggered()
+{
+    on_actionClip_Plane_Y_Axis_2_triggered();
+}
+
+void MainWindow::on_actionClipping_Z_triggered()
+{
+    on_actionClip_Plane_Z_Axis_triggered();
+}
+
+void MainWindow::on_actionClipping_Z_minus_triggered()
+{
+    on_actionClip_Plane_Z_Axis_2_triggered();
+}
+
+void MainWindow::on_actionCubicCut_triggered()
+{
+    on_actionCubic_Cut_triggered();
+}
+
+void MainWindow::on_actionRenderSettings_triggered()
+{
+    RenderSettings* r = new RenderSettings(this);
+    r->show();
+}
+
+void MainWindow::on_actionSolidBlend_triggered()
+{
+    if(DicomRenderManager::getInstance().getBlendoption() == 0){
+        DicomRenderManager::getInstance().setBlendoption(1);
+    }else{
+        DicomRenderManager::getInstance().setBlendoption(0);
     }
 }

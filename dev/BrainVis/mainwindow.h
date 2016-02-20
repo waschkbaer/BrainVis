@@ -131,6 +131,24 @@ private slots:
 
     void on_actionFrame_Detection_triggered();
 
+    void on_actionClipping_X_triggered();
+
+    void on_actionClipping_X_minus_triggered();
+
+    void on_actionClipping_Y_triggered();
+
+    void on_actionClipping_Y_minus_triggered();
+
+    void on_actionClipping_Z_triggered();
+
+    void on_actionClipping_Z_minus_triggered();
+
+    void on_actionCubicCut_triggered();
+
+    void on_actionRenderSettings_triggered();
+
+    void on_actionSolidBlend_triggered();
+
 private:
     void disableControllBoxes();
     Ui::MainWindow *ui;

@@ -568,8 +568,8 @@ void DICOMRenderer::ClearBackground(Vec4f color){
 void DICOMRenderer::RayCast(){
     //get the default framebuffer (QT Sucks hard!)
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-
-    if(_GL_CTVolume != nullptr && DicomRenderManager::getInstance().getBlendValue() > 0.0f){
+    // && DicomRenderManager::getInstance().getBlendValue() > 0.0f
+    if(_GL_CTVolume != nullptr){
         drawCubeEntry(_rayEntryCT,_data->getCTWorld());
 
         drawVolumeRayCast(  _rayCastColorCT,
@@ -583,8 +583,8 @@ void DICOMRenderer::RayCast(){
                             true,
                             DicomRenderManager::getInstance().getPerformanceValue());
     }
-
-    if(_GL_MRVolume != nullptr && DicomRenderManager::getInstance().getBlendValue() < 1.0f){
+    // && DicomRenderManager::getInstance().getBlendValue() < 1.0f
+    if(_GL_MRVolume != nullptr){
         drawCubeEntry(_rayEntryMR,_data->getMRWorld());
 
         drawVolumeRayCast(  _rayCastColorMR,
@@ -1122,6 +1122,7 @@ void DICOMRenderer::drawCompositing(){
     _compositingThreeDShader->SetTexture2D("raycastMR",_rayCastColorMR->GetTextureHandle(),1);
     _compositingThreeDShader->SetTexture2D("boundingBox",_boundingBoxVolumeBuffer->GetTextureHandle(),2);
     _compositingThreeDShader->SetTexture2D("fontTexture",_FontTexture->GetGLID(),3);
+    _compositingThreeDShader->Set("blendoption",DicomRenderManager::getInstance().getBlendoption());
 
     _renderPlane->paint();
 

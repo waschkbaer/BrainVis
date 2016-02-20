@@ -23,26 +23,8 @@ in vec3 entranceInViewSpace;
 layout(location=0) out vec4 outputColor;
 layout(location=1) out vec4 outputPosition;
 
-
-bool isTwoDCut(vec3 curPos, vec3 focusPos, vec3 axis){
-  if(axis.x == 1.0 || axis.x == -1.0){
-      if(abs(focusPos.x - curPos.x) < 0.75){
-        return false;
-      }
-  }else if(axis.y == 1.0 || axis.y == -1.0){
-      if(abs(focusPos.y - curPos.y) < 0.75){
-        return false;
-      }
-  }else if(axis.z == 1.0 || axis.z == -1.0){
-      if(abs(focusPos.z - curPos.z) < 0.75){
-        return false;
-      }
-  }
-  return true;
-}
-
 float calcR(vec3 X, vec3 d, vec3 A){
-  float r = X.x*A.x*d.x + X.y*A.y*d.y + X.z*A.z*d.z;
+  float r = (X.x-A.x)*d.x + (X.y-A.y)*d.y + (X.z-A.z)*d.z;
   r = -r / (pow(d.x,2) + pow(d.y,2) + pow(d.z,2));
   return r;
 }
@@ -55,56 +37,41 @@ void main(void)
 
   // fetch ray entry from texture and get ray exit point from vs-shader
   vec3 rayStart = texelFetch(rayStartPoint, screenpos,0).xyz;
-  vec3 rayDir = normalview-rayStart;
-  rayDir = rayDir/length(rayDir);
 
   outputColor = vec4(0,0,0,-1000);
   outputPosition = vec4(rayStart,-1000);
 
   vec3 texturePos = rayStart;
-  vec4 finalColor = vec4(0,0,0,0);
   float value = 0;
   vec4 viewPos = vec4(0,0,0,0);
-  bool isCut = false;
 
-  float stepper = 1.0f/1536.0f*stepSize;
+  //calculate the volumespace position of the clipping plane
+  vec4 worldstart = worldFragmentMatrix*vec4(rayStart-vec3(0.5,0.5,0.5),1);
+  vec4 worldend = worldFragmentMatrix*vec4(normalview-vec3(0.5,0.5,0.5),1);
+  vec3 worlddir = worldend.xyz - worldstart.xyz;
+  worlddir = normalize(worlddir);
+
+  float distance = calcR(worldstart.xyz,worlddir,focusWorldPos);
+
+  vec3 worldTarget = worldstart.xyz + distance * worlddir;
+
+  mat4 invWorld = inverse(worldFragmentMatrix);
+
+  texturePos = (invWorld* vec4(worldTarget,1)).xyz;
+  texturePos = texturePos+ vec3(0.5,0.5,0.5);
   
-  for(int i = 0; i < 4000;++i){
-    viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
+  if( texturePos.x >= 0.0f && texturePos.x <= 1.0f &&
+      texturePos.y >= 0.0f && texturePos.y <= 1.0f &&
+      texturePos.z >= 0.0f && texturePos.z <= 1.0f){
 
-    switch(cutMode){
-      case 3:  isCut = isTwoDCut( viewPos.xyz,     //2d cut
-                                  focusWorldPos,
-                                  cutPlaneNormal);
-                                  break;
-      default : i = 4001; outputColor = vec4(0,0,0,0); isCut = true; break;
-    }
+      viewPos = worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
-    if(!isCut){
+      value = texture(volume, texturePos).x;
+      value *= tfScaling;
 
-          value = texture(volume, texturePos).x;
-          value *= tfScaling;
-
-          viewPos = viewFragmentMatrix*viewPos;
-            
-          outputColor = vec4(finalColor.xyz,viewPos.z);
-          outputColor = vec4(value,value,value,viewPos.z);
-
-          if(isCTImage > 0.5f && value > 0.4f){
-            outputColor = vec4(0,0,0,viewPos.z);
-          }
-          outputPosition = vec4(texturePos,viewPos.z);
-
-          i = 4000;
-          break;
-    }
-    texturePos += rayDir * stepper;
-
-    //early ray termination
-    if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||
-      texturePos.x < 0.0f || texturePos.y < 0.0f || texturePos.z < 0.0f){
-    i = 1000;
-      break;
-    }
+      viewPos = viewFragmentMatrix*viewPos;
+                
+      outputColor = vec4(value,value,value,viewPos.z);
+      outputPosition = vec4(viewPos.xyz,viewPos.z);
   }
 }

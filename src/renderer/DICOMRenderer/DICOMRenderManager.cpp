@@ -113,6 +113,16 @@ void DicomRenderManager::setOrthonormalThreeD(bool orthonormalThreeD)
 {
     _orthonormalThreeD = orthonormalThreeD;
 }
+int DicomRenderManager::getBlendoption() const
+{
+    return _blendoption;
+}
+
+void DicomRenderManager::setBlendoption(int blendoption)
+{
+    _blendoption = blendoption;
+}
+
 
 
 

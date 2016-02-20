@@ -9,12 +9,13 @@ RenderSettings::RenderSettings(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    DicomRenderManager::getInstance().setDisplayFrameShapes(ui->displayFrame->isChecked());
-    DicomRenderManager::getInstance().setDisplayFrameDetectionBox(ui->displaydetectionbox->isChecked());
-    DicomRenderManager::getInstance().setDisplayBoundingBox(ui->displayboundingbox->isChecked());
-    DicomRenderManager::getInstance().setDisplayElectrodes(ui->displayelectrodes->isChecked());
-    DicomRenderManager::getInstance().setPerformanceValue((float) ui->performanceslider->value() /1000.0f);
-    DicomRenderManager::getInstance().setBlendValue((float)ui->blendingslider->value()/10000.0f);
+    ui->displayFrame->setChecked(DicomRenderManager::getInstance().getDisplayFrameShapes());
+    ui->displaydetectionbox->setChecked(DicomRenderManager::getInstance().getDisplayFrameDetectionBox());
+    ui->displayboundingbox->setChecked(DicomRenderManager::getInstance().getDisplayBoundingBox());
+    ui->displayelectrodes->setChecked(DicomRenderManager::getInstance().getDisplayElectrodes());
+
+    ui->performanceslider->setValue((1.0f/DicomRenderManager::getInstance().getPerformanceValue())*1000.0f);
+    ui->blendingslider->setValue(DicomRenderManager::getInstance().getBlendValue()*10000.0f);
 
     setFloating(true);
     show();

@@ -12,6 +12,8 @@ uniform float mrctblend = 0.5f;
 uniform vec3 bottomBG = vec3(0.1f,0.2f,0.5f);
 uniform vec3 topBG = vec3(0.4f,1.0f,1.0f);
 
+uniform int blendoption = 0;
+
 // INPUT VARIABLES
 in vec2 vScreenPosition;
 
@@ -31,10 +33,14 @@ void main(void)
 
   float depth = -8000.0f;
 
-  if(raycastColorCT.w > raycastColorMR.w){
+  if(raycastColorCT.w-1.0f > raycastColorMR.w){
     depth = raycastColorCT.w;
+    if(blendoption == 1)
+      finalColor = raycastColorCT.xyz;
   }else{
     depth = raycastColorMR.w;
+    if(blendoption == 1)
+      finalColor = raycastColorMR.xyz;
   }
   
   if(mrctblend == 1.0){
@@ -44,17 +50,17 @@ void main(void)
   }
 
   if(depth < boundingColor.w &&
-	(boundingColor.x != 0.0f ||
-	boundingColor.y != 0.0f ||
-	boundingColor.z != 0.0f)
+  (boundingColor.x != 0.0f ||
+  boundingColor.y != 0.0f ||
+  boundingColor.z != 0.0f)
   ){
-  	finalColor = boundingColor.xyz;
+    finalColor = boundingColor.xyz;
   }
 
   if( finalColor.x == 0.0 &&
       finalColor.y == 0.0 &&
       finalColor.z == 0.0){
-    finalColor.xyz = topBG*vScreenPosition.y + (1.0f -vScreenPosition.y)*bottomBG;
+      finalColor.xyz = topBG*vScreenPosition.y + (1.0f -vScreenPosition.y)*bottomBG;
   }
 
   if(font.x == 0 && font.y == 0 && font.z == 0){
