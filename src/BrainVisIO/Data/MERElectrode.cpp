@@ -24,7 +24,8 @@ MERElectrode::MERElectrode(const std::vector<std::string>& filelist,
                            int startDepth):
     _currentDepth(startDepth),
     _targetPosition(targetPosition),
-    _elctrodeDirection(Core::Math::Vec3f(0,1,0))
+    _elctrodeDirection(Core::Math::Vec3f(0,1,0)),
+    _electrodeVisible(true)
 {
     loadRecordings(filelist);
 }
