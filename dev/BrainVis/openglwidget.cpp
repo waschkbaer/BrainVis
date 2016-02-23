@@ -205,11 +205,11 @@ void OpenGLWidget::renderFont(){
         _fontImage->setFontColor(0,128,255);
         //string : left electrode:[ depth -5, {LAnt: ?}{LCen: ?}{LLat: ?} ]
         std::string leftElec = "electrode info here";
-        _fontImage->drawText(2,14,leftElec);
+        //_fontImage->drawText(2,14,leftElec);
 
         _fontImage->setFontColor(0,128,255);
         std::string rightElec = "electrode info here";
-        _fontImage->drawText(2,28,rightElec);
+        //_fontImage->drawText(2,28,rightElec);
 
         _fontImage->setFontColor(255,255,0);
         std::string pickPosition = "targeted ("+

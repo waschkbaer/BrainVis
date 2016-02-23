@@ -21,6 +21,8 @@ public:
     void setTrackMode(bool mode);
     void deleteRenderer(uint16_t id);
 
+    void forceRepaint();
+
     float getBlendValue() const;
     void setBlendValue(float blendValue);
 

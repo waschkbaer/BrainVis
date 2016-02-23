@@ -36,6 +36,16 @@ void DicomRenderManager::setTrackMode(bool mode){
     }
 }
 
+void DicomRenderManager::forceRepaint(){
+    std::map<uint16_t,std::shared_ptr<DICOMRenderer>>::iterator it = _rendererMap.begin();
+    std::shared_ptr<DICOMRenderer> r = nullptr;
+    for(it = _rendererMap.begin(); it != _rendererMap.end(); ++it){
+            r = it->second;
+            r->sheduleRepaint();
+
+    }
+}
+
 const std::shared_ptr<DICOMRenderer> DicomRenderManager::getRenderer(uint16_t id){
     if(_rendererMap.find(id) != _rendererMap.end()){
         return _rendererMap.find(id)->second;

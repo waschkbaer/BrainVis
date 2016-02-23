@@ -776,9 +776,7 @@ void DICOMRenderer::drawLineBoxes(std::shared_ptr<GLFBOTex> target){
 
         _boundingBox->paint(GL_LINES);
 
-    }
 
-    if(_displayThreeDCursor){
         //this part draws the planes which indicate the current CT slide
         Mat4f translation;
         Mat4f sliceWorld;

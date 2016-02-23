@@ -41,7 +41,7 @@
          <x>0</x>
          <y>0</y>
          <width>347</width>
-         <height>131</height>
+         <height>219</height>
         </rect>
        </property>
        <attribute name="label">
@@ -352,7 +352,7 @@
            <item>
             <widget class="QLineEdit" name="MRPath">
              <property name="text">
-              <string>C:\Users\andre\Dropbox\MasterThesis\Data\MER Imagedata\MRKopf_1118\t2_spc_n_3657</string>
+              <string>C:\Users\andre\Documents\BrainVis\build\bin\Datasets\13.01.2016\MR_T2</string>
              </property>
             </widget>
            </item>
@@ -382,7 +382,7 @@
            <item>
             <widget class="QLineEdit" name="CTPath">
              <property name="text">
-              <string>C:\Users\andre\Dropbox\MasterThesis\CTFrameduen</string>
+              <string>C:\Users\andre\Documents\BrainVis\build\bin\Datasets\13.01.2016\CT_stx</string>
              </property>
             </widget>
            </item>
