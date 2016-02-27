@@ -3,9 +3,6 @@
 #include <algorithm>
 
 DataHandle::DataHandle():
-    _transferFunction(nullptr),
-    _position(0.5f),
-    _gradient(0.5f),
     _MRLoaded(false),
     _CTLoaded(false),
     _MRCTBlend(1.0f),
@@ -40,8 +37,7 @@ void DataHandle::loadMRData(const std::string& path)
 {
     _MRVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
     _fMRScalingFactor = 65535.0f/_MRVolume->getHistogram().size();
-    _transferFunction = std::unique_ptr<DataIO::TransferFunction1D>(new DataIO::TransferFunction1D(_MRVolume->getHistogram().size()));
-    _transferFunction->SetStdFunction();
+
 
     _MRScale.x = _MRVolume->getAspectRatio().x * _MRVolume->getDimensions().x;
     _MRScale.y = _MRVolume->getAspectRatio().y * _MRVolume->getDimensions().y;
@@ -60,8 +56,6 @@ void DataHandle::loadCTData(const std::string& path)
 {
     _CTVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
     _fCTScalingFactor = 65535.0f/_CTVolume->getHistogram().size();
-    _transferFunction = std::unique_ptr<DataIO::TransferFunction1D>(new DataIO::TransferFunction1D(_CTVolume->getHistogram().size()));
-    _transferFunction->SetStdFunction();
 
     _CTScale.x = _CTVolume->getAspectRatio().x * _CTVolume->getDimensions().x;
     _CTScale.y = _CTVolume->getAspectRatio().y * _CTVolume->getDimensions().y;
@@ -199,16 +193,6 @@ void DataHandle::setLeftFBBCenter(const Core::Math::Vec3f &leftFBBCenter)
     incrementStatus();
 }
 
-float DataHandle::getGradient() const
-{
-    return _gradient;
-}
-
-float DataHandle::getPosition() const
-{
-    return _position;
-}
-
 float DataHandle::getFRotationStepScale() const
 {
     return _fRotationStepScale;
@@ -342,12 +326,7 @@ float DataHandle::getCTTransferScaling() const
     return _fCTScalingFactor;
 }
 
-void DataHandle::setSmoothStep(float pos, float grad){
-    _transferFunction->SetStdFunction(pos,grad);
-    _position = pos;
-    _gradient = grad;
-    incrementStatus();
-}
+
 std::string DataHandle::getMRPath() const
 {
     return _MRPath;
@@ -550,10 +529,7 @@ void DataHandle::setCTWorld(const Core::Math::Mat4f &CTWorld)
     incrementStatus();
 }
 
-std::shared_ptr<std::vector<Core::Math::Vec4f>> DataHandle::getTransferFunction()
-{
-    return _transferFunction->GetColorData();
-}
+
 
 Core::Math::Vec3f DataHandle::getCTOffset() const
 {

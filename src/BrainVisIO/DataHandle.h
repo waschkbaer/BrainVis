@@ -28,9 +28,6 @@ public:
     float getMRTransferScaling() const;
     float getCTTransferScaling() const;
 
-    std::shared_ptr<std::vector<Core::Math::Vec4f>> getTransferFunction();
-    void setSmoothStep(float pos, float grad);
-
     const std::vector<uint16_t>&      getMRData();
     const std::vector<uint16_t>&      getCTData();
     Core::Math::Vec3f       getMRAspectRatio();
@@ -155,9 +152,7 @@ public:
     const std::vector<uint16_t>& getCTHistogramm();
     const std::vector<uint16_t>& getMRHistogramm();
 
-    float getPosition() const;
 
-    float getGradient() const;
 
     Core::Math::Vec3f getLeftFBBCenter() const;
     void setLeftFBBCenter(const Core::Math::Vec3f &leftFBBCenter);
@@ -226,11 +221,7 @@ private:
     float                                           _MRCTBlend;
     std::vector<Core::Math::Vec3f>                  _FFTColorImage;
 
-    //Transferfunction
-    std::unique_ptr<DataIO::TransferFunction1D>     _transferFunction;
-    float                                           _position;
-    float                                           _gradient;
-    bool                                            _tfChanged;
+
 
     //picking/tracking (store each space, less calculation)
     Core::Math::Vec3f                               _vSelectedVolumeSpacePosition;

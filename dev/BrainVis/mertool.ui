@@ -59,6 +59,11 @@
         <height>30</height>
        </size>
       </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+       </font>
+      </property>
       <property name="frameShape">
        <enum>QFrame::Box</enum>
       </property>
@@ -83,6 +88,11 @@
        </property>
        <item>
         <widget class="QPushButton" name="loadButton">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Load</string>
          </property>
@@ -101,6 +111,11 @@
            <width>75</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
          </property>
          <property name="text">
           <string>Options</string>
@@ -121,6 +136,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>classification</string>
          </property>
@@ -140,6 +160,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>LiveMode</string>
          </property>
@@ -155,6 +180,11 @@
         <width>16777215</width>
         <height>30</height>
        </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+       </font>
       </property>
       <property name="frameShape">
        <enum>QFrame::Box</enum>
@@ -192,6 +222,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>127.0.0.1:8881</string>
          </property>
@@ -211,6 +246,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Connect</string>
          </property>
@@ -218,6 +258,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="disconnectButton">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Disconnect</string>
          </property>
@@ -230,6 +275,11 @@
            <width>75</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
          </property>
          <property name="text">
           <string>Record</string>
@@ -244,6 +294,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>next Step</string>
          </property>
@@ -257,6 +312,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Save Step</string>
          </property>
@@ -264,6 +324,11 @@
        </item>
        <item>
         <widget class="QLineEdit" name="infoText">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>INFO </string>
          </property>
@@ -289,6 +354,11 @@
         <height>30</height>
        </size>
       </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+       </font>
+      </property>
       <property name="frameShape">
        <enum>QFrame::Box</enum>
       </property>
@@ -313,6 +383,11 @@
        </property>
        <item>
         <widget class="QPushButton" name="classifyButton">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>classify selected electrode</string>
          </property>
@@ -320,6 +395,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="learnelectrodeButton">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>learn selected electrode + STN selection</string>
          </property>
@@ -327,6 +407,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="learnAllelectrodeButton">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>train all loaded electrodes</string>
          </property>
@@ -342,6 +427,11 @@
         <width>16777215</width>
         <height>23</height>
        </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+       </font>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -379,6 +469,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Displaytyp : </string>
          </property>
@@ -398,6 +493,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Signal</string>
          </property>
@@ -416,6 +516,11 @@
            <width>100</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
          </property>
          <property name="text">
           <string>FFT</string>
@@ -439,6 +544,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Auto classifier</string>
          </property>
@@ -446,6 +556,11 @@
        </item>
        <item>
         <widget class="QComboBox" name="BundleSelection">
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="currentText">
           <string/>
          </property>
@@ -461,6 +576,14 @@
         <width>16777215</width>
         <height>16777215</height>
        </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+       </font>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>

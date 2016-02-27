@@ -175,7 +175,7 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event){
 }
 
 void OpenGLWidget::updateTF(float xPos, float yPos, float widgetSizeX, float widgetSizeY){
-    _data->setSmoothStep(xPos/widgetSizeX, yPos/widgetSizeY);
+    DicomRenderManager::getInstance().setSmoothStep(xPos/widgetSizeX, yPos/widgetSizeY);
 }
 
 void OpenGLWidget::pickPosition(Core::Math::Vec2ui position){

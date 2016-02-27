@@ -133,10 +133,31 @@ void DicomRenderManager::setBlendoption(int blendoption)
     _blendoption = blendoption;
 }
 
+std::shared_ptr<std::vector<Core::Math::Vec4f>> DicomRenderManager::getTransferFunction()
+{
+    return _transferFunction->GetColorData();
+}
+
+void DicomRenderManager::setSmoothStep(float pos, float grad){
+    _transferFunction->SetStdFunction(pos,grad);
+    _position = pos;
+    _gradient = grad;
+    _renderSettingStatus++;
+}
+
+float DicomRenderManager::getGradient() const
+{
+    return _gradient;
+}
+uint64_t DicomRenderManager::getRenderSettingStatus() const
+{
+    return _renderSettingStatus;
+}
 
 
-
-
-
+float DicomRenderManager::getPosition() const
+{
+    return _position;
+}
 
 

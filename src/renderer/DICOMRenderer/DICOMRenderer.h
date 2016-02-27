@@ -105,20 +105,30 @@ class DICOMRenderer{
         void setDoesGradientDescent(bool doesGradientDescent);
 
         void findGFrame();
+        void registerDatasets();
 
         void setDoFrameDetection(bool doFrameDetection);
 
         RenderMode activeRenderMode() const;
 
         void setIsTracking(bool isTracking);
-
+        void updateTransferFunction();
 private:
+
         //Loading stuff
         bool LoadShaderResources();
         bool LoadAndCheckShaders(std::shared_ptr<GLProgram>& programPtr, ShaderDescriptor& sd);
         bool LoadGeometry();
         bool LoadFrameBuffer();
         bool LoadFFTColorTex();
+
+        void generateLeftFrameBoundingBox(Vec3f center, Vec3f scale);
+        void generateRightFrameBoundingBox(Vec3f center, Vec3f scale);
+        void createFrameGeometry(std::vector<Vec3f> corners, int id= 0);
+
+        void checkDatasetStatus();
+        void checkElectrodeStatus();
+        void checkSettingStatus();
 
         //raycaster-------------------------------------------------------------------
         void RayCast();
@@ -143,10 +153,7 @@ private:
 
         void drawCompositing();
 
-        void checkDatasetStatus();
-        void checkElectrodeStatus();
-
-        //slicer---------(slice renderer based on raycaster!)-----------------------
+        //slicer------------------------------------------------------------------------
         void SliceRendering();
         void drawSliceCompositing();
         void drawSlice(std::shared_ptr<GLProgram> shader, bool isCT = true,bool full = true, bool noCTBones = false);
@@ -155,14 +162,9 @@ private:
         std::vector<Vec3f> findFrame(float startX = 0.0f, float stepX = 1.0f, Vec2f range = Vec2f(0.45f,0.6f), Vec3f minBox = Vec3f(0,0,0), Vec3f maxBox = Vec3f(1,1,1));
         std::vector<Vec3f> findFrameCorners(std::vector<Vec3f> data);
         void renderFramePosition();
-        void generateLeftFrameBoundingBox(Vec3f center, Vec3f scale);
-        void generateRightFrameBoundingBox(Vec3f center, Vec3f scale);
-        void createFrameGeometry(std::vector<Vec3f> corners, int id= 0);
-
 
         //utils
         void ClearBackground(Vec4f color);
-        void updateTransferFunction();
         Core::Math::Mat4f calculateElectrodeMatices(Core::Math::Vec3f entry, Core::Math::Vec3f target);
         void checkForErrorCodes(std::string note);
 
@@ -187,7 +189,6 @@ private:
         std::shared_ptr<GLProgram>      _sliceShader;
         std::shared_ptr<GLProgram>      _compositingThreeDShader;
         std::shared_ptr<GLProgram>      _compositingTwoDShader;
-        std::shared_ptr<GLProgram>      _compositingVolumeSubstraction;
         std::shared_ptr<GLProgram>      _lineShader;
         std::shared_ptr<GLProgram>      _sphereFFTShader;
         std::shared_ptr<GLProgram>      _frameSearchShader;
@@ -234,30 +235,17 @@ private:
         bool                            _needsUpdate;
         uint64_t                        _datasetStatus;
         uint64_t                        _electrodeStatus;
+        uint64_t                        _renderSettingStatus;
 
         DICOMClipMode                   _clipMode;
-
-        std::shared_ptr<BrainVisIO::MERData::MERBundle> _currentElectrode;
-        //matricies for the left and write electrode renderer (cylinder)
-        Mat4f                           _electrodeLeftMatrix;
-        Mat4f                           _electrodeRightMatix;
 
         //zoom for the slide renderer
         Vec3f                           _vZoom;
 
 
         //gradient decent testing
-        std::shared_ptr<GLFBOTex>       COMPOSITING;
         bool                            _doesGradientDescent;
-
-        Vec3f                           _ACMRWorldPosition;
-        Vec3f                           _PCMRWorldPosition;
-
         bool                            _doFrameDetection;
-
-
-        //runparameters
-        Vec3f                           _fokuslookat;
 
         std::unique_ptr<iFusion>        _fusionMethod;
 };

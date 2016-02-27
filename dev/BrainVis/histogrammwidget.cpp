@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 
 #include <QTimer>
+#include <renderer/DICOMRenderer/DICOMRenderManager.h>
 
 HistogrammWidget::HistogrammWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     QDockWidget(parent),
@@ -19,8 +20,8 @@ HistogrammWidget::HistogrammWidget(QWidget *parent, std::shared_ptr<DataHandle> 
 
     show();
 
-    lastPos = _data->getPosition();
-    lastGrad = _data->getGradient();
+    lastPos = DicomRenderManager::getInstance().getPosition();
+    lastGrad = DicomRenderManager::getInstance().getGradient();
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -75,7 +76,7 @@ QImage* HistogrammWidget::createHistogramm(std::vector<uint16_t> histogramm){
         }
     }
 
-    drawTF(image,716,153,_data->getPosition(),_data->getGradient());
+    drawTF(image,716,153,DicomRenderManager::getInstance().getPosition(),DicomRenderManager::getInstance().getGradient());
 
 
 
@@ -120,7 +121,7 @@ void HistogrammWidget::drawTF(QImage* image, int width, int height, float pos, f
 }
 
 void HistogrammWidget::update(){
-    if(lastGrad != _data->getGradient() || lastPos != _data->getPosition()){
+    if(lastGrad != DicomRenderManager::getInstance().getGradient() || lastPos != DicomRenderManager::getInstance().getPosition()){
         createHistogramms(_data->getCTHistogramm(),_data->getMRHistogramm());
     }
 }

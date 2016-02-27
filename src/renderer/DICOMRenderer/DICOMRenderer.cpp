@@ -82,9 +82,9 @@ _displayFrame(true),
 _displayCenterACPC(true),
 _displayThreeDCursor(true),
 _displayTwoDCursor(true),
-_currentElectrode(nullptr),
 _isTracking(true),
-_fusionMethod(nullptr)
+_fusionMethod(nullptr),
+_renderSettingStatus(0)
 {
 }
 
@@ -100,14 +100,7 @@ void DICOMRenderer::Initialize(){
     //creating a targetBinder to simplify switching between framebuffers
     _targetBinder = std::unique_ptr<GLTargetBinder>(new GLTargetBinder());
 
-    //starting with some fix projection / view / viwport
-    //_projection.Perspective(45, 512.0f/512.0f,0.01f, 1000.0f);
-    //_projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
-    _view = _camera->buildLookAt();
-
-    //glViewport(0,0,512,512);
     sheduleRepaint();
-
 }
 
 void DICOMRenderer::Cleanup(){
@@ -150,8 +143,9 @@ void DICOMRenderer::SetWindowSize(uint32_t width, uint32_t height){
 
         //recreate the framebuffers
         LoadFrameBuffer();
+
+        sheduleRepaint();
     }
-    sheduleRepaint();
 }
 
 void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
@@ -184,28 +178,12 @@ void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
     // try to read the QT framebuffer id, it is != 0
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
 
-    // if this is the first renderer we have to search the G-Frame to
-    // calculate the center of the scan
-    if(!_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
-       //searchGFrame();
-
-       // start slice is the center -> maybe change to center of frame!
-       _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
-    }
-
-
-    // this has to be done if the frame was found
-    if(_data->getBFoundCTFrame() && _GL_CTVolume != nullptr){
-        createFrameGeometry(_data->getLeftMarker(),0);
-        createFrameGeometry(_data->getRightMarker(),1);
-    }
-
     // creates a 1D Texture with a specified colorrange for
     // the filtered dB of the FFT
     if(!LoadFFTColorTex()) cout << "error in ffttex"<< endl;
 
+    _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
     sheduleRepaint();
-
 }
 
 void DICOMRenderer::ChangeSlide(int slidedelta){
@@ -298,59 +276,46 @@ void DICOMRenderer::checkElectrodeStatus(){
     }
 }
 
+void DICOMRenderer::checkSettingStatus(){
+    if(DicomRenderManager::getInstance().getRenderSettingStatus() > _renderSettingStatus){
+        updateTransferFunction();
+        _renderSettingStatus = DicomRenderManager::getInstance().getRenderSettingStatus();
+        sheduleRepaint();
+    }
+}
+
 void DICOMRenderer::Paint(){
     Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
 
     checkDatasetStatus();
     checkElectrodeStatus();
+    checkSettingStatus();
 
-    if(_doFrameDetection){
-        findGFrame();
-    }
-    while(_doesGradientDescent){
-    //if(_doesGradientDescent){
+    findGFrame();
+    registerDatasets();
 
-        if(_fusionMethod == nullptr){
-            _fusionMethod = std::unique_ptr<iFusion>(new OpenGLFusion(_data,_windowSize,_GL_CTVolume->GetGLID(),_GL_MRVolume->GetGLID()));
-            //_fusionMethod = std::unique_ptr<iFusion>(new CPUFusion(_data));
-        }
-        _fusionMethod->init(_windowSize);
-
-        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &_displayFramebufferID );
-        float result = _fusionMethod->executeFusionStep();
-        glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
-
-        if(result < 0.0f){
-            if(_data->getFTranslationStep() < 0.5f){
-                 _doesGradientDescent = false;
-                 double d = timer.elapsed();
-                 _fusionMethod->reset();
-                 std::cout << "end gdc : " << d<<std::endl;
-            }else{
-                _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
-                _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
-            }
-        }
-        DicomRenderManager::getInstance().setBlendValue(0.5f);
-    }
-
-
+    glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
     //QT SUCKS and forces us to seperate into an else branch
     if(_needsUpdate){
+
+        //check projectiontype
         if(!DicomRenderManager::getInstance().getOrthonormalThreeD()){
             _projection.Perspective(45, (float)_windowSize.x/(float)_windowSize.y,0.01f, 1000.0f);
         }else{
             _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
         }
 
+        //check if tracking enabled
         if(_isTracking)
             setCameraLookAt(_data->getSelectedWorldSpacePositon());
 
+        //check if the frame detection boxes are enabled
         if(DicomRenderManager::getInstance().getDisplayFrameDetectionBox()){
             generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
             generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
         }
-        updateTransferFunction();
+
         if(_activeRenderMode == ThreeDMode){
             RayCast();
         }else{
@@ -424,14 +389,6 @@ bool DICOMRenderer::LoadShaderResources(){
     fs.push_back("Shader/ComposeFragment_TwoD.glsl");
     sd = ShaderDescriptor(vs,fs);
     if(!LoadAndCheckShaders(_compositingTwoDShader,sd)) return false;
-    checkForErrorCodes("@ Load Compositing2DShader");
-
-    vs.clear();
-    fs.clear();
-    vs.push_back("Shader/ComposeVertex.glsl");
-    fs.push_back("Shader/ComposeFragmenVolumeSubstraction.glsl");
-    sd = ShaderDescriptor(vs,fs);
-    if(!LoadAndCheckShaders(_compositingVolumeSubstraction,sd)) return false;
     checkForErrorCodes("@ Load Compositing2DShader");
 
     vs.clear();
@@ -1255,9 +1212,9 @@ void DICOMRenderer::drawSliceCompositing(){
 
 
 void DICOMRenderer::updateTransferFunction(){
-    std::vector<Core::Math::Vec4f> tf = *(_data->getTransferFunction().get());
+    std::vector<Core::Math::Vec4f> tf = *(DicomRenderManager::getInstance().getTransferFunction().get());
 
-    if(_data->getTransferFunction()->size() > 0){
+    if(tf.size() > 0){
         if(_transferFunctionTex == nullptr){
             _transferFunctionTex = std::make_shared<GLTexture1D>(tf.size(),GL_RGBA32F,GL_RGBA,GL_FLOAT,&(tf[0]));
         }else{
@@ -1297,107 +1254,6 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
     Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
-std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range, Vec3f minBox, Vec3f maxBox){
-    //variable declaration
-    bool foundStart = false;
-    bool foundEnd = false;
-    bool foundData = false;
-    std::vector<Vec3f> frameData;
-    std::vector<Vec4f> framebuffer;
-    Vec3f currentSlide = Vec3f(startX,0.5,0.5);
-
-    framebuffer.resize(_windowSize.x*_windowSize.y);
-
-
-    _frameSearchShader->Enable();
-    _frameSearchShader->Set("minBox",minBox);
-    _frameSearchShader->Set("maxBox",maxBox);
-    _frameSearchShader->Disable();
-
-    //std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
-    while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
-        //std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
-        //render slide
-        foundData = false;
-        _data->setSelectedSlices(currentSlide);
-
-        renderFramePosition();
-        //render!!! somehow!!
-
-        //read framebuffer
-        _targetBinder->Bind(_rayCastColorCT);
-
-        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(framebuffer[0]));
-
-
-        for(int i = 0; i < framebuffer.size();++i){
-            if(framebuffer[i].x == 0.0f && framebuffer[i].y == 0.0f && framebuffer[i].z == 0.0f){
-
-            }else{
-                frameData.push_back(Vec3f(framebuffer[i].x,framebuffer[i].y,framebuffer[i].z));
-                foundData = true;
-                foundStart = true;
-            }
-        }
-        if(foundData || !foundStart){
-            //std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
-            currentSlide.x += stepX*0.5f;
-        }else{
-            foundEnd = true;
-        }
-
-        _targetBinder->Unbind();
-    }
-    //std::cout << "[DICOMRenderer] will end search "<<currentSlide <<std::endl;
-
-    return frameData;
-}
-
-std::vector<Vec3f> DICOMRenderer::findFrameCorners(std::vector<Vec3f> data){
-    //finding the corners of the N shape
-    Vec3f topLeft(0,0,0);
-    Vec3f bottomLeft(0,1,1);
-    Vec3f topRight(0,0,0);
-    Vec3f bottomRight(0,1,1);
-
-    for(int i = 0; i < data.size();++i ){
-        if(data[i].y < 0.5f && data[i].z > 0.5f ){
-            if(data[i].z > topLeft.z)
-                topLeft = data[i];
-            //top left
-        }else if(data[i].y > 0.5f && data[i].z > 0.5f ){
-            if(data[i].z > topRight.z)
-                topRight = data[i];
-            //top right
-        }else if(data[i].y < 0.5f && data[i].z < 0.5f ){
-            if(data[i].z < bottomLeft.z)
-                bottomLeft = data[i];
-
-            //bottom left
-        }else if(data[i].y > 0.5f && data[i].z < 0.5f ){
-            if(data[i].z < bottomRight.z)
-                bottomRight = data[i];
-            //bottom right
-        }
-    }
-
-    //transform from "volumespace" to "geometry cube space/worldspace"
-    topLeft         -= 0.5f;
-    topRight        -= 0.5f;
-    bottomLeft      -= 0.5f;
-    bottomRight     -= 0.5f;
-
-    //push final frame position into vector vor later useage, allway clockwise
-    // TopLeft->TopRight->BottomRight->BottomLeft
-    std::vector<Vec3f> corners;
-    corners.push_back(topLeft);
-    corners.push_back(topRight);
-    corners.push_back(bottomRight);
-    corners.push_back(bottomLeft);
-
-    return corners;
-}
 
 void DICOMRenderer::renderFramePosition(){
     Mat4f oldProjectionMatrix = _projection;
@@ -1536,8 +1392,6 @@ Core::Math::Mat4f DICOMRenderer::calculateElectrodeMatices(Core::Math::Vec3f ent
     outdir.normalize();
     T.Translation(entry+  outdir*15.0f );
 
-    _electrodeLeftMatrix = S*U;
-
     return S*U; 
 }
 
@@ -1548,6 +1402,7 @@ bool DICOMRenderer::doesGradientDescent() const
 
 void DICOMRenderer::setDoesGradientDescent(bool doesGradientDescent)
 {
+
     _doesGradientDescent = doesGradientDescent;
     if(_doesGradientDescent)
         timer.start();
@@ -1572,7 +1427,110 @@ void DICOMRenderer::generateRightFrameBoundingBox(Vec3f center, Vec3f scale){
     }
 }
 
+std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f range, Vec3f minBox, Vec3f maxBox){
+    //variable declaration
+    bool foundStart = false;
+    bool foundEnd = false;
+    bool foundData = false;
+    std::vector<Vec3f> frameData;
+    std::vector<Vec4f> framebuffer;
+    Vec3f currentSlide = Vec3f(startX,0.5,0.5);
+
+    framebuffer.resize(_windowSize.x*_windowSize.y);
+
+
+    _frameSearchShader->Enable();
+    _frameSearchShader->Set("minBox",minBox);
+    _frameSearchShader->Set("maxBox",maxBox);
+    _frameSearchShader->Disable();
+
+    //std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
+    while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
+        //std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
+        //render slide
+        foundData = false;
+        _data->setSelectedSlices(currentSlide);
+
+        renderFramePosition();
+        //render!!! somehow!!
+
+        //read framebuffer
+        _targetBinder->Bind(_rayCastColorCT);
+
+        glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
+        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(framebuffer[0]));
+
+
+        for(int i = 0; i < framebuffer.size();++i){
+            if(framebuffer[i].x == 0.0f && framebuffer[i].y == 0.0f && framebuffer[i].z == 0.0f){
+
+            }else{
+                frameData.push_back(Vec3f(framebuffer[i].x,framebuffer[i].y,framebuffer[i].z));
+                foundData = true;
+                foundStart = true;
+            }
+        }
+        if(foundData || !foundStart){
+            //std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
+            currentSlide.x += stepX*0.5f;
+        }else{
+            foundEnd = true;
+        }
+
+        _targetBinder->Unbind();
+    }
+    //std::cout << "[DICOMRenderer] will end search "<<currentSlide <<std::endl;
+
+    return frameData;
+}
+
+std::vector<Vec3f> DICOMRenderer::findFrameCorners(std::vector<Vec3f> data){
+    //finding the corners of the N shape
+    Vec3f topLeft(0,0,0);
+    Vec3f bottomLeft(0,1,1);
+    Vec3f topRight(0,0,0);
+    Vec3f bottomRight(0,1,1);
+
+    for(int i = 0; i < data.size();++i ){
+        if(data[i].y < 0.5f && data[i].z > 0.5f ){
+            if(data[i].z > topLeft.z)
+                topLeft = data[i];
+            //top left
+        }else if(data[i].y > 0.5f && data[i].z > 0.5f ){
+            if(data[i].z > topRight.z)
+                topRight = data[i];
+            //top right
+        }else if(data[i].y < 0.5f && data[i].z < 0.5f ){
+            if(data[i].z < bottomLeft.z)
+                bottomLeft = data[i];
+
+            //bottom left
+        }else if(data[i].y > 0.5f && data[i].z < 0.5f ){
+            if(data[i].z < bottomRight.z)
+                bottomRight = data[i];
+            //bottom right
+        }
+    }
+
+    //transform from "volumespace" to "geometry cube space/worldspace"
+    topLeft         -= 0.5f;
+    topRight        -= 0.5f;
+    bottomLeft      -= 0.5f;
+    bottomRight     -= 0.5f;
+
+    //push final frame position into vector vor later useage, allway clockwise
+    // TopLeft->TopRight->BottomRight->BottomLeft
+    std::vector<Vec3f> corners;
+    corners.push_back(topLeft);
+    corners.push_back(topRight);
+    corners.push_back(bottomRight);
+    corners.push_back(bottomLeft);
+
+    return corners;
+}
+
 void DICOMRenderer::findGFrame(){
+    if(!_doFrameDetection) return;
     Vec3f lMin = _data->getLeftFBBCenter()-_data->getLeftFBBScale();
     Vec3f lMax = _data->getLeftFBBCenter()+_data->getLeftFBBScale();
 
@@ -1601,4 +1559,31 @@ void DICOMRenderer::findGFrame(){
     _data->setSelectedSlices(Vec3f(0.5f,0.5f,0.5f));
 
     _doFrameDetection = false;
+}
+
+void DICOMRenderer::registerDatasets(){
+    while(_doesGradientDescent){
+    //if(_doesGradientDescent){
+
+        if(_fusionMethod == nullptr){
+            _fusionMethod = std::unique_ptr<iFusion>(new OpenGLFusion(_data,_windowSize,_GL_CTVolume->GetGLID(),_GL_MRVolume->GetGLID()));
+            //_fusionMethod = std::unique_ptr<iFusion>(new CPUFusion(_data));
+        }
+        _fusionMethod->init(_windowSize);
+
+        float result = _fusionMethod->executeFusionStep();
+
+        if(result < 0.0f){
+            if(_data->getFTranslationStep() < 0.5f){
+                 _doesGradientDescent = false;
+                 double d = timer.elapsed();
+                 _fusionMethod->reset();
+                 std::cout << "end gdc : " << d<<std::endl;
+            }else{
+                _data->setFTranslationStep(_data->getFTranslationStep()*_data->getFTranslationStepScale());
+                _data->setFRotationStep(_data->getFRotationStep()*_data->getFRotationStepScale());
+            }
+        }
+        DicomRenderManager::getInstance().setBlendValue(0.5f);
+    }
 }

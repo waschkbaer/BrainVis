@@ -7,6 +7,7 @@
 
 #include "DICOMRenderer.h"
 #include "DICOMRendererEnums.h"
+#include <BrainVisIO/TransferFunction1D.h>
 
 class DicomRenderManager{
 public:
@@ -47,6 +48,13 @@ public:
     int getBlendoption() const;
     void setBlendoption(int blendoption);
 
+    std::shared_ptr<std::vector<Core::Math::Vec4f>> getTransferFunction();
+    void setSmoothStep(float pos, float grad);
+
+    float getPosition() const;
+    float getGradient() const;
+    uint64_t getRenderSettingStatus() const;
+
 protected:
 
 private:
@@ -64,6 +72,12 @@ private:
     bool            _orthonormalThreeD;
     int             _blendoption;
 
+    //Transferfunction
+    std::unique_ptr<DataIO::TransferFunction1D>     _transferFunction;
+    float                                           _position;
+    float                                           _gradient;
+    uint64_t        _renderSettingStatus;
+
     DicomRenderManager():
     _nextRenderID(0),
     _blendValue(0.5f),
@@ -73,7 +87,13 @@ private:
     _displayBoundingBox(true),
     _displayElectrodes(true),
     _orthonormalThreeD(false),
-    _blendoption(0){}
+    _blendoption(0),
+    _transferFunction(nullptr),
+      _renderSettingStatus(0)
+    {
+        _transferFunction = std::unique_ptr<DataIO::TransferFunction1D>(new DataIO::TransferFunction1D(4000));
+        _transferFunction->SetStdFunction();
+    }
     ~DicomRenderManager(){}
 };
 

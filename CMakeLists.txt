@@ -59,11 +59,13 @@ SET(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".so" ".dll" ".a")
 
 
 find_package(Qt5Widgets REQUIRED)  
- find_package(Qt5OpenGL REQUIRED)  
+find_package(Qt5OpenGL  REQUIRED)  
+find_package(FFTW)
+find_package(CUDA REQUIRED)  
 
 #turn on using solution folders
 #todo verify if needed
-set_property( GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #todo is this really necessary?
 include(CheckCXXCompilerFlag)
@@ -78,14 +80,13 @@ elseif(!WIN32)
 endif()
 
 # Set a default build type if none was specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-   message(STATUS "Setting build type to 'Release' as none was specified.")
-   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-   # Set the possible values of build type for cmake-gui
-   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Release"
-     "MinSizeRel" "RelWithDebInfo")
-endif()
-
+#if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+#   message(STATUS "Setting build type to 'Release' as none was specified.")
+#   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+#   # Set the possible values of build type for cmake-gui
+#   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Release"
+#     "MinSizeRel" "RelWithDebInfo")
+#endif()
 
 add_definitions(-DGL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED)
 
@@ -94,8 +95,7 @@ if(WIN32)
     ADD_DEFINITIONS(-D_UNICODE)
 endif(WIN32)
 
-find_package(FFTW)
-find_package(CUDA REQUIRED)  
+
 
 add_subdirectory(src)
 add_subdirectory(ext)
