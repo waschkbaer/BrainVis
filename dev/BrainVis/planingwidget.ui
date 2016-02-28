@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>349</width>
-    <height>341</height>
+    <height>225</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,6 +32,9 @@
     </property>
     <item>
      <widget class="QToolBox" name="toolBox">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="currentIndex">
        <number>1</number>
       </property>
@@ -41,7 +44,7 @@
          <x>0</x>
          <y>0</y>
          <width>347</width>
-         <height>219</height>
+         <height>318</height>
         </rect>
        </property>
        <attribute name="label">
@@ -49,19 +52,19 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="spacing">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="topMargin">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>2</number>
+         <number>0</number>
         </property>
         <item>
          <widget class="QGroupBox" name="ACPCline">
@@ -314,7 +317,7 @@
          <x>0</x>
          <y>0</y>
          <width>347</width>
-         <height>219</height>
+         <height>121</height>
         </rect>
        </property>
        <attribute name="label">
@@ -322,19 +325,19 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <property name="spacing">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="topMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <item>
          <widget class="QGroupBox" name="MRBox">
@@ -409,6 +412,21 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QPushButton" name="LoadSettings">
          <property name="text">

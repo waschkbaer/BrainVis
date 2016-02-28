@@ -28,6 +28,9 @@
     <height>1</height>
    </size>
   </property>
+  <property name="features">
+   <set>QDockWidget::AllDockWidgetFeatures</set>
+  </property>
   <property name="allowedAreas">
    <set>Qt::NoDockWidgetArea</set>
   </property>
@@ -110,13 +113,14 @@
          <property name="font">
           <font>
            <family>Verdana</family>
+           <pointsize>6</pointsize>
           </font>
          </property>
          <property name="text">
           <string>3D</string>
          </property>
          <property name="flat">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -128,16 +132,11 @@
            <height>20</height>
           </size>
          </property>
-         <property name="font">
-          <font>
-           <family>Verdana</family>
-          </font>
-         </property>
          <property name="text">
-          <string>Z-Axis</string>
+          <string>Axial</string>
          </property>
          <property name="flat">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -150,10 +149,10 @@
           </size>
          </property>
          <property name="text">
-          <string>X-Axis</string>
+          <string>Sagittal</string>
          </property>
          <property name="flat">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -166,13 +165,13 @@
           </size>
          </property>
          <property name="text">
-          <string>Y-Axis</string>
+          <string>Coronal</string>
          </property>
          <property name="default">
           <bool>false</bool>
          </property>
          <property name="flat">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>

@@ -45,7 +45,6 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data,
         case RenderMode::YAxis      :  ui->YAxis->setEnabled(false);break;
         case RenderMode::ZAxis      :  ui->ZAxis->setEnabled(false);break;
     }
-    ui->buttonbackground->setStyleSheet("background-color:white");
 }
 
 RenderWidget::~RenderWidget()

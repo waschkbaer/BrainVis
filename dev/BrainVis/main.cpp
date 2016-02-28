@@ -11,6 +11,8 @@
  * etc...
  */
 
+#include <QFile>
+
 #include <QApplication>
 #include <QSurfaceFormat>
 
@@ -28,6 +30,13 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    QFile File("stylesheet.css");
+     File.open(QFile::ReadOnly);
+     QString StyleSheet = QLatin1String(File.readAll());
+
+     a.setStyleSheet(StyleSheet);
+
 
     MainWindow w;
     w.show();
