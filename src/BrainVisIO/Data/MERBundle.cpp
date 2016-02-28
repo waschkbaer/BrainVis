@@ -97,6 +97,14 @@ void MERBundle::calculateDataPosition(std::shared_ptr<MERElectrode> electrode){
         }
     }
 }
+
+void MERBundle::deselectAllData(){
+    std::map<std::string,std::shared_ptr<MERElectrode>>::iterator it = _electrodes.begin();
+    for(it = _electrodes.begin(); it != _electrodes.end(); ++it){
+        it->second->deselectAllData();
+    }
+}
+
 bool MERBundle::getIsRightSide() const
 {
     return _isRightSide;

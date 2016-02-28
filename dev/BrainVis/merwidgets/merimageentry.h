@@ -12,13 +12,14 @@
 namespace Ui {
 class MERimageentry;
 }
+class merelectrodeentry;
 
 class MERimageentry : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MERimageentry(int depth = -10,const std::string& name = "none",std::shared_ptr<BrainVisIO::MERData::MERData> data = nullptr,QWidget *parent = 0);
+    explicit MERimageentry(int depth = -10,const std::string& name = "none",std::shared_ptr<BrainVisIO::MERData::MERData> data = nullptr,merelectrodeentry *parent = 0);
     ~MERimageentry();
 
     void createSpectralImage(const std::vector<double>& data);
@@ -31,12 +32,15 @@ public:
 
     void mousePressEvent(QMouseEvent* event);
 
+    void setSelected(bool selected);
+
 private slots:
 
     void on_stnLine_textChanged(const QString &arg1);
 
 private:
     QColor getSpectralColor(double value);
+    merelectrodeentry*          _entry;
 
     Ui::MERimageentry *ui;
 

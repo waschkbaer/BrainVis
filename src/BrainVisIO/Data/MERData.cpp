@@ -18,7 +18,8 @@ _lastRequestedSpectralPower(),
 _lastRequestTimer(0),
 _recordedSeconds(0),
 _spectralAverage(0),
-_isSTNclassified(false){
+_isSTNclassified(false),
+_focusSelected(false){
 
 }
 MERData::MERData(int recordingDepth, const std::string& filename):
@@ -278,6 +279,16 @@ void MERData::loadFile(const std::string& filename){
 
     _recordedSeconds = _signal.size()/SAMPLESPERSECOND;
 }
+bool MERData::getFocusSelected() const
+{
+    return _focusSelected;
+}
+
+void MERData::setFocusSelected(bool focusSelected)
+{
+    _focusSelected = focusSelected;
+}
+
 bool MERData::getIsSTNclassified() const
 {
     return _isSTNclassified;

@@ -7,6 +7,6 @@ if (CUDA_FOUND)
 	CUDA_ADD_LIBRARY(CUDAIO ${CUDAIO_SOURCE} ${CUDAIO_HEADER} )
 
 	#target_include_directories (CUDAIO  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-	#target_link_libraries (CUDAIO  LINK_PUBLIC Core)
-	#target_link_libraries (CUDAIO  LINK_PUBLIC jpeglib)
+	#target_link_libraries (CUDAIO Core)
+	#target_link_libraries (CUDAIO jpeglib)
 endif(CUDA_FOUND)

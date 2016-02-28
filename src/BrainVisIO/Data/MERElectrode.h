@@ -33,6 +33,8 @@ public:
     bool getElectrodeVisible() const;
     void setElectrodeVisible(bool electrodeVisible);
 
+    void deselectAllData();
+
 protected:
 
 private:

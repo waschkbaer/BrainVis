@@ -30,4 +30,5 @@ INCLUDE_DIRECTORIES(${BRAINVIS_ROOT_DIR}/src/mocca/include)
 
 # level 0 modules
 ADD_SUBDIRECTORY(mocca)
+ADD_SUBDIRECTORY(mui)
 

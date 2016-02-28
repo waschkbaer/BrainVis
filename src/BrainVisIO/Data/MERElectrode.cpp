@@ -66,6 +66,13 @@ const std::shared_ptr<MERData> MERElectrode::getMERData(int depth){
     return nullptr;
 }
 
+void MERElectrode::deselectAllData(){
+    std::map<int,std::shared_ptr<MERData>>::iterator it = _data.begin();
+    for(it = _data.begin(); it != _data.end(); ++it){
+        it->second->setFocusSelected(false);
+    }
+}
+
 void MERElectrode::loadRecordings(const std::vector<std::string>& filelist){
     for(const std::string s : filelist){
         _data.insert(std::pair<int,std::shared_ptr<MERData>>

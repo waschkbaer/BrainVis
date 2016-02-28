@@ -1,0 +1,14 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
+
+INCLUDE(PlatformSpecific)
+INCLUDE(Macros)
+
+FILE(GLOB_RECURSE MUI_HEADER ${PROJECT_SOURCE_DIR}/src/mui/include/*.h)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src/mui/include)
+
+CreateSourceGroups("${MOCCA_HEADER}" ${PROJECT_SOURCE_DIR}/src/mui/include)
+
+#add some if win def
+SET_PROPERTY(GLOBAL PROPERTY MUILIB ${CMAKE_CURRENT_SOURCE_DIR}/lib/gate_shared.lib)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib/gate_shared.dll DESTINATION ${CMAKE_SOURCE_DIR}/build/bin)

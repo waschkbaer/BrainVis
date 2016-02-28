@@ -28,11 +28,11 @@ add_library (Renderer ${REND2_SOURCE} ${REND2_HEADER} ${REND2_SHADERS} $<TARGET_
 target_include_directories (Renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_include_directories (Renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Shader)
 
-target_link_libraries (Renderer LINK_PUBLIC Core)
-target_link_libraries (Renderer LINK_PUBLIC BRAINVISIO)
-target_link_libraries (Renderer LINK_PUBLIC glew)
-target_link_libraries (Renderer LINK_PUBLIC ghoul)
-target_link_libraries (Renderer  ${CUDA_LIBRARIES}) 
+target_link_libraries (Renderer Core)
+target_link_libraries (Renderer BRAINVISIO)
+target_link_libraries (Renderer glew)
+target_link_libraries (Renderer ghoul)
+target_link_libraries (Renderer ${CUDA_LIBRARIES}) 
 
 CUDA_ADD_CUBLAS_TO_TARGET (Renderer)
 CUDA_ADD_CUFFT_TO_TARGET (Renderer)

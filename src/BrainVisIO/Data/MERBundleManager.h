@@ -27,6 +27,7 @@ public:
 
     void disableAllBundles();
     void activateBundle(const std::string& name);
+    void deselectAllData();
 
     std::string getActiveBundleName() const;
 

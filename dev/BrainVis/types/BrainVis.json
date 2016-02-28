@@ -1,0 +1,30 @@
+{
+	"id" : "BrainVis",
+	"requirements" :
+	[
+		{
+			"id" : "[Renderer] Next [MER] Next",
+			"type" : "Toggle"
+		},
+		{
+			"id" : "[Renderer][MER] Switch",
+			"type" : "Toggle"
+		},
+		{
+			"id" : "[Renderer] Zoom [MER] Depth",
+			"type" : "Continuous1D"
+		},
+		{
+			"id" : "[Renderer] Windowing",
+			"type" : "Continuous2D"
+		},
+		{
+			"id" : "[Renderer] Rotate Camera",
+			"type" : "Continuous2D"
+		},
+		{
+			"id" : "Continuous3D Reqirement",
+			"type" : "Continuous3D"
+		}
+	]
+}

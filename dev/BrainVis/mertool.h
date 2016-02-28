@@ -36,6 +36,7 @@ public:
     void closeEvent(QCloseEvent *event);
 
     void fftCalcThreadRun();
+    void disableSelection();
 
     int timerId;
 protected:

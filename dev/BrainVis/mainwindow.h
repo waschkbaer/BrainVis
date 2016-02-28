@@ -18,6 +18,7 @@ class DataHandle;
 class HistogrammWidget;
 class FrameWidget;
 class MERTool;
+class MuiConnector;
 
 /*!
  * \brief The MainWindow acts as a central hub for all widgets
@@ -149,6 +150,8 @@ private slots:
 
     void on_actionSolidBlend_triggered();
 
+    void on_actionMorphableUI_triggered();
+
 private:
     void disableControllBoxes();
     Ui::MainWindow *ui;
@@ -164,6 +167,7 @@ private:
     std::shared_ptr<HistogrammWidget>                   _histogramm;
     std::shared_ptr<FrameWidget>                        _frame;
     std::shared_ptr<MERTool>                            _MERTool;
+    std::shared_ptr<MuiConnector>                       _muiConnector;
 };
 
 #endif // MAINWINDOW_H

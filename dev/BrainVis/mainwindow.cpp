@@ -22,6 +22,8 @@
 #include <renderer/DICOMRenderer/DICOMRendererEnums.h>
 
 #include "rendersettings.h"
+#include "muiconnector.h"
+#include "muihandler/muihandler.h"
 
 using namespace BrainVis;
 
@@ -32,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _histogramm(nullptr),
     _frame(nullptr),
     _registrationWidget(nullptr),
+    _muiConnector(nullptr),
     _renderIDCounter(0)
 {
     ui->setupUi(this);
@@ -44,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    MuiHandler::getInstance().stop();
     if(_data != nullptr && _data->getUsesNetworkMER()){
         _data->waitForNetworkThread();
     }
@@ -295,4 +299,11 @@ void MainWindow::on_actionSolidBlend_triggered()
     }else{
         DicomRenderManager::getInstance().setBlendoption(0);
     }
+}
+
+void MainWindow::on_actionMorphableUI_triggered()
+{
+   if(_muiConnector == nullptr){
+       _muiConnector = std::make_shared<MuiConnector>(this);
+   }
 }

@@ -39,6 +39,13 @@ void MERBundleManager::disableAllBundles(){
     }
 }
 
+void MERBundleManager::deselectAllData(){
+    std::map<std::string,std::shared_ptr<MERBundle>>::iterator it = _bundles.begin();
+    for(it = _bundles.begin(); it != _bundles.end(); ++it){
+        it->second->deselectAllData();
+    }
+}
+
 void MERBundleManager::activateBundle(const std::string& name){
     disableAllBundles();
     getMERBundle(name)->setIsActive(true);

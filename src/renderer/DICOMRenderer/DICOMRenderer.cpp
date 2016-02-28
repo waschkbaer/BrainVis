@@ -334,8 +334,6 @@ void DICOMRenderer::Paint(){
              drawSliceCompositing();
          }
     }
-
-
     Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 

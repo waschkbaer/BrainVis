@@ -37,6 +37,8 @@ public:
     bool getIsRightSide() const;
     void setIsRightSide(bool isRightSide);
 
+    void deselectAllData();
+
 protected:
     void calculateDataPosition(std::shared_ptr<MERElectrode> electrode);
 private:

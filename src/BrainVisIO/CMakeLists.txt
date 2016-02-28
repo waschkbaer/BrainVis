@@ -28,7 +28,7 @@ ELSE(FFTW_LIBRARIES)
 ENDIF(FFTW_LIBRARIES)
 
 if(WIN32)
-    target_link_libraries (BRAINVISIO LINK_PUBLIC Shlwapi)
+    target_link_libraries (BRAINVISIO Shlwapi)
 endif(WIN32)
 
 #MOCCA

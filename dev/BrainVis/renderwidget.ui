@@ -61,7 +61,7 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="buttonbackground">
       <property name="maximumSize">
        <size>
         <width>1024</width>
@@ -70,14 +70,15 @@
       </property>
       <property name="font">
        <font>
+        <family>Verdana</family>
         <pointsize>6</pointsize>
        </font>
       </property>
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Plain</enum>
       </property>
       <property name="lineWidth">
        <number>0</number>
@@ -106,8 +107,16 @@
            <height>20</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>3D</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -119,8 +128,16 @@
            <height>20</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+          </font>
+         </property>
          <property name="text">
           <string>Z-Axis</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -135,6 +152,9 @@
          <property name="text">
           <string>X-Axis</string>
          </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -147,6 +167,12 @@
          </property>
          <property name="text">
           <string>Y-Axis</string>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

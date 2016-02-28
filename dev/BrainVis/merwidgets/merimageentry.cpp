@@ -1,22 +1,27 @@
 #include "merimageentry.h"
 #include "ui_merimageentry.h"
 
+#include <QTimer>
+
 #include "mertoolenums.h"
+#include "merelectrodeentry.h"
 
 #include <iostream>
 
 #include "../ActivityManager.h"
 #include <renderer/DICOMRenderer/DICOMRenderManager.h>
 #include <BrainVisIO/DataHandleManager.h>
+#include <BrainVisIO/Data/MERBundleManager.h>
 
 using namespace BrainVis;
 
-MERimageentry::MERimageentry(int depth ,const std::string& name,std::shared_ptr<BrainVisIO::MERData::MERData> data,QWidget *parent) :
+MERimageentry::MERimageentry(int depth ,const std::string& name,std::shared_ptr<BrainVisIO::MERData::MERData> data,merelectrodeentry *parent) :
     QWidget(parent),
     _lastSpectralData(),
     _depth(depth),
     _name(name),
     _data(data),
+    _entry(parent),
     ui(new Ui::MERimageentry)
 {
     ui->setupUi(this);
@@ -30,6 +35,7 @@ MERimageentry::MERimageentry(int depth ,const std::string& name,std::shared_ptr<
     }else{
         ui->stnLine->setText("");
     }
+
 }
 
 MERimageentry::~MERimageentry()
@@ -146,6 +152,7 @@ void MERimageentry::createSignalImage(const std::vector<short>& data){
 }
 
 void MERimageentry::update(){
+
 }
 
 QColor MERimageentry::getSpectralColor(double value){
@@ -168,6 +175,9 @@ QColor MERimageentry::getSpectralColor(double value){
 }
 
 void MERimageentry::mousePressEvent(QMouseEvent* event){
+    BrainVisIO::MERData::MERBundleManager::getInstance().deselectAllData();
+    _entry->disableSelection();
+    setSelected(true);
     uint16_t handle = ActivityManager::getInstance().getActiveDataset();
     std::shared_ptr<DataHandle> d = DataHandleManager::getInstance().getDataHandle(handle);
     if(d != nullptr)
@@ -180,5 +190,14 @@ void MERimageentry::on_stnLine_textChanged(const QString &arg1)
         _data->setIsSTNclassified(true);
     }else{
         _data->setIsSTNclassified(false);
+    }
+}
+
+void MERimageentry::setSelected(bool selected){
+    _data->setFocusSelected(selected);
+    if(_data->getFocusSelected()){
+        ui->imgLabel->setStyleSheet("border: 2px solid");
+    }else{
+        ui->imgLabel->setStyleSheet("border: 0px");
     }
 }

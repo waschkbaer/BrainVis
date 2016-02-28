@@ -40,6 +40,9 @@ public:
     bool getIsSTNclassified() const;
     void setIsSTNclassified(bool isSTNclassified);
 
+    bool getFocusSelected() const;
+    void setFocusSelected(bool focusSelected);
+
 protected:
     void loadFile(const std::string& filename);
 
@@ -57,6 +60,7 @@ private:
     Core::Math::Vec3f       _position;
 
     bool                    _isSTNclassified;
+    bool                    _focusSelected;
 
 };
 

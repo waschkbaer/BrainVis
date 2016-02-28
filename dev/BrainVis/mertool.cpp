@@ -160,17 +160,17 @@ void MERTool::updateData(const std::string& bundlename){
     std::shared_ptr<BrainVisIO::MERData::MERElectrode> cen = bundle->getElectrode("cen");
 
     if(_electrodeEntries.find("lat") == _electrodeEntries.end())
-        _electrodeEntries.insert(std::pair<std::string,std::shared_ptr<merelectrodeentry>>("lat",std::make_shared<merelectrodeentry>("Lat-Right")));
+        _electrodeEntries.insert(std::pair<std::string,std::shared_ptr<merelectrodeentry>>("lat",std::make_shared<merelectrodeentry>("Lat-Right",this)));
     else
         _electrodeEntries.find("lat")->second->clean();
 
     if(_electrodeEntries.find("ant") == _electrodeEntries.end())
-        _electrodeEntries.insert(std::pair<std::string,std::shared_ptr<merelectrodeentry>>("ant",std::make_shared<merelectrodeentry>("Ant-Right")));
+        _electrodeEntries.insert(std::pair<std::string,std::shared_ptr<merelectrodeentry>>("ant",std::make_shared<merelectrodeentry>("Ant-Right",this)));
     else
         _electrodeEntries.find("ant")->second->clean();
 
     if(_electrodeEntries.find("cen") == _electrodeEntries.end())
-        _electrodeEntries.insert(std::pair<std::string,std::shared_ptr<merelectrodeentry>>("cen",std::make_shared<merelectrodeentry>("Cen-Right")));
+        _electrodeEntries.insert(std::pair<std::string,std::shared_ptr<merelectrodeentry>>("cen",std::make_shared<merelectrodeentry>("Cen-Right",this)));
     else
         _electrodeEntries.find("cen")->second->clean();
 
@@ -181,6 +181,14 @@ void MERTool::updateData(const std::string& bundlename){
     _electrodeEntries.find("lat")->second->createElectrodeEntries(lat,_displayMode);
     _electrodeEntries.find("ant")->second->createElectrodeEntries(ant,_displayMode);
     _electrodeEntries.find("cen")->second->createElectrodeEntries(cen,_displayMode);
+
+
+}
+
+void MERTool::disableSelection(){
+    _electrodeEntries.find("lat")->second->disableAllImages();
+    _electrodeEntries.find("ant")->second->disableAllImages();
+    _electrodeEntries.find("cen")->second->disableAllImages();
 }
 
 void MERTool::on_signalRadio_toggled(bool checked)

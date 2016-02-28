@@ -139,9 +139,14 @@ std::shared_ptr<std::vector<Core::Math::Vec4f>> DicomRenderManager::getTransferF
 }
 
 void DicomRenderManager::setSmoothStep(float pos, float grad){
-    _transferFunction->SetStdFunction(pos,grad);
     _position = pos;
     _gradient = grad;
+
+    _position = std::min(1.0f,std::max(0.0f,_position));
+    _gradient = std::min(1.0f,std::max(0.0f,_gradient));
+
+    _transferFunction->SetStdFunction(_position,_gradient);
+
     _renderSettingStatus++;
 }
 

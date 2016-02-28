@@ -1,27 +1,22 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 file(GLOB BRAINVIS_SOURCE 	*.cpp
 				DriveTool/*.cpp
 				merwidgets/*.cpp
-				Utils/*.cpp)
+				Utils/*.cpp
+			 	muihandler/*.cpp)
 file(GLOB BRAINVIS_HEADER 	*.h
 				DriveTool/*.h
 				merwidgets/*.h
-				Utils/*.h)
+				Utils/*.h
+				muihandler/*.h)
 file(GLOB SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Shader/*.glsl)
 file(GLOB BUTTONS ${CMAKE_CURRENT_SOURCE_DIR}/Buttons/*.jpg)
-file(GLOB DEMOMER ${CMAKE_CURRENT_SOURCE_DIR}/MER/*.csv)
-
-set (CMAKE_PREFIX_PATH "C:\\Qt\\5.5\\msvc2013_64")
+file(GLOB MUIJSON ${CMAKE_CURRENT_SOURCE_DIR}/types/BrainVis.json)
 
 project(BrainVis)
 set(CMAKE_AUTOMOC ON) 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)  
-
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
 
 # Find the QtWidgets library
 find_package(Qt5Widgets REQUIRED)
@@ -39,26 +34,28 @@ QT5_WRAP_UI(UIS_HDRS rendersettings.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/merimageentry.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/merelectrodeentry.ui)
 QT5_WRAP_UI(UIS_HDRS merwidgets/meroptions.ui)
+QT5_WRAP_UI(UIS_HDRS muiconnector.ui)
+GET_PROPERTY(muipath GLOBAL PROPERTY MUILIB)
 
-
-add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc ${CUDA_OBJECTS})
+add_executable(BrainVis ${BRAINVIS_SOURCE} ${BRAINVIS_HEADER} ${UIS_HDRS} $<TARGET_OBJECTS:mocca> brainvis.rc )
 
 set_target_properties( BrainVis PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BRAINVIS_ROOT_DIR}/build/bin )
 
 
 file(COPY ${SHADERS} DESTINATION ${CMAKE_SOURCE_DIR}/build/bin/Shader)
 file(COPY ${BUTTONS} DESTINATION ${CMAKE_SOURCE_DIR}/build/bin/Buttons)
-file(COPY ${DEMOMER} DESTINATION ${CMAKE_SOURCE_DIR}/build/bin/MER)
+file(COPY ${MUIJSON} DESTINATION ${CMAKE_SOURCE_DIR}/build/bin/types)
 
 include_directories(../src/Externals/glm)
-target_link_libraries(BrainVis LINK_PUBLIC Qt5::Widgets)
-target_link_libraries(BrainVis LINK_PUBLIC Renderer)
-target_link_libraries(BrainVis LINK_PUBLIC ${OPENGL_LIBRARIES})
-target_link_libraries(BrainVis LINK_PUBLIC Core)
-target_link_libraries(BrainVis LINK_PUBLIC ghoul)
-target_link_libraries(BrainVis LINK_PUBLIC BRAINVISIO)
+target_link_libraries(BrainVis Qt5::Widgets)
+target_link_libraries(BrainVis Renderer)
+target_link_libraries(BrainVis ${OPENGL_LIBRARIES})
+target_link_libraries(BrainVis Core)
+target_link_libraries(BrainVis ghoul)
+target_link_libraries(BrainVis BRAINVISIO)
+target_link_libraries(BrainVis ${muipath})
 
-qt5_use_modules(BrainVis  Widgets OpenGL)  
+#qt5_use_modules(BrainVis Widgets OpenGL)  
 
 #GHOUL
 include_directories(

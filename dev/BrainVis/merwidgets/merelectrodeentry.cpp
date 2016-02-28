@@ -1,6 +1,6 @@
 #include "merelectrodeentry.h"
 #include "ui_merelectrodeentry.h"
-
+#include "../mertool.h"
 
 #include <BrainVisIO/Data/MERData.h>
 #include <BrainVisIO/Data/MERElectrode.h>
@@ -9,13 +9,13 @@
 #include <BrainVisIO/Data/MERBundleManager.h>
 #include <BrainVisIO/DataHandleManager.h>
 
-#include "merimageentry.h"
-
-merelectrodeentry::merelectrodeentry(const std::string& electrodeName, QWidget *parent) :
+merelectrodeentry::merelectrodeentry(const std::string& electrodeName, MERTool *parent) :
     QWidget(parent),
     _electrodeName(electrodeName),
     _electrode(nullptr),
-    ui(new Ui::merelectrodeentry)
+    ui(new Ui::merelectrodeentry),
+    _widgets(),
+    _parent(parent)
 {
     ui->setupUi(this);
     show();
@@ -44,6 +44,15 @@ void merelectrodeentry::createElectrodeEntries(std::shared_ptr<BrainVisIO::MERDa
             ui->entryframe->layout()->addWidget(imgentry);
             _widgets.push_back(imgentry);
         }
+    }
+}
+void merelectrodeentry::disableSelection(){
+    _parent->disableSelection();
+}
+
+void merelectrodeentry::disableAllImages(){
+    for(MERimageentry* w : _widgets){
+        w->setSelected(false);
     }
 }
 
