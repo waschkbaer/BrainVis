@@ -187,16 +187,18 @@ void MERimageentry::mousePressEvent(QMouseEvent* event){
 void MERimageentry::on_stnLine_textChanged(const QString &arg1)
 {
     if(arg1.toStdString() == "stn" || arg1.toStdString() == "Stn" || arg1.toStdString() == "STN"){
+        ui->stnLine->setStyleSheet("background-color:white; color:black;");
         _data->setIsSTNclassified(true);
     }else{
         _data->setIsSTNclassified(false);
+        ui->stnLine->setStyleSheet("background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4d4d, stop: 0 #646464, stop: 1 #5d5d5d);");
     }
 }
 
 void MERimageentry::setSelected(bool selected){
     _data->setFocusSelected(selected);
     if(_data->getFocusSelected()){
-        ui->imgLabel->setStyleSheet("border: 2px solid");
+        ui->imgLabel->setStyleSheet("border: 2px solid white");
     }else{
         ui->imgLabel->setStyleSheet("border: 0px");
     }

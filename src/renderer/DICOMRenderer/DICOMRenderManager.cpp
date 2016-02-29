@@ -12,6 +12,12 @@ uint16_t DicomRenderManager::addRenderer(std::shared_ptr<DICOMRenderer> r){
     return id;
 }
 
+void DicomRenderManager::recreateRenderer(int id){
+    if(_rendererMap.find(id) != _rendererMap.end()){
+       _rendererMap.find(id)->second = std::make_shared<DICOMRenderer>();
+    }
+}
+
 const std::shared_ptr<DICOMRenderer> DicomRenderManager::getRenderer(RenderMode mode){
     std::map<uint16_t,std::shared_ptr<DICOMRenderer>>::iterator it = _rendererMap.begin();
     std::shared_ptr<DICOMRenderer> r = nullptr;

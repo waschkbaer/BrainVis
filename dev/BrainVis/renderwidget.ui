@@ -12,14 +12,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>338</width>
-    <height>256</height>
+    <width>360</width>
+    <height>290</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1024</width>
-    <height>1044</height>
+    <width>1920</width>
+    <height>1080</height>
    </size>
   </property>
   <property name="sizeIncrement">
@@ -29,10 +29,10 @@
    </size>
   </property>
   <property name="features">
-   <set>QDockWidget::AllDockWidgetFeatures</set>
+   <set>QDockWidget::DockWidgetClosable</set>
   </property>
   <property name="allowedAreas">
-   <set>Qt::NoDockWidgetArea</set>
+   <set>Qt::AllDockWidgetAreas</set>
   </property>
   <property name="windowTitle">
    <string>RenderWidget</string>
@@ -182,8 +182,8 @@
      <widget class="OpenGLWidget" name="openGLWidget">
       <property name="maximumSize">
        <size>
-        <width>1024</width>
-        <height>1024</height>
+        <width>1920</width>
+        <height>1080</height>
        </size>
       </property>
      </widget>

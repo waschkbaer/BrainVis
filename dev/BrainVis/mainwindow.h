@@ -20,6 +20,15 @@ class FrameWidget;
 class MERTool;
 class MuiConnector;
 
+enum dockMode{
+    noDock = 0,
+    left,
+    right,
+    top,
+    bottom,
+    center
+};
+
 /*!
  * \brief The MainWindow acts as a central hub for all widgets
  *
@@ -61,7 +70,7 @@ public:
      * needed memory and achieve data synchronization between all
      * renderwidgets
      */
-    void createNewRenderWidger(RenderMode mode = RenderMode::ThreeDMode, Core::Math::Vec2ui position = Core::Math::Vec2ui(0,80));
+    void createNewRenderWidget(RenderMode mode = RenderMode::ThreeDMode,dockMode dockmode = dockMode::noDock);
 
     /*!
      * \brief returns a renderwidget to be used for some commands

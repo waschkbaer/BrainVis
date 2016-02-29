@@ -17,6 +17,7 @@ public:
     }
 
     uint16_t addRenderer(std::shared_ptr<DICOMRenderer> r = nullptr);
+    void recreateRenderer(int id);
     const std::shared_ptr<DICOMRenderer> getRenderer(uint16_t);
     const std::shared_ptr<DICOMRenderer> getRenderer(RenderMode mode);
     void setTrackMode(bool mode);

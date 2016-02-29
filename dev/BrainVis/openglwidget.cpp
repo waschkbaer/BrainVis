@@ -24,7 +24,8 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       _windowSize(0,0),
       _scrollMode(false),
       _rendererID(-1),
-      _renderer(nullptr)
+      _renderer(nullptr),
+        _initDone(false)
 {
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -64,6 +65,14 @@ void OpenGLWidget::initializeGL()
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
     GLMutex::getInstance().unlockContext();
+
+    if(_initDone){
+        DicomRenderManager::getInstance().recreateRenderer(_rendererID);
+        _renderer = DicomRenderManager::getInstance().getRenderer(_rendererID);
+        _renderer->SetDataHandle(_data);
+        _renderer->Initialize();
+    }
+    _initDone = true;
 }
 
 int i=0;

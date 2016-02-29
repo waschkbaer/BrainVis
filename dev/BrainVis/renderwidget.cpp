@@ -23,7 +23,7 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data,
     _renderID(renderID),
     _isValid(true)
 {
-    setFloating(true);
+    //setFloating(true);
     ui->setupUi(this);
     move(windowPosition.x,windowPosition.y);
 

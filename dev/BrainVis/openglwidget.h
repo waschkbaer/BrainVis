@@ -94,6 +94,7 @@ private:
     bool                            _rightMouseDown;
 
     bool                            _scrollMode;
+    bool                            _initDone;
 
     int                             _rendererID;
 signals:

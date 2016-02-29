@@ -173,6 +173,7 @@ void DICOMRenderer::SetDataHandle(const std::shared_ptr<DataHandle> dataHandle){
     }
 
     // update the Transferfunction
+    _transferFunctionTex= nullptr;
     updateTransferFunction();
 
     // try to read the QT framebuffer id, it is != 0

@@ -43,6 +43,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->actionMove->setChecked(false);
     ui->actionRotate->setChecked(true);
+
+    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 }
 
 MainWindow::~MainWindow()
@@ -54,7 +59,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::createNewRenderWidger(RenderMode mode,Core::Math::Vec2ui position){
+void MainWindow::createNewRenderWidget(RenderMode mode,dockMode dockmode){
     if(ActivityManager::getInstance().getActiveDataset() != -1){
         int renderHandle = DicomRenderManager::getInstance().addRenderer();
         ActivityManager::getInstance().setActiveRenderer(renderHandle);
@@ -64,9 +69,19 @@ void MainWindow::createNewRenderWidger(RenderMode mode,Core::Math::Vec2ui positi
                                         this,
                                         renderHandle,
                                         mode,
-                                        position)
+                                        Vec2ui(0,0))
                                    );
 
+
+
+        switch(dockmode){
+            case dockMode::center: this->setCentralWidget((QWidget*)m_vActiveRenderer[m_vActiveRenderer.size()-1].get());break;
+            case dockMode::left: this->addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea ,(QDockWidget*)m_vActiveRenderer[m_vActiveRenderer.size()-1].get());break;
+            case dockMode::top: this->addDockWidget(Qt::DockWidgetArea::TopDockWidgetArea ,(QDockWidget*)m_vActiveRenderer[m_vActiveRenderer.size()-1].get());break;
+            case dockMode::bottom: this->addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea ,(QDockWidget*)m_vActiveRenderer[m_vActiveRenderer.size()-1].get());break;
+            case dockMode::right:
+            case dockMode::noDock: m_vActiveRenderer[m_vActiveRenderer.size()-1]->setFloating(true); break;
+        }
 
     }
 }
@@ -78,7 +93,7 @@ int MainWindow::getNextRenderIDCounter()
 }
 void MainWindow::on_actionAdd_RenderWidget_triggered()
 {
-    createNewRenderWidger();
+    createNewRenderWidget();
 }
 
 std::shared_ptr<RenderWidget> MainWindow::getWorkingRenderer(){
@@ -218,7 +233,7 @@ void MainWindow::on_actionRegistration_Widget_triggered()
 
 void MainWindow::on_actionNewRenderer_triggered()
 {
-    createNewRenderWidger();
+    createNewRenderWidget();
 }
 
 void MainWindow::on_actionRegistration_triggered()
