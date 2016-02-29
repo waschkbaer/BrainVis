@@ -119,6 +119,14 @@ void OpenGLWidget::mouseReleaseEvent (QMouseEvent * event ){
         mouseMoveEvent(event);
         oldPos.x = -1;
         oldPos.y = -1;
+
+
+        if(ModiSingleton::getInstance().getActiveModeRightClick() == Mode::VolumePicking){
+            GLMutex::getInstance().lockContext();
+            makeCurrent();
+            _renderer->PickPixel(Vec2ui(event->pos().x(),event->pos().y()));
+            GLMutex::getInstance().unlockContext();
+        }
     }
 
 }
@@ -161,9 +169,6 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
             updateTF((float)event->pos().x(),(float)event->pos().y(),(float)width(),(float)height());
 
         //volume picking active
-        }else if(ModiSingleton::getInstance().getActiveModeRightClick() == Mode::VolumePicking){
-            std::cout << "renderer: " << rendererID() <<std::endl;
-            _renderer->PickPixel(Vec2ui(event->pos().x(),event->pos().y()));
         }
         oldPos.x = event->pos().x();
         oldPos.y = event->pos().y();

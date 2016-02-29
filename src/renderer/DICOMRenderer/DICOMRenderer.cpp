@@ -1226,9 +1226,9 @@ void DICOMRenderer::updateTransferFunction(){
 
 void DICOMRenderer::PickPixel(Vec2ui coord){
     std::cout << "picking << "<<coord<<std::endl;
-    Tuvok::Renderer::Context::ContextMutex::getInstance().lockContext();
+
     Vec4ui8 data(255,255,255,255);
-    Vec4f VolumePos;
+    Vec3f VolumePos;
 
     _targetBinder->Unbind();
 
@@ -1237,20 +1237,21 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
 
     screenshot(0);
 
-    glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGB32F, GL_FLOAT, (GLvoid*)&VolumePos);
+    std::cout << "winy "<< _windowSize.y << std::endl;
+    glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&data);
 
 
 
-    //if(data.x != 0 && data.y != 0 && data.z != 0){
-        //VolumePos = Vec4f((float)data.x/255.0f,(float)data.y/255.0f,(float)data.z/255.0f,(float)data.w/255.0f);
-        std::cout << VolumePos << std::endl;
+    if(data.x != 0 && data.y != 0 && data.z != 0){
+        VolumePos.x = (float)data.x/255.0f;
+        VolumePos.y = (float)data.y/255.0f;
+        VolumePos.z = (float)data.z/255.0f;
+    }
 
-    //}
+
+    _data->setSelectedSlices(VolumePos);
 
 
-    //_data->setSelectedSlices(Vec3f(VolumePos.x,VolumePos.y,VolumePos.z));
-
-    Tuvok::Renderer::Context::ContextMutex::getInstance().unlockContext();
 }
 
 
