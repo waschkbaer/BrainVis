@@ -38,6 +38,7 @@ private:
 
 private:
     Vec2ui                          _windowSize;
+    Vec2ui                          _windowSizeReal;
     std::vector<Core::Math::Mat4f>  _matrices;
     uint32_t                        _ctHandle;
     uint32_t                        _mrHandle;

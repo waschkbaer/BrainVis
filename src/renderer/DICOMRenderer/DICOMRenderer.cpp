@@ -1230,7 +1230,6 @@ void DICOMRenderer::updateTransferFunction(){
 
 
 void DICOMRenderer::PickPixel(Vec2ui coord){
-    std::cout << "picking << "<<coord<<std::endl;
 
     Vec4ui8 data(255,255,255,255);
     Vec3f VolumePos;
@@ -1240,12 +1239,7 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
     _targetBinder->Bind(_rayCastPositionCT);
     glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
 
-    screenshot(0);
-
-    std::cout << "winy "<< _windowSize.y << std::endl;
     glReadPixels(coord.x, _windowSize.y - coord.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)&data);
-
-
 
     if(data.x != 0 && data.y != 0 && data.z != 0){
         VolumePos.x = (float)data.x/255.0f;
@@ -1455,9 +1449,7 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
     _frameSearchShader->Set("maxBox",maxBox);
     _frameSearchShader->Disable();
 
-    //std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
     while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
-        std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
         //render slide
         foundData = false;
         _data->setSelectedSlices(currentSlide);
@@ -1471,9 +1463,6 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
         glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
         glReadPixels(0, 0, width, height, GL_RGBA, GL_FLOAT, (GLvoid*)&(framebuffer[0]));
 
-        glViewport(0,0,width,height);
-        screenshot(sc++);
-        glViewport(0,0,_windowSize.x,_windowSize.y);
         for(int i = 0; i < framebuffer.size();++i){
             if(framebuffer[i].x == 0.0f && framebuffer[i].y == 0.0f && framebuffer[i].z == 0.0f){
 
@@ -1484,15 +1473,13 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
             }
         }
         if(foundData || !foundStart){
-            //std::cout << "[DICOMRenderer] going to next slide elements found : "<< frameData.size() <<std::endl;
-            currentSlide.x += stepX*0.5f;
+             currentSlide.x += stepX*0.5f;
         }else{
             foundEnd = true;
         }
 
         _targetBinder->Unbind();
     }
-    //std::cout << "[DICOMRenderer] will end search "<<currentSlide <<std::endl;
 
     return frameData;
 }

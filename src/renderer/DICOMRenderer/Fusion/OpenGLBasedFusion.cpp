@@ -2,9 +2,11 @@
 
 using namespace std;
 
+
 OpenGLFusion::OpenGLFusion(std::shared_ptr<DataHandle> d, Vec2ui WindowResolution, uint32_t CTTextureHandle, uint32_t MRTextureHandle):
 iFusion(d),
 _windowSize(Vec2ui(0,0)),
+_windowSizeReal(Vec2ui(0,0)),
 _ctHandle(CTTextureHandle),
 _mrHandle(MRTextureHandle){
     init(WindowResolution);
@@ -87,7 +89,6 @@ int32_t OpenGLFusion::executeFusionStep(){
     return -1.0f; // -1 finish
 }
 
-
 std::vector<float> OpenGLFusion::doGD(){
     //render entry of CT
 
@@ -102,8 +103,11 @@ std::vector<float> OpenGLFusion::doGD(){
     std::vector<Vec4f>              dataBuffer3;
     std::vector<Vec4f>              dataBuffer4;
     std::vector<Vec4f>              dataBuffer5;
+    Core::Math::Vec2ui              realWindowSize;
+
 
     //initialization
+    glViewport(0,0,_windowSize.x,_windowSize.y);
     ortho.Ortho(-(int32_t)_windowSize.x/2,(int32_t)_windowSize.x/2,-(int32_t)_windowSize.y/2,(int32_t)_windowSize.y/2,-5000.0f,5000.0f);
     view.BuildLookAt(Vec3f(0,200,0),Vec3f(0,0,0),Vec3f(0,0,-1));
     values.resize(_matrices.size());
@@ -214,6 +218,8 @@ std::vector<float> OpenGLFusion::doGD(){
             values[12] += dataBuffer5[x].x;
         }
     }
+
+    glViewport(0,0,_windowSizeReal.x,_windowSizeReal.y);
     return values;
 }
 
@@ -255,8 +261,9 @@ bool OpenGLFusion::init(Core::Math::Vec2ui resolution){
 
 
     //create framebuffer objects
-    if(_windowSize.x !=  resolution.x || _windowSize.y != resolution.y){
-       _windowSize = resolution;
+    if(_windowSizeReal.x !=  resolution.x || _windowSizeReal.y != resolution.y){
+       _windowSizeReal = resolution;
+       _windowSize = Vec2ui(250,250);
        _rayEntryBuffer = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
        _raySubBuffer1  = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
        _raySubBuffer2  = std::make_shared<GLFBOTex>(GL_NEAREST, GL_NEAREST, GL_CLAMP, _windowSize.x, _windowSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, true, 1);
