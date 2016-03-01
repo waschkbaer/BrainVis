@@ -64,6 +64,7 @@ class DICOMRenderer{
 
         //switches rendermode (3D, Axis slices etc)
         void SetRenderMode(const RenderMode& mode);
+        RenderMode getRenderMode() const {return _activeRenderMode;}
 
         //resizes the framebuffer and all members which have to be recreated
         //after resize

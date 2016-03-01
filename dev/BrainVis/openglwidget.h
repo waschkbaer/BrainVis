@@ -82,21 +82,21 @@ public:
     void setClipMode(DICOMClipMode mode);
 
 private:
-    std::shared_ptr<DICOMRenderer>  _renderer;
-    std::shared_ptr<DataHandle>     _data;
-    QTimer*                         _timer;
+    std::shared_ptr<DICOMRenderer>      _renderer;
+    std::shared_ptr<DataHandle>         _data;
+    QTimer*                             _timer;
 
-    std::unique_ptr<FontImagePainter> _fontImage;
+    std::unique_ptr<FontImagePainter>   _fontImage;
 
-    Core::Math::Vec2ui                _windowSize;
+    Core::Math::Vec2ui                  _windowSize;
 
-    bool                            _leftMouseDown;
-    bool                            _rightMouseDown;
+    bool                                _leftMouseDown;
+    bool                                _rightMouseDown;
 
-    bool                            _scrollMode;
-    bool                            _initDone;
+    bool                                _scrollMode;
+    bool                                _initDone;
 
-    int                             _rendererID;
+    int                                 _rendererID;
 signals:
 
 public slots:

@@ -38,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
     _renderIDCounter(0)
 {
     ui->setupUi(this);
-    showMaximized();
     ui->centralWidget->setStyleSheet("background-color: #8D9294;");
 
     ui->actionMove->setChecked(false);

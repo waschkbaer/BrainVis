@@ -5,7 +5,8 @@ enum Mode{
     TFEditor = 0,
     CameraMovement,
     CameraRotation,
-    VolumePicking
+    VolumePicking,
+    TwoDScroll
 };
 
 

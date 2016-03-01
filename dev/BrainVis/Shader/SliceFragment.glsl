@@ -72,6 +72,6 @@ void main(void)
       viewPos = viewFragmentMatrix*viewPos;
                 
       outputColor = vec4(value,value,value,viewPos.z);
-      outputPosition = vec4(viewPos.xyz,viewPos.z);
+      outputPosition = vec4(texturePos.xyz,viewPos.z);
   }
 }

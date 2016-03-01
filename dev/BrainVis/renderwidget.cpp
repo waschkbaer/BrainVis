@@ -40,10 +40,10 @@ RenderWidget::RenderWidget(std::shared_ptr<DataHandle> data,
 
     DicomRenderManager::getInstance().getRenderer(renderID)->SetRenderMode(mode);
     switch(mode){
-        case RenderMode::ThreeDMode :  ui->ThreeD->setEnabled(false);break;
-        case RenderMode::XAxis      :  ui->XAxis->setEnabled(false);break;
-        case RenderMode::YAxis      :  ui->YAxis->setEnabled(false);break;
-        case RenderMode::ZAxis      :  ui->ZAxis->setEnabled(false);break;
+        case RenderMode::ThreeDMode :  ui->ThreeD->setEnabled(false);this->setWindowTitle("3d View");break;
+        case RenderMode::XAxis      :  ui->XAxis->setEnabled(false);this->setWindowTitle("Sagittal View");break;
+        case RenderMode::YAxis      :  ui->YAxis->setEnabled(false);this->setWindowTitle("Coronal View");break;
+        case RenderMode::ZAxis      :  ui->ZAxis->setEnabled(false);this->setWindowTitle("Axial View");break;
     }
 }
 
@@ -65,6 +65,7 @@ void RenderWidget::on_ThreeD_clicked()
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(true);
     ui->ThreeD->setEnabled(false);
+    this->setWindowTitle("3d View");
 }
 
 void RenderWidget::on_ZAxis_clicked()
@@ -75,6 +76,7 @@ void RenderWidget::on_ZAxis_clicked()
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(false);
     ui->ThreeD->setEnabled(true);
+    this->setWindowTitle("Axial View");
 }
 
 void RenderWidget::on_XAxis_clicked()
@@ -85,6 +87,7 @@ void RenderWidget::on_XAxis_clicked()
     ui->YAxis->setEnabled(true);
     ui->ZAxis->setEnabled(true);
     ui->ThreeD->setEnabled(true);
+    this->setWindowTitle("Sagittal View");
 }
 
 void RenderWidget::on_YAxis_clicked()
@@ -95,6 +98,9 @@ void RenderWidget::on_YAxis_clicked()
     ui->YAxis->setEnabled(false);
     ui->ZAxis->setEnabled(true);
     ui->ThreeD->setEnabled(true);
+    this->setWindowTitle("Coronal View");
+
+
 }
 bool RenderWidget::isValid() const
 {
@@ -109,100 +115,6 @@ int RenderWidget::renderID() const
 
 void RenderWidget::keyPressEvent(QKeyEvent *event){
     ActivityManager::getInstance().setActiveRenderer(_renderID);
-    if(event->key() == Qt::Key_R){
-        ModiSingleton::getInstance().setActiveModeLeftClick(Mode::CameraRotation);
-    }
-    if(event->key() == Qt::Key_M){
-        ModiSingleton::getInstance().setActiveModeLeftClick(Mode::CameraMovement);
-    }
-    if(event->key() == Qt::Key_T){
-        std::cout << "mode: tfeditor" << std::endl;
-        ModiSingleton::getInstance().setActiveModeRightClick(Mode::TFEditor);
-    }
-    if(event->key() == Qt::Key_P){
-        std::cout << "mode: picking" << std::endl;
-        ModiSingleton::getInstance().setActiveModeRightClick(Mode::VolumePicking);
-    }
-
-    //manual move
-    if(event->key() == Qt::Key_1){
-        Vec3f o = _data->getMROffset();
-        o.z -= 0.1f;
-        _data->setMROffset(o);
-    }
-    if(event->key() == Qt::Key_2){
-        Vec3f o = _data->getMROffset();
-        o.z += 0.1f;
-        _data->setMROffset(o);
-    }
-
-    if(event->key() == Qt::Key_3){
-        Vec3f o = _data->getMROffset();
-        o.x -= 0.1f;
-        _data->setMROffset(o);
-    }
-    if(event->key() == Qt::Key_4){
-        Vec3f o = _data->getMROffset();
-        o.x += 0.1f;
-        _data->setMROffset(o);
-    }
-
-    if(event->key() == Qt::Key_5){
-        Vec3f o = _data->getMROffset();
-        o.y -= 0.1f;
-        _data->setMROffset(o);
-    }
-    if(event->key() == Qt::Key_6){
-        Vec3f o = _data->getMROffset();
-        o.y += 0.1f;
-        _data->setMROffset(o);
-    }
-
-    //manual rot
-    if(event->key() == Qt::Key_Y){
-        Vec3f o = _data->getMRRotation();
-        o.z -= 0.01f;
-        _data->setMRRotation(o);
-    }
-    if(event->key() == Qt::Key_X){
-        Vec3f o = _data->getMRRotation();
-        o.z += 0.01f;
-        _data->setMRRotation(o);
-    }
-
-    if(event->key() == Qt::Key_C){
-        Vec3f o = _data->getMRRotation();
-        o.x -= 0.01f;
-        _data->setMRRotation(o);
-    }
-    if(event->key() == Qt::Key_V){
-        Vec3f o = _data->getMRRotation();
-        o.x += 0.01f;
-        _data->setMRRotation(o);
-    }
-
-    if(event->key() == Qt::Key_B){
-        Vec3f o = _data->getMRRotation();
-        o.y -= 0.01f;
-        _data->setMRRotation(o);
-    }
-    if(event->key() == Qt::Key_N){
-        Vec3f o = _data->getMRRotation();
-        o.y += 0.01f;
-        _data->setMRRotation(o);
-    }
-    if(event->key() == Qt::Key_A){
-        _data->setMRRotation(Vec3f(0,0,0));
-    }
-    if(event->key() == Qt::Key_Q){
-        _data->setMROffset(Vec3f(0,0,0));
-    }
-    if(event->key() == Qt::Key_W){
-        _data->setMRCTBlend(_data->getMRCTBlend()+0.05f);
-    }
-    if(event->key() == Qt::Key_S){
-        _data->setMRCTBlend(_data->getMRCTBlend()-0.05f);
-    }
     if(event->key() == Qt::Key_Alt){
         ui->openGLWidget->switchScrollMode();
     }

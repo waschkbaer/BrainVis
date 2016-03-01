@@ -17,20 +17,25 @@
 using namespace BrainVis;
 using namespace Tuvok::Renderer;
 
+static float TwoDScrollWidthPercent = 0.1f;
+
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      _leftMouseDown(false),
-      _rightMouseDown(false),
-      _windowSize(0,0),
-      _scrollMode(false),
-      _rendererID(-1),
-      _renderer(nullptr),
+        _leftMouseDown(false),
+        _rightMouseDown(false),
+        _windowSize(0,0),
+        _scrollMode(false),
+        _rendererID(-1),
+        _renderer(nullptr),
         _initDone(false)
 {
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(update()));
     _timer->start(16);
     installEventFilter(this);
+
+    setAttribute(Qt::WA_Hover);
+    setMouseTracking(true);
 }
 
 OpenGLWidget::~OpenGLWidget()
@@ -103,10 +108,23 @@ void OpenGLWidget::paintGL(){
 Vec2i oldPos(-1,-1);
 void OpenGLWidget::mousePressEvent(QMouseEvent * event ){
     if(event->button() == Qt::LeftButton){
-        _leftMouseDown=true;
-        mouseMoveEvent(event);
+        if(_renderer->getRenderMode() != RenderMode::ThreeDMode){
+            if((float)event->pos().x()/(float)this->width() < TwoDScrollWidthPercent){
+                _leftMouseDown=true;
+                mouseMoveEvent(event);
+            }else{
+                GLMutex::getInstance().lockContext();
+                makeCurrent();
+                _renderer->PickPixel(Vec2ui(event->pos().x(),event->pos().y()));
+                GLMutex::getInstance().unlockContext();
+            }
+        }else{
+            _leftMouseDown=true;
+            mouseMoveEvent(event);
+        }
     }else if(event->button() == Qt::RightButton){
         _rightMouseDown=true;
+        mouseMoveEvent(event);
     }
 }
 void OpenGLWidget::mouseReleaseEvent (QMouseEvent * event ){
@@ -119,43 +137,36 @@ void OpenGLWidget::mouseReleaseEvent (QMouseEvent * event ){
         mouseMoveEvent(event);
         oldPos.x = -1;
         oldPos.y = -1;
-
-
-        if(ModiSingleton::getInstance().getActiveModeRightClick() == Mode::VolumePicking){
-            GLMutex::getInstance().lockContext();
-            makeCurrent();
-            _renderer->PickPixel(Vec2ui(event->pos().x(),event->pos().y()));
-            GLMutex::getInstance().unlockContext();
-        }
     }
 
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
+    if( _renderer->getRenderMode() != RenderMode::ThreeDMode &&
+        (float)event->pos().x()/(float)this->width() < TwoDScrollWidthPercent){
+        this->setCursor(Qt::SizeVerCursor);
+    }else{
+        this->setCursor(Qt::ArrowCursor);
+    }
     ActivityManager::getInstance().setActiveRenderer(_rendererID);
     GLMutex::getInstance().lockContext();
     if(_leftMouseDown){
+        if(oldPos.x == -1 && oldPos.y == -1){
+            oldPos.x = event->pos().x();
+            oldPos.y = event->pos().y();
+        }
 
-        //camera movement active
-        if(ModiSingleton::getInstance().getActiveModeLeftClick() == Mode::CameraMovement){
-            if(oldPos.x == -1 && oldPos.y == -1){
-                oldPos.x = event->pos().x();
-                oldPos.y = event->pos().y();
-            }
+        Vec2i delta(event->pos().x()-oldPos.x ,event->pos().y()-oldPos.y);
 
-            Vec2i delta(event->pos().x()-oldPos.x ,event->pos().y()-oldPos.y);
+        if(_renderer->getRenderMode() != RenderMode::ThreeDMode){
+            changeSlide((float)delta.y);
+
+        }else if(ModiSingleton::getInstance().getActiveModeLeftClick() == Mode::CameraMovement){
             _renderer->moveCamera(Vec3f(-delta.x*0.01f,delta.y*0.01f,0));
-
-        //camera rotation active
+            this->setCursor(Qt::SizeAllCursor);
         }else if(ModiSingleton::getInstance().getActiveModeLeftClick() == Mode::CameraRotation){
-            if(oldPos.x == -1 && oldPos.y == -1){
-                oldPos.x = event->pos().x();
-                oldPos.y = event->pos().y();
-            }
-
-            Vec2i delta(event->pos().x()-oldPos.x ,event->pos().y()-oldPos.y);
             _renderer->rotateCamera(Vec3f(delta.y*0.5f,delta.x*0.5f,0));
-
+            this->setCursor(Qt::SizeAllCursor);
         }
         oldPos.x = event->pos().x();
         oldPos.y = event->pos().y();
@@ -167,7 +178,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event){
         if(ModiSingleton::getInstance().getActiveModeRightClick() == Mode::TFEditor){
 
             updateTF((float)event->pos().x(),(float)event->pos().y(),(float)width(),(float)height());
-
+            this->setCursor(Qt::SplitHCursor);
         //volume picking active
         }
         oldPos.x = event->pos().x();
