@@ -316,6 +316,11 @@ void DICOMRenderer::Paint(){
             generateLeftFrameBoundingBox(_data->getLeftFBBCenter()-volumeOffset,_data->getLeftFBBScale());
             generateRightFrameBoundingBox(_data->getRightFBBCenter()-volumeOffset,_data->getRightFBBScale());
         }
+        // this has to be done if the frame was found
+        if(_data->getBFoundCTFrame()){
+            createFrameGeometry(_data->getLeftMarker(),0);
+            createFrameGeometry(_data->getRightMarker(),1);
+        }
 
         if(_activeRenderMode == ThreeDMode){
             RayCast();
@@ -1254,7 +1259,7 @@ void DICOMRenderer::PickPixel(Vec2ui coord){
 
 }
 
-
+int sc = 0;
 void DICOMRenderer::renderFramePosition(){
     Mat4f oldProjectionMatrix = _projection;
     Mat4f oldViewMatrix = _view;
@@ -1262,9 +1267,12 @@ void DICOMRenderer::renderFramePosition(){
     RenderMode current = _activeRenderMode;
 
     _activeRenderMode = RenderMode::XAxis;
+    int width = 250;
+    int height = 250;
 
-    _projection.Ortho(-(int32_t)_windowSize.x/2*_vZoom.x,(int32_t)_windowSize.x/2*_vZoom.x,-(int32_t)_windowSize.y/2*_vZoom.x,(int32_t)_windowSize.y/2*_vZoom.x,-5000.0f,5000.0f);
+    _projection.Ortho(-(float)width/2*_vZoom.x,(float)width/2*_vZoom.x,-(float)height/2*_vZoom.x,(float)height/2*_vZoom.x,-5000.0f,5000.0f);
     _view.BuildLookAt(Vec3f(300,0,0),Vec3f(0,0,0),Vec3f(0,0,1));
+    glViewport(0,0,width,height);
 
     float stepsize = 0;
     stepsize = _data->getCTScale().x*2;
@@ -1285,7 +1293,7 @@ void DICOMRenderer::renderFramePosition(){
                         stepsize);
 
 
-
+    glViewport(0,0,_windowSize.x,_windowSize.y);
     _projection = oldProjectionMatrix;
     _view = oldViewMatrix;
     _clipMode = oldClipMode;
@@ -1436,7 +1444,10 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
     std::vector<Vec4f> framebuffer;
     Vec3f currentSlide = Vec3f(startX,0.5,0.5);
 
-    framebuffer.resize(_windowSize.x*_windowSize.y);
+    int width = 250;
+    int height = 250;
+
+    framebuffer.resize(width*height);
 
 
     _frameSearchShader->Enable();
@@ -1446,7 +1457,7 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
 
     //std::cout << "[DICOMRenderer]  start frameloop"<<std::endl;
     while(!foundEnd && currentSlide.x >= 0.0f && currentSlide.x <= 1.0f){
-        //std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
+        std::cout <<"[DICOMRenderer] "<< currentSlide << std::endl;
         //render slide
         foundData = false;
         _data->setSelectedSlices(currentSlide);
@@ -1458,9 +1469,11 @@ std::vector<Vec3f> DICOMRenderer::findFrame(float startX, float stepX, Vec2f ran
         _targetBinder->Bind(_rayCastColorCT);
 
         glReadBuffer((GLenum)GL_COLOR_ATTACHMENT0);
-        glReadPixels(0, 0, _windowSize.x, _windowSize.y, GL_RGBA, GL_FLOAT, (GLvoid*)&(framebuffer[0]));
+        glReadPixels(0, 0, width, height, GL_RGBA, GL_FLOAT, (GLvoid*)&(framebuffer[0]));
 
-
+        glViewport(0,0,width,height);
+        screenshot(sc++);
+        glViewport(0,0,_windowSize.x,_windowSize.y);
         for(int i = 0; i < framebuffer.size();++i){
             if(framebuffer[i].x == 0.0f && framebuffer[i].y == 0.0f && framebuffer[i].z == 0.0f){
 
