@@ -61,7 +61,6 @@ SET(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".so" ".dll" ".a")
 find_package(Qt5Widgets REQUIRED)  
 find_package(Qt5OpenGL  REQUIRED)  
 find_package(FFTW)
-find_package(CUDA REQUIRED)  
 
 #turn on using solution folders
 #todo verify if needed
