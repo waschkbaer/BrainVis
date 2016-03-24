@@ -35,7 +35,11 @@ DataHandle::DataHandle():
 
 void DataHandle::loadMRData(const std::string& path)
 {
-    _MRVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
+    try{
+        _MRVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
+    }catch(std::exception &e){
+        throw e;
+    }
     _fMRScalingFactor = 65535.0f/_MRVolume->getHistogram().size();
 
 
@@ -54,7 +58,11 @@ void DataHandle::loadMRData(const std::string& path)
 
 void DataHandle::loadCTData(const std::string& path)
 {
-    _CTVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
+    try{
+        _CTVolume = std::unique_ptr<DicomVolume>(new DicomVolume(path));
+    }catch(std::exception &e){
+        throw e;
+    }
     _fCTScalingFactor = 65535.0f/_CTVolume->getHistogram().size();
 
     _CTScale.x = _CTVolume->getAspectRatio().x * _CTVolume->getDimensions().x;

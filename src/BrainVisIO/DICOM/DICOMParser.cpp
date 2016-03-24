@@ -131,12 +131,7 @@ void DICOMParser::GetDirInfo(string  strDirectory) {
     bool bFoundMatch = false;
     for (size_t j = 0; j<m_FileStacks.size(); j++) {
       if (((DICOMStackInfo*)m_FileStacks[j])->Match(&fileInfos[i])) {
-        //IVDA_MESSAGEV("found match at %u(%s), dropping %u(%s) out.",
-        //        static_cast<unsigned>(j), m_FileStacks[j]->m_strDesc.c_str(),
-        //        static_cast<unsigned>(i), fileInfos[i].m_strDesc.c_str());
-        
-        //std::cout << "found match at "<< static_cast<unsigned>(j) <<"("<< m_FileStacks[j]->m_strDesc.c_str() <<"), dropping "<< static_cast<unsigned>(i) <<"("<< fileInfos[i].m_strDesc.c_str() <<") out." << std::endl;
-        
+
         bFoundMatch = true;
         break;
       }

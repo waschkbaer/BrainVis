@@ -112,6 +112,9 @@ void MERTool::on_loadButton_clicked()
     dialog.setOption(QFileDialog::ShowDirsOnly);
     QString directory = dialog.getExistingDirectory();
 
+    if(directory.toStdString().size() < 3){
+        return;
+    }
     std::vector<std::string> p = mocca::splitString<std::string>(directory.toStdString(),'/');
 
     std::shared_ptr<BrainVisIO::MERData::MERBundle> bunlde = BrainVisIO::MERData::MERFileManager::getInstance().openFolder(directory.toStdString());

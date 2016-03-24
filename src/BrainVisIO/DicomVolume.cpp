@@ -1,9 +1,11 @@
 #include "DicomVolume.h"
-
+#include <exception>
 
 DicomVolume::DicomVolume(const std::string& path)
 {
-  initData(path);
+  if(!initData(path)){
+      throw std::exception("could not init data");
+  }
 };
 DicomVolume::DicomVolume(const std::string& rawFile,const std::string& metaFile){ };
 DicomVolume::~DicomVolume(){ };

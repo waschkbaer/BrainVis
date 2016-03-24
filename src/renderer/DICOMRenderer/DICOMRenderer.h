@@ -1,5 +1,5 @@
-#ifndef __TNG__DICOMRENDERER__
-#define __TNG__DICOMRENDERER__
+#ifndef __DICOMRENDERER
+#define __DICOMRENDERER
 
 //used Trinity-renderer classes
 #include <renderer/ShaderDescriptor.h>

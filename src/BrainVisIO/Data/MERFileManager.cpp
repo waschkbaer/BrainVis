@@ -52,7 +52,9 @@ const std::shared_ptr<MERBundle> MERFileManager::openFolder(const std::string& f
 
                     file.close();
                   }
-                  else std::cout << "Unable to open file" << std::endl;
+                  else{
+                    //std::cout << "Unable to open file" << std::endl;
+                  }
             }
         }
 

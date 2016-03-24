@@ -45,6 +45,7 @@ private:
   Core::Math::Vec3f     m_vAspectRatio;
 
   DICOMParser           m_DicomParser;
+  bool                  m_bCorrectData;
 };
 
 

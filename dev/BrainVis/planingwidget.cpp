@@ -75,16 +75,19 @@ void PlaningWidget::on_Start_clicked()
     std::string ct = dataHandle->getCTPath();
     std::string mr = dataHandle->getMRPath();
 
-    if(dataHandle->getCTPath().size() > 1){
-        dataHandle->loadCTData(ct);
+    try{
+        if(dataHandle->getCTPath().size() > 1){
+            dataHandle->loadCTData(ct);
+        }
+        if(dataHandle->getMRPath().size() > 1){
+            dataHandle->loadMRData(mr);
+        }
+    }catch(std::exception &e){
+        DataHandleManager::getInstance().deleteDataHandle(handle);
+        this->close();
+        return;
     }
-
-    if(dataHandle->getMRPath().size() > 1){
-        dataHandle->loadMRData(mr);
-    }
-
     w->setDataHandle(dataHandle);
-
 
     w->createNewRenderWidget(RenderMode::YAxis, dockMode::center);
     w->createNewRenderWidget(RenderMode::XAxis, dockMode::bottom);
