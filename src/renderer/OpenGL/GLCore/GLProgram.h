@@ -9,7 +9,7 @@
 #ifndef __TNG__GLProgram__
 #define __TNG__GLProgram__
 
-#include <renderer/OpenGL/OpenGLDefines.h>
+#include <renderer/openGL/OpenGLDefines.h>
 #include <core/Math/Vectors.h>
 #include <string>
 #include <map>

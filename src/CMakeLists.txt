@@ -7,10 +7,8 @@ include_directories(
 					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/
 					${BRAINVIS_ROOT_DIR}/ext/ghoul/include/ghoul/)
 
-#add_subdirectory(CudaIO)
-add_subdirectory(renderer)
-add_subdirectory(BrainVisIO)
-add_subdirectory(core)
+
+
 
 
 ########## Ghoul Objects +++++++++++>
@@ -28,7 +26,10 @@ add_library(ghoul ${GHOUL_SOURCE} ${GHOUL_HEADER})
 INCLUDE_DIRECTORIES(${BRAINVIS_ROOT_DIR}/src)
 INCLUDE_DIRECTORIES(${BRAINVIS_ROOT_DIR}/src/mocca/include)
 
-# level 0 modules
+#ADD_SUBDIRECTORY(CudaIO)
+ADD_SUBDIRECTORY(renderer)
+ADD_SUBDIRECTORY(io)
+ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(mocca)
 ADD_SUBDIRECTORY(mui)
-
+ADD_SUBDIRECTORY(brainVis)

@@ -9,7 +9,7 @@
 #include "GLProgram.h"
 #include "GLTexture.h"
 
-#include <renderer/ShaderDescriptor.h>
+#include <renderer/tools/ShaderDescriptor.h>
 
 #include <iostream>
 #include <cstdio>

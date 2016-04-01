@@ -10,7 +10,7 @@
 #define __TNG__GLFrameBuffer__
 
 #include <core/Math/Vectors.h>
-#include <renderer/OpenGL/OpenGLDefines.h>
+#include <renderer/openGL/OpenGLDefines.h>
 
 namespace Tuvok{
   namespace Renderer{

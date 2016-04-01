@@ -7,8 +7,8 @@
 //
 
 #include "GLVolume3DTex.h"
-#include <renderer/OpenGL/GLCore/GLTexture3D.h>
-#include <renderer/OpenGL/GLCore/GLProgram.h>
+#include <renderer/openGL/GLCore/GLTexture3D.h>
+#include <renderer/openGL/GLCore/GLProgram.h>
 
 using namespace Tuvok::Renderer::OpenGL::GLVolume;
 using namespace Tuvok::Renderer::OpenGL::GLCore;

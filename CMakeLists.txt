@@ -98,4 +98,3 @@ endif(WIN32)
 
 add_subdirectory(src)
 add_subdirectory(ext)
-add_subdirectory(dev)

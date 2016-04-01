@@ -1,30 +1,24 @@
 file(GLOB REND2_SOURCE   *.cpp
-			OpenGL/*.cpp
-			NetworkRenderer/*.cpp
-			DICOMRenderer/*.cpp
-			DICOMRenderer/Fusion/*.cpp
-                        OpenGL/GLCore/*.cpp
-                        OpenGL/GLVolume/*.cpp
-                        Context/*.cpp
-						Service/*.cpp)
+			openGL/*.cpp
+			fusion/*.cpp
+                        openGL/GLCore/*.cpp
+                        openGL/GLVolume/*.cpp
+			tools/*.cpp)
 file(GLOB REND2_HEADER   *.h
-                        OpenGL/*.h
-			NetworkRenderer/*.h
-			DICOMRenderer/*.h
-			DICOMRenderer/Fusion/*.h
-                        OpenGL/GLCore/*.h
-                        OpenGL/GLVolume/*.h
-                        Context/*.h
-			Service/*.h)
+                        openGL/*.h
+			fusion/*.h
+                        openGL/GLCore/*.h
+                        openGL/GLVolume/*.h
+			tools/*.h)
 file(GLOB REND2_SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Shader/*.glsl)
 
 option(ADD_CUDA_SUPPORT "adds cuda classes" off)
 
-if (TRINITY_BUILD_FRONTEND)
+if (ADD_CUDA_SUPPORT)
 	find_package(CUDA REQUIRED)  
 
 	set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})  
-	cuda_compile(CUDA_OBJECTS C:/Users/andre/Documents/BrainVis/src/renderer/DICOMRenderer/Fusion/CudaKernel.cu)  
+	cuda_compile(CUDA_OBJECTS C:/Users/andre/Documents/BrainVis/src/renderer/Fusion/CudaKernel.cu)  
 endif()
 
 add_definitions(-DGLEW_STATIC)
@@ -38,7 +32,7 @@ target_link_libraries (Renderer BRAINVISIO)
 target_link_libraries (Renderer glew)
 target_link_libraries (Renderer ghoul)
 
-if (TRINITY_BUILD_FRONTEND)
+if (ADD_CUDA_SUPPORT)
 	target_link_libraries (Renderer ${CUDA_LIBRARIES}) 
 
 	CUDA_ADD_CUBLAS_TO_TARGET (Renderer)

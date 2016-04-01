@@ -40,7 +40,7 @@
 #define TUVOK_GLTEXTURE_H
 
 #include <core/StdDefines.h>
-#include <renderer/OpenGL/OpenGLDefines.h>
+#include <renderer/openGL/OpenGLDefines.h>
 #include <string>
 #include <memory>
 

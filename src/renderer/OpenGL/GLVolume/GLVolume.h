@@ -8,7 +8,7 @@
 
 #ifndef __TNG__GLVolume__
 #define __TNG__GLVolume__
-#include <renderer/OpenGL/OpenGLDefines.h>
+#include <renderer/openGL/OpenGLDefines.h>
 
 namespace Tuvok{
   namespace Renderer{

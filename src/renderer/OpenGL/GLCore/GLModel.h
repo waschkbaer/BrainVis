@@ -9,7 +9,7 @@
 #ifndef __TNG__GLModel__
 #define __TNG__GLModel__
 
-#include <renderer/OpenGL/OpenGLDefines.h>
+#include <renderer/openGL/OpenGLDefines.h>
 #include <core/Math/Vectors.h>
 
 namespace Tuvok{
