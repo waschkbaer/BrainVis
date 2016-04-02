@@ -22,16 +22,14 @@ int                                             device_matrix_count = 0;
 float*                                          device_result = NULL;
 float*                                          device_output = NULL;
 static float                                    sizefaktor = 2.0f;
-static bool                                     volumeInitCT = false;
-static bool                                     volumeInitMR = false;
+int                                             zPowerTwo = 0;
 
 void initCuda(){
     cudaFree(0);
 }
 
 void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT){
-    if(volumeInitMR && !CT) return;
-    if(volumeInitCT && CT) return;
+
     //if i want to use the full size...
     //i have to use a float buffer since CUDA does not support
     //the linear filter on int/short textures :(
@@ -93,7 +91,6 @@ void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT)
         cudaBindTextureToArray(CTtex, d_volumeArray, channelDesc);
         CTmaxValue = max;
         std::cout << "CT TEXTURE VALUE "<< (int)valu << std::endl;
-        volumeInitCT = true;
     }else{
         cudaMalloc3DArray(&d_volumeArrayMR, &channelDesc, extend);
 
@@ -114,9 +111,7 @@ void generateCudaTexture(unsigned short* hostdata, int x, int y, int z, bool CT)
         cudaBindTextureToArray(MRtex, d_volumeArrayMR, channelDesc);
         MRmaxValue = max;
         std::cout << "MR TEXTURE VALUE "<< (int)valu << std::endl;
-        volumeInitMR = true;
     }
-
 }
 
 //DEVICE CODE --------------------------------------------------------
@@ -155,7 +150,7 @@ __global__ void substractCTandMR(float*     result,
     float valueMR = 0.0f;
 
     valueCT = valueCT/CTMax;
-    if(valueCT > 0.5f )valueCT = 0;
+    if(valueCT > 0.6f )valueCT = 0;
 
     ctPosition.x -= 0.5f;
     ctPosition.y -= 0.5f;
@@ -185,7 +180,7 @@ __global__ void substractCTandMR(float*     result,
     subresult = (valueMR-valueCT)*(valueMR-valueCT);
 
     //test use the thread reduction of the block to reduce the global memory acces
-    int tid = threadIdx.z * blockDim.x *blockDim.y + threadIdx.y * blockDim.x + threadIdx.x; // calculate the 1d index
+    /*int tid = threadIdx.z * blockDim.x *blockDim.y + threadIdx.y * blockDim.x + threadIdx.x; // calculate the 1d index
     sdata[tid] = subresult;
 
     __syncthreads();
@@ -198,8 +193,8 @@ __global__ void substractCTandMR(float*     result,
     if(tid == 0){
         index = blockIdx.z * 32 *32 + blockIdx.y * 32+ blockIdx.x;
         result[index] =sdata[0];
-    }
-    //result[index] = subresult;
+    }*/
+    result[index] = subresult;
 }
 
 
@@ -212,12 +207,23 @@ __global__ void reduce(float* g_idata, float* g_odata){
     sdata[tid] = g_idata[i] + g_idata[i+blockDim.x];
     __syncthreads();
     // do reduction in shared mem
-    for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
-    if (tid < s) {
-    sdata[tid] += sdata[tid + s];
+    for (unsigned int s=blockDim.x/2; s>32; s>>=1)
+    {
+        if (tid < s)
+            sdata[tid] += sdata[tid + s];
+        __syncthreads();
     }
-    __syncthreads();
+
+    if (tid < 32)
+    {
+    sdata[tid] += sdata[tid + 32];__syncthreads();
+    sdata[tid] += sdata[tid + 16];__syncthreads();
+    sdata[tid] += sdata[tid + 8];__syncthreads();
+    sdata[tid] += sdata[tid + 4];__syncthreads();
+    sdata[tid] += sdata[tid + 2];__syncthreads();
+    sdata[tid] += sdata[tid + 1];
     }
+
     if(tid == 0){
         g_odata[blockIdx.x] = sdata[0];
     }
@@ -230,28 +236,37 @@ __global__ void reduce(float* g_idata, float* g_odata){
 static int count = 13;
 static std::vector<float> result_vector;
 void initDevice(int x, int y, int z){
+    zPowerTwo = 1;
+    while(std::pow(2,zPowerTwo) < z){
+        zPowerTwo +=1;
+    }
+    zPowerTwo = std::pow(2,zPowerTwo);
+
+
     if(device_result == NULL)
-        cudaMalloc((void**) &device_result, sizeof(float)*x*y*z/512);
+        cudaMalloc((void**) &device_result, sizeof(float)*x*y*zPowerTwo);
 
     if(device_output == NULL)
-        cudaMalloc((void**) &device_output, sizeof(float)*x*y*z/512);
+        cudaMalloc((void**) &device_output, sizeof(float)*x*y*zPowerTwo);
 
     result_vector.resize(count);
 }
 
+float* result = NULL;
 float sumReduce(int x, int y, int z){
-    int arraySize = x*y*z;
+    int arraySize = x*y*zPowerTwo;
     float* temp = NULL;
     const int threads = 512;
+    if(result == NULL)
+        result = new float[threads];
 
     while(arraySize >= threads){
         arraySize = arraySize/threads/2;
-        reduce<<<arraySize,threads>>>(device_result,device_output);
+        reduce<<<arraySize/2,threads>>>(device_result,device_output);
         temp = device_output;
         device_output = device_result;
         device_result = temp;
     }
-    float* result = new float[arraySize];
     cudaMemcpy(&(result[0]), temp, sizeof(float)*arraySize, cudaMemcpyDeviceToHost);
 
     float resultVal = 0;
@@ -283,7 +298,7 @@ const std::vector<float>& step(int x, int y, int z,float* matrix){
                                                         matrix[matInd+1],matrix[matInd+5],matrix[matInd+9],matrix[matInd+13],
                                                         matrix[matInd+2],matrix[matInd+6],matrix[matInd+10],matrix[matInd+14]);
         cudaDeviceSynchronize();
-        result_vector[i] = sumReduce(x/8,y/8,z/8);
+        result_vector[i] = sumReduce(x,y,z);
         cudaDeviceSynchronize();
     }
 
