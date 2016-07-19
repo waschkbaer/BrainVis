@@ -23,6 +23,8 @@ FrameWidget::FrameWidget(QWidget *parent, std::shared_ptr<DataHandle> data) :
     if(data != nullptr){
         setSliders();
     }
+
+    on_setupBoxes_clicked();
 }
 
 FrameWidget::~FrameWidget()
@@ -154,6 +156,28 @@ void FrameWidget::on_pushButton_clicked()
 }
 
 void FrameWidget::closeEvent(QCloseEvent *bar){
+    DicomRenderManager::getInstance().setDisplayFrameDetectionBox(false);
     MainWindow* parent = (MainWindow*)this->parent();
     parent->closeFrameWidget();
+}
+
+void FrameWidget::on_reset_clicked()
+{
+    _data->resetFrame();
+}
+
+void FrameWidget::on_setupBoxes_clicked()
+{
+    if(ui->setupBoxes->isChecked()){
+        DicomRenderManager::getInstance().setDisplayFrameDetectionBox(true);
+        ui->sidebox->setVisible(true);
+        ui->settingsposition->setVisible(true);
+        ui->settingssize->setVisible(true);
+    }else{
+        DicomRenderManager::getInstance().setDisplayFrameDetectionBox(false);
+        ui->sidebox->setVisible(false);
+        ui->settingsposition->setVisible(false);
+        ui->settingssize->setVisible(false);
+    }
+    adjustSize();
 }

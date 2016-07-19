@@ -152,7 +152,7 @@ public:
     const std::vector<uint16_t>& getCTHistogramm();
     const std::vector<uint16_t>& getMRHistogramm();
 
-
+    void resetFrame();
 
     Core::Math::Vec3f getLeftFBBCenter() const;
     void setLeftFBBCenter(const Core::Math::Vec3f &leftFBBCenter);

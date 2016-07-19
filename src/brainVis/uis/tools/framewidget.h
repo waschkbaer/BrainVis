@@ -39,6 +39,10 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_reset_clicked();
+
+    void on_setupBoxes_clicked();
+
 private:
     Ui::FrameWidget *ui;
     std::shared_ptr<DataHandle> _data;

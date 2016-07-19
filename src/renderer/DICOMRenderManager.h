@@ -84,7 +84,7 @@ private:
     _blendValue(0.5f),
     _performanceValue(1.0f),
     _displayFrameShapes(true),
-    _displayFrameDetectionBox(true),
+    _displayFrameDetectionBox(false),
     _displayBoundingBox(true),
     _displayElectrodes(true),
     _orthonormalThreeD(false),

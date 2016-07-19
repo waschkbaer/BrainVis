@@ -101,6 +101,7 @@ bool DicomRenderManager::getDisplayFrameDetectionBox() const
 void DicomRenderManager::setDisplayFrameDetectionBox(bool displayFrameDetectionBox)
 {
     _displayFrameDetectionBox = displayFrameDetectionBox;
+    _renderSettingStatus++;
 }
 bool DicomRenderManager::getDisplayBoundingBox() const
 {

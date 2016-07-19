@@ -410,6 +410,16 @@ void DataHandle::setFCTScalingFactor(float fCTScalingFactor)
     _fCTScalingFactor = fCTScalingFactor;
     incrementStatus();
 }
+
+void DataHandle::resetFrame(){
+    _bFoundCTFrame = false;
+    _leftMarker.empty();
+    _rightMarker.empty();
+    _CTeX = Core::Math::Vec3f(1,0,0);
+    _CTeY = Core::Math::Vec3f(0,1,0);
+    _CTeZ = Core::Math::Vec3f(0,0,1);
+}
+
 bool DataHandle::getBFoundCTFrame() const
 {
     return _bFoundCTFrame;

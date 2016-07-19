@@ -872,7 +872,7 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
 
     //check if we found the G Frame and draws it if found-------------
 
-        if(_NShape1 != nullptr){
+        if(_NShape1 != nullptr && _data->getBFoundCTFrame()){
 
             _lineShader->Set("projectionMatrix",_projection);
             _lineShader->Set("viewMatrix",_view);
@@ -883,7 +883,7 @@ void DICOMRenderer::drawGFrame(std::shared_ptr<GLFBOTex> target){
 
         }
 
-        if(_NShape2 != nullptr){
+        if(_NShape2 != nullptr && _data->getBFoundCTFrame()){
 
             _lineShader->Set("projectionMatrix",_projection);
             _lineShader->Set("viewMatrix",_view);
