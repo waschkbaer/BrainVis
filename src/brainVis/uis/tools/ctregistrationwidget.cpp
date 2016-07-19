@@ -9,6 +9,7 @@
 
 #include "ActivityManager.h"
 #include <renderer/DICOMRenderManager.h>
+#include <stdlib.h>
 
 using namespace BrainVis;
 
@@ -17,7 +18,9 @@ CtRegistrationWidget::CtRegistrationWidget(QWidget *parent, std::shared_ptr<Data
     ui(new Ui::CtRegistrationWidget),
     _data(data),
     _registrationRenderer(nullptr),
-    _fusionMode(FusionMode::OpenGL)
+    _fusionMode(FusionMode::OpenGL),
+    _translation(_data->getMROffset()),
+    _rotation(_data->getMRRotation())
 {
     ui->setupUi(this);
 
@@ -123,18 +126,24 @@ void CtRegistrationWidget::update(){
         ui->registerButton->setEnabled(false);
         ui->resetButton->setEnabled(false);
         this->setWindowTitle(QString("Registration Widget : Registering"));
+
     }else{
         ui->registerButton->setEnabled(true);
         ui->resetButton->setEnabled(true);
         this->setWindowTitle(QString("Registration Widget"));
     }
-    ui->currentTranslationX->setText(QString(std::to_string(_data->getMROffset().x).c_str()));
-    ui->currentTranslationY->setText(QString(std::to_string(_data->getMROffset().y).c_str()));
-    ui->currentTranslationZ->setText(QString(std::to_string(_data->getMROffset().z).c_str()));
 
-    ui->currentRotationX->setText(QString(std::to_string(_data->getMRRotation().x).c_str()));
-    ui->currentRotationY->setText(QString(std::to_string(_data->getMRRotation().y).c_str()));
-    ui->currentRotationZ->setText(QString(std::to_string(_data->getMRRotation().z).c_str()));
+    if(_translation != _data->getMROffset() || _rotation != _data->getMRRotation()){
+        ui->currentTranslationX->setText(QString(std::to_string(_data->getMROffset().x).c_str()));
+        ui->currentTranslationY->setText(QString(std::to_string(_data->getMROffset().y).c_str()));
+        ui->currentTranslationZ->setText(QString(std::to_string(_data->getMROffset().z).c_str()));
+
+        ui->currentRotationX->setText(QString(std::to_string(_data->getMRRotation().x).c_str()));
+        ui->currentRotationY->setText(QString(std::to_string(_data->getMRRotation().y).c_str()));
+        ui->currentRotationZ->setText(QString(std::to_string(_data->getMRRotation().z).c_str()));
+        _translation = _data->getMROffset();
+        _rotation = _data->getMRRotation();
+    }
 }
 
 void CtRegistrationWidget::closeEvent(QCloseEvent *bar){
@@ -157,4 +166,89 @@ _fusionMode = FusionMode::CUDA;
 void CtRegistrationWidget::on_cpuButton_clicked()
 {
 _fusionMode = FusionMode::CPU;
+}
+
+void CtRegistrationWidget::on_currentTranslationX_editingFinished()
+{
+    _translation.x = ui->currentTranslationX->text().toFloat();
+    _data->setMROffset(_translation);
+}
+
+void CtRegistrationWidget::on_currentTranslationY_editingFinished()
+{
+    _translation.y = ui->currentTranslationY->text().toFloat();
+    _data->setMROffset(_translation);
+}
+
+void CtRegistrationWidget::on_currentTranslationZ_editingFinished()
+{
+    _translation.z = ui->currentTranslationZ->text().toFloat();
+    _data->setMROffset(_translation);
+}
+
+void CtRegistrationWidget::on_currentTranslationX_returnPressed()
+{
+    on_currentTranslationX_editingFinished();
+}
+
+void CtRegistrationWidget::on_currentTranslationY_returnPressed()
+{
+    on_currentTranslationY_editingFinished();
+}
+
+void CtRegistrationWidget::on_currentTranslationZ_returnPressed()
+{
+    on_currentTranslationZ_editingFinished();
+}
+
+void CtRegistrationWidget::on_currentRotationX_editingFinished()
+{
+    _rotation.x = ui->currentRotationX->text().toFloat();
+    _data->setMRRotation(_rotation);
+}
+
+void CtRegistrationWidget::on_currentRotationY_editingFinished()
+{
+    _rotation.y = ui->currentRotationY->text().toFloat();
+    _data->setMRRotation(_rotation);
+}
+
+void CtRegistrationWidget::on_currentRotationZ_editingFinished()
+{
+    _rotation.z = ui->currentRotationZ->text().toFloat();
+    _data->setMRRotation(_rotation);
+}
+
+void CtRegistrationWidget::on_currentRotationX_returnPressed()
+{
+    on_currentRotationX_editingFinished();
+}
+
+void CtRegistrationWidget::on_currentRotationY_returnPressed()
+{
+    on_currentRotationY_editingFinished();
+}
+
+void CtRegistrationWidget::on_currentRotationZ_returnPressed()
+{
+    on_currentRotationZ_editingFinished();
+}
+
+void CtRegistrationWidget::on_randombutton_clicked()
+{
+    /* initialize random seed: */
+     srand (time(NULL));
+
+     /* generate random translation between -20 and + 20: */
+     _translation.x = (rand() % 40 + 1)-20;
+     _translation.y = (rand() % 40 + 1)-20;
+     _translation.z = (rand() % 40 + 1)-20;
+
+     /* generate random translation between -0.50 and + 0.50: */
+     _rotation.x = ((float)(rand() % 100 + 1)-50.0f)/100.0f;
+     _rotation.y = ((float)(rand() % 100 + 1)-50.0f)/100.0f;
+     _rotation.z = ((float)(rand() % 100 + 1)-50.0f)/100.0f;
+
+     _data->setMROffset(_translation);
+     _data->setMRRotation(_rotation);
 }

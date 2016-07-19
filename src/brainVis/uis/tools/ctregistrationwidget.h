@@ -4,6 +4,7 @@
 #include <QDockWidget>
 #include <memory>
 #include <renderer/DICOMRendererEnums.h>
+#include <core/Math/Vectors.h>
 
 namespace Ui {
 class CtRegistrationWidget;
@@ -43,6 +44,32 @@ private slots:
 
     void on_cpuButton_clicked();
 
+    void on_currentTranslationX_editingFinished();
+
+    void on_currentTranslationY_editingFinished();
+
+    void on_currentTranslationZ_editingFinished();
+
+    void on_currentTranslationX_returnPressed();
+
+    void on_currentTranslationY_returnPressed();
+
+    void on_currentTranslationZ_returnPressed();
+
+    void on_currentRotationX_editingFinished();
+
+    void on_currentRotationY_editingFinished();
+
+    void on_currentRotationZ_editingFinished();
+
+    void on_currentRotationX_returnPressed();
+
+    void on_currentRotationY_returnPressed();
+
+    void on_currentRotationZ_returnPressed();
+
+    void on_randombutton_clicked();
+
 private:
     Ui::CtRegistrationWidget *ui;
     std::shared_ptr<DataHandle> _data;
@@ -51,6 +78,9 @@ private:
     float _translationScaling;
     float _rotationStep;
     float _rotationScaling;
+
+    Core::Math::Vec3f               _translation;
+    Core::Math::Vec3f               _rotation;
 
     std::shared_ptr<DICOMRenderer>  _registrationRenderer;
     FusionMode                      _fusionMode;
