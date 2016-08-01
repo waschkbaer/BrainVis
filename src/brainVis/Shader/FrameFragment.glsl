@@ -53,6 +53,7 @@ void main(void)
   // fetch ray entry from texture and get ray exit point from vs-shader
   vec3 rayStart = texelFetch(rayStartPoint, screenpos,0).xyz;
   vec3 rayDir = normalview-rayStart;
+  float rayLength = length(rayDir);
   rayDir = rayDir/length(rayDir);
 
   outputColor = vec4(0,0,0,-1000);
@@ -63,8 +64,12 @@ void main(void)
   float value = 0;
   vec4 viewPos = vec4(0,0,0,0);
   bool isCut = false;
+
+  vec3 stepDir = rayDir * stepSize;
+  float stepLength = length(stepDir);
+  float traversedLength = 0;
  
-  for(int i = 0; i < 4000;++i){
+  for(int i = 0; i < 4000 && rayLength > traversedLength;++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
     switch(cutMode){
@@ -97,17 +102,12 @@ void main(void)
             outputColor = vec4(0,0,0,viewPos.z);
           }          
 
-          i = 4000;
+          i = 999999;
           break;
     }
-    texturePos += rayDir/stepSize;
 
-    //early ray termination
-    if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||
-      texturePos.x < 0.0f || texturePos.y < 0.0f || texturePos.z < 0.0f){
-    i = 1000;
-      break;
-    }
+    texturePos += stepDir;
+    traversedLength += stepLength;
   }
   
 }

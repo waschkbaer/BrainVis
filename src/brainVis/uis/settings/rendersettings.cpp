@@ -14,7 +14,7 @@ RenderSettings::RenderSettings(QWidget *parent) :
     ui->displayboundingbox->setChecked(DicomRenderManager::getInstance().getDisplayBoundingBox());
     ui->displayelectrodes->setChecked(DicomRenderManager::getInstance().getDisplayElectrodes());
 
-    ui->performanceslider->setValue((1.0f/DicomRenderManager::getInstance().getPerformanceValue())*1000.0f);
+    ui->performanceslider->setValue((DicomRenderManager::getInstance().getPerformanceValue())*1000.0f);
     ui->blendingslider->setValue(DicomRenderManager::getInstance().getBlendValue()*10000.0f);
 
     setFloating(true);
@@ -52,7 +52,7 @@ void RenderSettings::on_displayelectrodes_clicked()
 
 void RenderSettings::on_performanceslider_valueChanged(int value)
 {
-    DicomRenderManager::getInstance().setPerformanceValue( 1.0f/((float)value/1000.0f)  );
+    DicomRenderManager::getInstance().setPerformanceValue( ((float)value/1000.0f)  );
     DicomRenderManager::getInstance().forceRepaint();
 }
 

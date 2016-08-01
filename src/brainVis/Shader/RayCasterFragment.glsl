@@ -12,7 +12,7 @@ uniform vec3    focusWorldPos = vec3(7.97907,18.9604,-24.2198);
 uniform vec3    cutPlaneNormal = vec3(1,0,0);
 uniform int     cutMode = 1;
 
-uniform float   stepSize = 1.0f;
+uniform float   stepSize = 0.0001f;
 uniform float   isCTImage = 0.0f;
 
 uniform float   MRIValue = 0.0f;
@@ -75,6 +75,7 @@ void main(void)
   // fetch ray entry from texture and get ray exit point from vs-shader
   vec3 rayStart = texelFetch(rayStartPoint, screenpos,0).xyz;
   vec3 rayDir = normalview-rayStart;
+  float rayLength = length(rayDir);
   rayDir = rayDir/length(rayDir);
 
   outputColor = vec4(0,0,0,-1000);
@@ -88,10 +89,11 @@ void main(void)
 
   vec4 targetPos = worldFragmentMatrix*vec4(MRIPosition-vec3(0.5,0.5,0.5),1);
   
+  vec3 stepDir = rayDir * stepSize;
+  float stepLength = length(stepDir);
+  float traversedLength = 0;
 
-  float stepper = 1.0f/1536.0f*stepSize;
-
-  for(int i = 0; i < 4096;++i){
+  for(int i = 0; i < 10000 && rayLength > length(texturePos-rayStart);++i){
     viewPos= worldFragmentMatrix*vec4(texturePos-vec3(0.5,0.5,0.5),1);
 
     switch(cutMode){
@@ -111,25 +113,6 @@ void main(void)
           value *= tfScaling;
           vec4 color =  texture(transferfunction, value);
 
-          //work in progress
-          /*
-          float mrivaluedelta = abs((texture(volume, texturePos).x * 65535.0f)-MRIValue);
-          if(length(abs(targetPos-viewPos)) < 3){
-            if(mrivaluedelta < 5){
-              float col =  1.0f - (mrivaluedelta/5.0f);
-              finalColor.xyz = finalColor.xyz + vec3(col,col,1)*(1.0-finalColor.w)*color.w;
-              finalColor.w = finalColor.w+color.w;
-            }else{
-              if(!isCut){
-                finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
-                finalColor.w = finalColor.w+color.w;
-              }
-            }
-          }else{
-            
-          }*/
-  
-
         finalColor.xyz = finalColor.xyz + vec3(value,value,value)*(1.0-finalColor.w)*color.w;
         finalColor.w = finalColor.w+color.w;
             
@@ -145,18 +128,11 @@ void main(void)
           outputPosition = vec4(texturePos,viewPos.z);
           
           i = 999999;
-          break;
         }
     }
 
-    texturePos += rayDir*stepper;
-
-  	//early ray termination
-  	if(texturePos.x > 1.0f || texturePos.y > 1.0f || texturePos.z > 1.0f ||
-  		texturePos.x < 0.0f || texturePos.y < 0.0f || texturePos.z < 0.0f){
-  	   i = 999999;
-  	   break;
-  	}
+    texturePos += stepDir;
+    traversedLength += stepLength;
   }
   
 }

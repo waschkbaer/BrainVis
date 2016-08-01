@@ -1304,7 +1304,7 @@ void DICOMRenderer::renderFramePosition(){
                         _transferFunctionTex->GetGLID(),
                         _data->getCTTransferScaling(),
                         true,
-                        stepsize);
+                        0.001);
 
 
     glViewport(0,0,_windowSize.x,_windowSize.y);

@@ -82,7 +82,7 @@ private:
     DicomRenderManager():
     _nextRenderID(0),
     _blendValue(0.5f),
-    _performanceValue(1.0f),
+    _performanceValue(0.001f),
     _displayFrameShapes(true),
     _displayFrameDetectionBox(false),
     _displayBoundingBox(true),
