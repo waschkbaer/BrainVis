@@ -100,7 +100,7 @@ bool MERClient::read(){
         try{
             //read some data smaller / equal to macpackagesize
             ByteArray input = _connection->receive(200000);
-            std::cout << "recieved data: " << input.size() << std::endl;
+            //std::cout << "recieved data: " << input.size() << std::endl;
 
             //sanity check : any data ?
             if(input.size() <= 0){
@@ -133,7 +133,7 @@ bool MERClient::read(){
             int nextIndex = _data.size();
             _data.resize(_data.size()+(input.size()));
             memcpy(&(_data[nextIndex]),input.data(),input.size());
-            std::cout << "data size: "<< _data.size() << std::endl;
+            //std::cout << "data size: "<< _data.size() << std::endl;
 
             //find header index and push them to vector // there should be 250 headers!
             std::vector<uint32_t> headerIndex;
@@ -144,7 +144,7 @@ bool MERClient::read(){
                 }
             }
 
-            std::cout << "header found: "<< headerIndex.size()<<std::endl;
+            //std::cout << "header found: "<< headerIndex.size()<<std::endl;
 
             int num_cycle = 0; //what cycle??
             int dataStart = 0;
@@ -174,11 +174,7 @@ bool MERClient::read(){
 
                 DataOffset = NUM_BYTES_PER_CHAN/2;
 
-                if(temp.size() != DataOffset*NUM_CHAN){
-                    cout << "[MERClient] something wrong with your size!"<<std::endl;
-                }
-
-                int32_t value = 0;
+                                int32_t value = 0;
                 //read some channel data
                 for(int j = 0; j < temp.size();j = j+8){
                     if(_electrodeSettings._cen != -1 && cenData != nullptr){
