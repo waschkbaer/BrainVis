@@ -138,4 +138,5 @@ void MEROptions::updateSettings(){
 void MEROptions::on_saveButton_clicked()
 {
     updateSettings();
+    close();
 }

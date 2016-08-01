@@ -114,7 +114,6 @@ void DICOMParser::GetDirInfo(string  strDirectory) {
   // query directory for DICOM files
   for (size_t i = 0;i<files.size();i++) {
     //IVDA_MESSAGEV("Looking for DICOM data in file %s", files[i].c_str());
-    //std::cout << "Looking for DICOM data in file "<< files[i].c_str() << std::endl;
     DICOMFileInfo info;
     if (GetDICOMFileInfo(files[i], info)) {
       fileInfos.push_back(info);
@@ -335,7 +334,6 @@ void DICOMParser::SkipUnusedElement(ifstream& fileDICOM, string& value, const ui
 
 bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
                                    DICOMFileInfo& info) {
-  DICOM_DBG("Processing file %s\n",strFilename.c_str());
 
   LARGE_STAT_BUFFER stat_buf;
 
@@ -349,12 +347,9 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
 
   // check for basic properties
   if (!GetFileStats(strFilename, stat_buf)) {// file must exist
-    //IVDA_MESSAGEV("File '%s' can't be a DICOM -- doesn't exist.",
-    //        strFilename.c_str());
     return false;
   }
   if (stat_buf.st_size < 128+4) { // file has minimum length ?
-    //IVDA_MESSAGEV("File '%s' can't be a DICOM -- too short.", strFilename.c_str());
     return false;
   }
 
@@ -374,7 +369,6 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
   char DICM[4];
   fileDICOM.read(DICM,4);
   if (DICM[0] != 'D' || DICM[1] != 'I' || DICM[2] != 'C' || DICM[3] != 'M') {
-    //IVDA_MESSAGEV("File '%s' does not contain DICM meta header.", strFilename.c_str());
 
     // DICOM supports files without the meta header,
     // in that case you have to guess the parameters
@@ -388,7 +382,6 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
                         iElemLength, bImplicit, bNeedsEndianConversion);
 
     if (iGroupID != 0x08) {
-      //IVDA_MESSAGEV("File '%s' is not a DICM file.", strFilename.c_str());
       return false;
     }
 
@@ -410,7 +403,6 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
       switch (iElementID) {
         case 0x0 : {  // File Meta Elements Group Len
               if (iElemLength != 4) {
-                //IVDA_MESSAGEV("Metaheader length field is invalid.");
                 return false;
               }
               int iMetaHeaderLength;
@@ -430,17 +422,14 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
                 bImplicit = true;
                 bNeedsEndianConversion = IsBigEndian();
                 info.m_bIsBigEndian = false;
-                DICOM_DBG("DICOM file is Implicit VR Little Endian\n");
               } else if (value == "1.2.840.10008.1.2.1") { // Explicit VR Little Endian
                 bImplicit = false;
                 bNeedsEndianConversion = IsBigEndian();
                 info.m_bIsBigEndian = false;
-                DICOM_DBG("DICOM file is Explicit VR Little Endian\n");
               } else if (value == "1.2.840.10008.1.2.2") { // Explicit VR Big Endian
                 bImplicit = false;
                 bNeedsEndianConversion = IsLittleEndian();
                 info.m_bIsBigEndian = true;
-                DICOM_DBG("DICOM file is Explicit VR Big Endian\n");
               } else if (value == "1.2.840.10008.1.2.4.50" ||   // JPEG Baseline            ( untested due to lack of example DICOMs)
                          value == "1.2.840.10008.1.2.4.51" ||   // JPEG Extended            ( untested due to lack of example DICOMs)
                          value == "1.2.840.10008.1.2.4.55" ||   // JPEG Progressive         ( untested due to lack of example DICOMs)
@@ -883,7 +872,6 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename,
 
 
   fileDICOM.close();
-
   return info.m_ivSize.volume() != 0;
 }
 

@@ -15,7 +15,7 @@
 #include <renderer/Fusion/OpenGLBasedFusion.h>
 #include <renderer/Fusion/CPUBasedFusion.h>
 #include <renderer/Fusion/CudaFusion.h>
-#define SUPPORTS_CUDA
+//#define SUPPORTS_CUDA
 
 #ifdef SUPPORTS_CUDA
 #include <renderer/Fusion/CudaKernel.h>

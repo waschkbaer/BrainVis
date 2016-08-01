@@ -1,4 +1,7 @@
 #include <mocca/net/IStreamConnection.h>
+#include <mocca/net/ConnectionFactorySelector.h>
+#include <mocca/net/NetworkError.h>
+#include <mocca/base/Error.h>
 
 #include <memory>
 #include <vector>
@@ -68,4 +71,5 @@ private:
     std::shared_ptr<BrainVisIO::MERData::MERBundle>     _currentBundle;
 
     std::unique_ptr<std::thread>                        _clientThread;
+    std::vector<uint16_t>                               _data;
 };

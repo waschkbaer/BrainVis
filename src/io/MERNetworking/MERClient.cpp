@@ -1,8 +1,6 @@
 #include "MERClient.h"
 
-#include <mocca/net/ConnectionFactorySelector.h>
-#include <mocca/net/NetworkError.h>
-#include <mocca/base/Error.h>
+
 
 #include <iostream>
 #include <fstream>
@@ -101,8 +99,8 @@ bool MERClient::read(){
 
         try{
             //read some data smaller / equal to macpackagesize
-            ByteArray input = _connection->receive(_MAXPACKAGESIZE);
-
+            ByteArray input = _connection->receive(200000);
+            std::cout << "recieved data: " << input.size() << std::endl;
 
             //sanity check : any data ?
             if(input.size() <= 0){
@@ -113,18 +111,18 @@ bool MERClient::read(){
             }
 
             //sanity check : can this be a short array ?
-            if(input.size() % 2 != 0){
+            /*if(input.size() % 2 != 0){
                 cout << "[MERClient] can't be short array: "<< input.size() << endl;
                 return false;
-            }
+            }*/
 
             output += "Packetsize["+std::to_string(input.size())+"] ";
 
             //sanity check : is this the size of a complete totalbyteread package?
-            if(TOTAL_BYTES_READ < input.size()){
+            /*if(TOTAL_BYTES_READ < input.size()){
                 cout << "[MERClient] there should be at least: "<< TOTAL_BYTES_READ << " bytes"<< endl;
                 return false;
-            }
+            }*/
 
             //copy the complete read data into a short vector
             //maybe needs some endianess check
@@ -132,14 +130,21 @@ bool MERClient::read(){
             data.resize(TOTAL_BYTES_READ/2);
             memcpy(&(data[0]),input.data(),TOTAL_BYTES_READ);
 
+            int nextIndex = _data.size();
+            _data.resize(_data.size()+(input.size()));
+            memcpy(&(_data[nextIndex]),input.data(),input.size());
+            std::cout << "data size: "<< _data.size() << std::endl;
+
             //find header index and push them to vector // there should be 250 headers!
             std::vector<uint32_t> headerIndex;
-            for(int i = 0; i < data.size();++i){
-                if(data[i] == 32896 && data[i + 1] == 32639 && data[i + 3] == 256) // 32896 dec = 8080 hex
+            for(int i = 0; i < _data.size();++i){
+                if(_data[i] == 32896 && _data[i + 1] == 32639 && _data[i + 3] == 256) // 32896 dec = 8080 hex
                 {
                     headerIndex.push_back(i);
                 }
             }
+
+            std::cout << "header found: "<< headerIndex.size()<<std::endl;
 
             int num_cycle = 0; //what cycle??
             int dataStart = 0;
@@ -159,13 +164,13 @@ bool MERClient::read(){
                 dataStart = headerIndex[i]+(NUM_BYTES_HEADER/2); // data starts 30 short later (header)
                 dataEnd = dataStart + (NUM_BYTES_DATA/2) - 1;
 
-                if(dataEnd > data.size()-1){
-                    std::cout << "[MERClient] end of dataarray" << std::endl;
+                if(dataEnd > _data.size()-1){
+                    //std::cout << "[MERClient] end of dataarray" << std::endl;
                     continue;
                 }
 
                 //memcpy of current data
-                memcpy(&(temp[0]),&(data[dataStart]),NUM_BYTES_DATA);
+                memcpy(&(temp[0]),&(_data[dataStart]),NUM_BYTES_DATA);
 
                 DataOffset = NUM_BYTES_PER_CHAN/2;
 
@@ -202,11 +207,29 @@ bool MERClient::read(){
                 }
             }
 
-            output += "possible headesr["+std::to_string(headerIndex.size())+"] ";
-            output += "read headers["+std::to_string(num_cycle)+"] ";
+            for(int i = headerIndex.size()-1; i >= 0 ;i--){
+                dataStart = headerIndex[i];
+                dataEnd = headerIndex[i]+ NUM_BYTES_PAYLOAD;
 
-            if(num_cycle != 250)
-                std::cout << output << std::endl;
+                if(dataEnd > _data.size())
+                    continue;
+
+
+                int missing = _data.size()-dataEnd;
+
+                std::vector<uint16_t> dataTemp;
+                dataTemp.resize(_data.size() - NUM_BYTES_PAYLOAD);
+                memcpy(&(dataTemp[0]),&(_data[0]),dataStart);
+                memcpy(&(dataTemp[dataStart+1]),&(_data[dataEnd]),missing);
+                _data = dataTemp;
+
+
+            }
+
+            //std::cout << "_data size after loops"<< _data.size() << std::endl;
+
+            //if(num_cycle != 250)
+            //    std::cout << output << std::endl;
 
         }catch(const ConnectionClosedError& err){
             std::cout <<"[MERClient] "<< err.what()<<std::endl;
