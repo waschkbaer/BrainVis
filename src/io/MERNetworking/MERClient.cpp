@@ -46,7 +46,7 @@ _MAXPACKAGESIZE(maxpackagesize),
   _isRecording(false),
   _currentDepth(11)
 {
-    ConnectionFactorySelector::addDefaultFactories();
+    //ConnectionFactorySelector::addDefaultFactories();
 }
 
 MERClient::~MERClient(){
@@ -82,7 +82,6 @@ void MERClient::connect(std::string hostnamePort, MERElectrodeIds electrodeSetti
 bool MERClient::read(){
     std::string output = "[MERClient] ";
     if(_isConnected){
-
         merClientMutex.lock();
         std::shared_ptr<BrainVisIO::MERData::MERData> cenData = _currentBundle->
                 getElectrode("cen")->
@@ -100,7 +99,6 @@ bool MERClient::read(){
         try{
             //read some data smaller / equal to macpackagesize
             ByteArray input = _connection->receive(200000);
-            //std::cout << "recieved data: " << input.size() << std::endl;
 
             //sanity check : any data ?
             if(input.size() <= 0){
@@ -110,19 +108,7 @@ bool MERClient::read(){
                 //cout << "[MERClient] "<< input.size()<< endl;
             }
 
-            //sanity check : can this be a short array ?
-            /*if(input.size() % 2 != 0){
-                cout << "[MERClient] can't be short array: "<< input.size() << endl;
-                return false;
-            }*/
-
             output += "Packetsize["+std::to_string(input.size())+"] ";
-
-            //sanity check : is this the size of a complete totalbyteread package?
-            /*if(TOTAL_BYTES_READ < input.size()){
-                cout << "[MERClient] there should be at least: "<< TOTAL_BYTES_READ << " bytes"<< endl;
-                return false;
-            }*/
 
             //copy the complete read data into a short vector
             //maybe needs some endianess check
@@ -225,7 +211,7 @@ bool MERClient::read(){
             //std::cout << "_data size after loops"<< _data.size() << std::endl;
 
             //if(num_cycle != 250)
-            //    std::cout << output << std::endl;
+                //std::cout << output << std::endl;
 
         }catch(const ConnectionClosedError& err){
             std::cout <<"[MERClient] "<< err.what()<<std::endl;

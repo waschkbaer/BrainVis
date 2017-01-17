@@ -18,6 +18,7 @@ public:
     ~MERElectrode();
 
     void newRecording();
+    void newRecording(int depth);
     void calculateFFT();
 
     int getLatestDepth();

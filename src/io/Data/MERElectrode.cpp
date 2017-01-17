@@ -48,6 +48,21 @@ void MERElectrode::newRecording(){
                         );
 }
 
+void MERElectrode::newRecording(int depth){
+    //std::cout << _currentDepth << " --- "<< depth << std::endl;
+    //if(depth <= _currentDepth) return;
+    _currentDepth = depth;
+
+    std::shared_ptr<MERData> data = std::make_shared<MERData>(_currentDepth);
+    data->setPosition(_targetPosition + _elctrodeDirection*_currentDepth);
+
+    _data.insert(std::pair<int,std::shared_ptr<MERData>>
+                        (
+                            _currentDepth,
+                            data)
+                        );
+}
+
 void MERElectrode::calculateFFT(){
     std::map<int,std::shared_ptr<MERData>>::iterator it = _data.begin();
     for(it = _data.begin(); it != _data.end(); ++it){

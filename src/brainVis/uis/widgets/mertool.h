@@ -13,6 +13,7 @@
 
 #include "merwidgets/merelectrodeentry.h"
 #include "merwidgets/mertoolenums.h"
+#include "io/MERNetworking/MERMetaClient.h"
 
 #include "Utils/Perceptron.h"
 
@@ -89,6 +90,7 @@ private:
     MERDisplayMode                                            _displayMode;
 
     std::unique_ptr<MERClient>                                _MERClient;
+    std::unique_ptr<MERMetaClient>                            _MERMeta;
 
     bool                                                      _fftThreadStop;
     std::unique_ptr<std::thread>                              _fftCalcThread;
@@ -96,6 +98,7 @@ private:
     std::shared_ptr<MERRecordSettings>                        _currentRecordingSettings;
 
     std::unique_ptr<Perceptron>                               _perceptron;
+
 };
 
 #endif // MERTOOL_H

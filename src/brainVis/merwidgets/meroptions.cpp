@@ -86,6 +86,7 @@ MEROptions::~MEROptions()
 
 
 void MEROptions::updateSettings(){
+    if(_settings == nullptr) return;
     _settings->_entryPosition.x = ui->ex->text().toFloat();
     _settings->_entryPosition.y = ui->ey->text().toFloat();
     _settings->_entryPosition.z = ui->ez->text().toFloat();

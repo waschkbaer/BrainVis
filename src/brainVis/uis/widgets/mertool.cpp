@@ -15,6 +15,7 @@
 #include <mocca/base/StringTools.h>
 #include <ctime>
 #include <stdlib.h>
+#include "mocca/log/LogManager.h"
 
 using namespace BrainVis;
 using namespace BrainVisIO::MERData;
@@ -23,6 +24,8 @@ MERTool::MERTool(QWidget *parent) :
     QDockWidget(parent),
     _displayMode(MERDisplayMode::fft),
     _fftThreadStop(false),
+    _MERMeta(nullptr),
+    _MERClient(nullptr),
     ui(new Ui::MERTool)
 {
     ui->setupUi(this);
@@ -34,7 +37,7 @@ MERTool::MERTool(QWidget *parent) :
 
     _perceptron = std::unique_ptr<Perceptron>(new Perceptron());
 
-    timerId = startTimer(1000);
+    timerId = startTimer(100);
 
     loadDataBase();
 }
@@ -43,6 +46,14 @@ void MERTool::timerEvent(QTimerEvent *event)
 {
     if(_MERClient != nullptr && ui->BundleSelection->currentIndex() >= 0 && _MERClient->getIsRecording()){
         updateData(ui->BundleSelection->currentText().toStdString());
+    }
+    if(_MERMeta != nullptr && _MERClient != nullptr){
+        if(_MERMeta->isRecording() != _MERClient->getIsRecording()){
+            on_recordButton_clicked();
+        }
+        if(_MERMeta->getCurrentDepth() != _MERClient->getCurrentDepth()){
+            on_nextButton_clicked();
+        }
     }
 }
 
@@ -225,7 +236,15 @@ void MERTool::on_classifierRadio_toggled(bool checked)
 
 void MERTool::on_connectButton_clicked()
 {
-    if(_MERClient != nullptr ) return;
+    if(_MERClient != nullptr) return;
+    if(_MERMeta != nullptr) return;
+
+    LINFO("MERTool | MER Meta connection starting");
+    _MERMeta = std::unique_ptr<MERMetaClient>(new MERMetaClient(ui->metaEdit->text().toStdString(),49155));
+    _MERMeta->start();
+    LINFO("MERTool | MER Meta connection established");
+
+    LINFO("MERTool | creating first bundle");
     std::shared_ptr<MERBundle> b = std::make_shared<MERBundle>();
     b->addElectrode("lat");
     b->addElectrode("cen");
@@ -237,21 +256,24 @@ void MERTool::on_connectButton_clicked()
                                 std::to_string(now->tm_mon+1)+"_"+
                                 std::to_string(now->tm_yday+1989);
 
+    LINFO("MERTool | add bundle to manager");
     MERBundleManager::getInstance().addMERBundle(dateString,b);
     if( ui->BundleSelection->findText(QString(dateString.c_str())) == -1)
         ui->BundleSelection->addItem(QString(dateString.c_str()));
 
     MERElectrodeIds ids(2,3,4);
 
+    LINFO("MERTool | starting MER Data Client");
     _MERClient = std::unique_ptr<MERClient>(new MERClient(400000));
     _MERClient->setCurrentBundle(b);
-    _MERClient->setCurrentDepth(-10);
+    _MERClient->setCurrentDepth(_MERMeta->getCurrentDepth());
 
+    LINFO("MERTool | connecting to MER Data Server");
     _MERClient->connect(ui->hostEdit->text().toStdString(),ids);
-
-    _MERClient->setIsRecording(false);
+    _MERClient->setIsRecording(_MERMeta->isRecording());
 
     //force options
+    LINFO("MERTool | open options");
     on_optionsButton_clicked();
     MERBundleManager::getInstance().activateBundle(dateString);
     ActivityManager::getInstance().setActiveElectrode(dateString);
@@ -284,10 +306,19 @@ void MERTool::on_nextButton_clicked()
 
     std::shared_ptr<MERBundle> bundle = MERBundleManager::getInstance().getMERBundle(ui->BundleSelection->currentText().toStdString());
     if(bundle != nullptr){
-        bundle->getElectrode("lat")->newRecording();
-        bundle->getElectrode("ant")->newRecording();
-        bundle->getElectrode("cen")->newRecording();
-        _MERClient->setCurrentDepth(bundle->getElectrode("lat")->getLatestDepth());
+        if(_MERMeta != nullptr){
+            LINFO("MERTool | NEW SITE TRIGGERED BY META : "<< _MERMeta->getCurrentDepth());
+            bundle->getElectrode("lat")->newRecording(_MERMeta->getCurrentDepth());
+            bundle->getElectrode("ant")->newRecording(_MERMeta->getCurrentDepth());
+            bundle->getElectrode("cen")->newRecording(_MERMeta->getCurrentDepth());
+            _MERClient->setCurrentDepth(_MERMeta->getCurrentDepth());
+        }else{
+            bundle->getElectrode("lat")->newRecording();
+            bundle->getElectrode("ant")->newRecording();
+            bundle->getElectrode("cen")->newRecording();
+            _MERClient->setCurrentDepth(bundle->getElectrode("lat")->getLatestDepth());
+        }
+
 
         std::string infostring  = "Depth: "+ std::to_string(_MERClient->getCurrentDepth());
         if(_MERClient->getIsRecording()){
